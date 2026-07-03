@@ -53,7 +53,6 @@ export async function POST(req: Request) {
         token: idToken,
         user: { id: uid, phone, role: 'user' },
       });
-    } catch (err: any) {
   } catch (err: any) {
     console.error('Signup error:', err);
     return NextResponse.json({ error: err.message, stack: err.stack, code: err.code }, { status: 500 });

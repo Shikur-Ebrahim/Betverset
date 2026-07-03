@@ -9,7 +9,7 @@ function stripQuotes(val: string): string {
 
 function initAdmin(): void {
   const mod = 'firebase-admin/app';
-  const { initializeApp, getApps, cert } = eval('require(' + mod + ')');
+  const { initializeApp, getApps, cert } = eval('require("' + mod + '")');
   
   if (_initialized || getApps().length > 0) {
     _initialized = true;
@@ -68,7 +68,7 @@ export function getAdminDb() {
   initAdmin();
   if (!_db) {
     const mod = 'firebase-admin/firestore';
-    const { getFirestore } = eval('require(' + mod + ')');
+    const { getFirestore } = eval('require("' + mod + '")');
     _db = getFirestore();
   }
   return _db;
@@ -78,7 +78,7 @@ export function getAdminAuth() {
   initAdmin();
   if (!_auth) {
     const mod = 'firebase-admin/auth';
-    const { getAuth } = eval('require(' + mod + ')');
+    const { getAuth } = eval('require("' + mod + '")');
     _auth = getAuth();
   }
   return _auth;
@@ -105,7 +105,7 @@ export const storage: any = new Proxy({}, {
   get(_t, prop: string) {
     initAdmin();
     const mod = 'firebase-admin/storage';
-    const { getStorage } = eval('require(' + mod + ')');
+    const { getStorage } = eval('require("' + mod + '")');
     const instance = getStorage();
     const val = instance[prop];
     return typeof val === 'function' ? val.bind(instance) : val;

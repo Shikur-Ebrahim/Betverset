@@ -1,7 +1,3 @@
-import { initializeApp, getApps, getApp, cert, App } from 'firebase-admin/app';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
-import { getAuth, Auth } from 'firebase-admin/auth';
-import { getStorage } from 'firebase-admin/storage';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,6 +8,8 @@ function stripQuotes(val: string): string {
 }
 
 function initAdmin(): void {
+  const { initializeApp, getApps, cert } = require('firebase-admin/app');
+  
   if (_initialized || getApps().length > 0) {
     _initialized = true;
     return;
@@ -62,56 +60,50 @@ function initAdmin(): void {
   );
 }
 
-function makeProxy<T extends object>(): T {
-  return new Proxy({} as T, {
-    get(_target, prop: string) {
-      initAdmin();
-      const instance = prop.startsWith('auth') || prop === 'createUser' || prop === 'getUser' || prop === 'updateUser' || prop === 'listUsers' || prop === 'verifyIdToken'
-        ? getAuth()
-        : getFirestore();
-      const val = (instance as any)[prop];
-      return typeof val === 'function' ? val.bind(instance) : val;
-    },
-  });
-}
+let _db: any = null;
+let _auth: any = null;
 
-let _db: Firestore | null = null;
-let _auth: Auth | null = null;
-
-export function getAdminDb(): Firestore {
+export function getAdminDb() {
   initAdmin();
-  if (!_db) _db = getFirestore();
+  if (!_db) {
+    const { getFirestore } = require('firebase-admin/firestore');
+    _db = getFirestore();
+  }
   return _db;
 }
 
-export function getAdminAuth(): Auth {
+export function getAdminAuth() {
   initAdmin();
-  if (!_auth) _auth = getAuth();
+  if (!_auth) {
+    const { getAuth } = require('firebase-admin/auth');
+    _auth = getAuth();
+  }
   return _auth;
 }
 
 // Backward-compatible exports — these are proxies that initialize on first use
-export const db: Firestore = new Proxy({} as Firestore, {
+export const db: any = new Proxy({}, {
   get(_t, prop: string) {
     const instance = getAdminDb();
-    const val = (instance as any)[prop];
+    const val = instance[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });
 
-export const auth: Auth = new Proxy({} as Auth, {
+export const auth: any = new Proxy({}, {
   get(_t, prop: string) {
     const instance = getAdminAuth();
-    const val = (instance as any)[prop];
+    const val = instance[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });
 
-export const storage = new Proxy({} as any, {
+export const storage: any = new Proxy({}, {
   get(_t, prop: string) {
     initAdmin();
+    const { getStorage } = require('firebase-admin/storage');
     const instance = getStorage();
-    const val = (instance as any)[prop];
+    const val = instance[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });

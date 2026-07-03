@@ -2,44 +2,41 @@ import { NextResponse } from 'next/server';
 import { getApps } from 'firebase-admin/app';
 import { db } from '@/lib/firebase-admin';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
-    const apps = getApps();
-    let dbStatus = 'Not initialized';
-    let dbError = null;
-    let docCount = -1;
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    const sa = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '';
 
+    // Check if it's hanging on db connect
+    let dbConnected = false;
+    let connectError = null;
+    
+    // Don't actually await it, just trigger the proxy
     try {
-      // Force init by accessing proxy
-      const coll = db.collection('users');
-      dbStatus = 'Proxy accessed, getting data...';
-      
-      // Try to fetch a single doc to see if it hangs or throws
-      const snap = await coll.limit(1).get();
-      dbStatus = 'Connected successfully';
-      docCount = snap.size;
+      db.collection('users');
+      dbConnected = true;
     } catch (e: any) {
-      dbStatus = 'Error connecting';
-      dbError = e.message;
+      connectError = e.message;
     }
 
     return NextResponse.json({
-      status: 'ok',
-      hasApps: apps.length > 0,
-      appName: apps.length > 0 ? apps[0].name : null,
-      projectIdEnv: !!process.env.FIREBASE_PROJECT_ID,
-      clientEmailEnv: !!process.env.FIREBASE_CLIENT_EMAIL,
-      privateKeyEnv: !!process.env.FIREBASE_PRIVATE_KEY,
-      privateKeyLength: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.length : 0,
-      serviceAccountEnv: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-      serviceAccountLength: process.env.FIREBASE_SERVICE_ACCOUNT_KEY ? process.env.FIREBASE_SERVICE_ACCOUNT_KEY.length : 0,
-      dbStatus,
-      dbError,
-      docCount
+      env: {
+        NEXT_PUBLIC_FIREBASE_API_KEY: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+        FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
+        FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
+        FIREBASE_PRIVATE_KEY_LENGTH: rawKey.length,
+        FIREBASE_PRIVATE_KEY_START: rawKey.substring(0, 30),
+        FIREBASE_PRIVATE_KEY_HAS_NEWLINES: rawKey.includes('\n'),
+        FIREBASE_PRIVATE_KEY_HAS_ESCAPED: rawKey.includes('\\n'),
+        FIREBASE_SERVICE_ACCOUNT_KEY_LENGTH: sa.length,
+        FIREBASE_SERVICE_ACCOUNT_KEY_START: sa.substring(0, 30),
+      },
+      dbConnected,
+      connectError
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message, stack: err.stack }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
-
-export const dynamic = 'force-dynamic';

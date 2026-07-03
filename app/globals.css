@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0D1117;
+  --foreground: #FFFFFF;
+  --site-bg: #0D1117;
+  --site-surface: #161B22;
+  --site-surface-strong: #21262D;
+  --site-surface-soft: #11141A;
+  --site-border: #30363D;
+  --site-muted: #8B949E;
+  --site-text-soft: #C9D1D9;
+  --site-primary: #FF8C00;
+  --site-primary-strong: #E67E00;
+  --site-primary-soft: rgba(255, 140, 0, 0.12);
+  --site-secondary: #58A6FF;
+  --site-secondary-soft: rgba(88, 166, 255, 0.14);
+  --site-live: #FF6B6B;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0D1117;
+    --foreground: #FFFFFF;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.site-shell {
+  min-height: 100vh;
+  color: var(--foreground);
+  padding-bottom: 70px; /* Space for bottom nav */
+}
+
+.site-header {
+  background: #161B22;
+  border-bottom: 1px solid var(--site-border);
+}
+
+.site-brand {
+  color: #FFFFFF;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-style: italic;
+}
+
+.site-nav-link {
+  color: var(--site-muted);
+  transition: color 0.2s ease;
+}
+
+.site-nav-link:hover {
+  color: #ffffff;
+}
+
+.site-outline-btn {
+  border: 1px solid var(--site-border);
+  background: transparent;
+  color: var(--site-text-soft);
+}
+
+.site-primary-btn {
+  background: var(--site-primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(255, 140, 0, 0.3);
+  border: none;
+}
+
+.site-primary-btn:hover {
+  filter: brightness(1.1);
+}
+
+.site-card {
+  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+}
+
+.site-card-hover:hover {
+  border-color: var(--site-primary);
+}
+
+.site-pill {
+  border: 1px solid rgba(255, 140, 0, 0.2);
+  background: var(--site-primary-soft);
+  color: var(--site-primary);
+}
+
+.site-live-pill {
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff9494;
+}
+
+.site-blue-pill {
+  background: var(--site-secondary-soft);
+  color: var(--site-secondary);
+}
+
+.site-muted {
+  color: var(--site-muted);
+}
+
+.site-soft-text {
+  color: var(--site-text-soft);
+}
+
+.site-score-box {
+  background: var(--background);
+  border: 1px solid var(--site-border);
+}
+
+.site-section-title {
+  color: #ffffff;
+}
+
+.site-accent-line {
+  height: 3px;
+  width: 68px;
+  border-radius: 9999px;
+  background: var(--site-primary);
+}
+
+.site-chip {
+  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+  color: var(--site-text-soft);
+}
+
+.site-logo-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.site-section-shell {
+  background: var(--site-surface);
+  border: 1px solid var(--site-border);
+}
+
+.site-divider {
+  height: 1px;
+  width: 100%;
+  background: var(--site-border);
+}
+
+/* Hide scrollbar for horizontal scrolling elements */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Champx Specific UI Classes */
+.champx-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: #161B22;
+  border-top: 1px solid var(--site-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  padding: 0 2px;
+}
+
+.champx-bottom-nav .champx-nav-item {
+  min-width: 0;
+  flex: 1;
+  max-width: 72px;
+}
+
+.champx-bottom-nav .champx-nav-item span {
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.champx-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--site-muted);
+  font-size: 10px;
+}
+
+.champx-nav-item.active {
+  color: var(--site-primary);
+}
+
+.champx-nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.champx-odds-btn {
+  background: #21262D;
+  border-radius: 8px;
+  padding: 8px 0;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.champx-odds-btn span.label {
+  font-size: 10px;
+  color: var(--site-muted);
+}
+
+.champx-odds-btn span.value {
+  font-size: 13px;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+.champx-league-header {
+  background: #21262D;
+  border-left: 4px solid var(--site-primary);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+.champx-match-row {
+  background: var(--site-surface);
+  border-bottom: 1px solid var(--site-border);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.champx-match-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.champx-match-time {
+  font-size: 12px;
+  color: var(--site-primary);
+  min-width: 45px;
+}
+
+.champx-match-teams {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.champx-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.champx-team-logo {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.champx-odds-container {
+  display: flex;
+  gap: 6px;
+}

@@ -1,0 +1,55 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/firebase-admin';
+import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
+
+
+export async function POST(req: Request) {
+  const adminId = await verifyAdmin(req);
+  if (!adminId) {
+    const authHeader = req.headers.get('authorization');
+    return authHeader ? forbidden() : unauthorized();
+  }
+
+  try {
+    const { name, type, logoUrl } = await req.json();
+    // Check for duplicates
+    const existing = await db.collection('withdrawal_methods')
+      .where('name', '==', name)
+      .where('active', '==', true)
+      .get();
+    if (!existing.empty) {
+      return NextResponse.json({ message: 'This method already exists' }, { status: 400 });
+    }
+
+    const docRef = db.collection('withdrawal_methods').doc();
+    const data = {
+      id: docRef.id,
+      name,
+      type,
+      logo_url: logoUrl,
+      active: true,
+      created_at: new Date().toISOString(),
+    };
+    await docRef.set(data);
+    return NextResponse.json(data, { status: 201 });
+  } catch (err: any) {
+    console.error('Error adding withdrawal method:', err);
+    return NextResponse.json({ message: 'Failed to add withdrawal method' }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const snapshot = await db.collection('withdrawal_methods')
+      .where('active', '==', true)
+      .orderBy('name', 'asc')
+      .get();
+    const methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    return NextResponse.json(methods);
+  } catch (err: any) {
+    console.error('Fetch withdrawal methods error:', err);
+    return NextResponse.json({ message: 'Failed to fetch withdrawal methods' }, { status: 500 });
+  }
+}
+
+export const dynamic = 'force-dynamic';

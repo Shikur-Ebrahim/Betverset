@@ -8,7 +8,8 @@ function stripQuotes(val: string): string {
 }
 
 function initAdmin(): void {
-  const { initializeApp, getApps, cert } = require('firebase-admin/app');
+  const mod = 'firebase-admin/app';
+  const { initializeApp, getApps, cert } = require(mod);
   
   if (_initialized || getApps().length > 0) {
     _initialized = true;
@@ -66,7 +67,8 @@ let _auth: any = null;
 export function getAdminDb() {
   initAdmin();
   if (!_db) {
-    const { getFirestore } = require('firebase-admin/firestore');
+    const mod = 'firebase-admin/firestore';
+    const { getFirestore } = require(mod);
     _db = getFirestore();
   }
   return _db;
@@ -75,7 +77,8 @@ export function getAdminDb() {
 export function getAdminAuth() {
   initAdmin();
   if (!_auth) {
-    const { getAuth } = require('firebase-admin/auth');
+    const mod = 'firebase-admin/auth';
+    const { getAuth } = require(mod);
     _auth = getAuth();
   }
   return _auth;
@@ -101,7 +104,8 @@ export const auth: any = new Proxy({}, {
 export const storage: any = new Proxy({}, {
   get(_t, prop: string) {
     initAdmin();
-    const { getStorage } = require('firebase-admin/storage');
+    const mod = 'firebase-admin/storage';
+    const { getStorage } = require(mod);
     const instance = getStorage();
     const val = instance[prop];
     return typeof val === 'function' ? val.bind(instance) : val;

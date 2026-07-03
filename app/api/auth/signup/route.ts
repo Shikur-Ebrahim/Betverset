@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
     const email = `${phone.replace('+', '')}@betvers.bet`;
 
-    try {
+
       const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
       if (!apiKey) throw new Error('Firebase API Key missing');
 

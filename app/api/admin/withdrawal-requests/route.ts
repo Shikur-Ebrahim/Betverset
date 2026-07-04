@@ -34,7 +34,7 @@ export async function GET(req: Request) {
         if (methodDoc.exists) method_name = methodDoc.data()?.name || '';
       }
 
-      return { id: doc.id, ...data, phone, method_name };
+      return { ...data, phone, method_name };
     }));
 
     return NextResponse.json(requests);

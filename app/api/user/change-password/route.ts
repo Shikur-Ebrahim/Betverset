@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@/lib/firebase-admin';
+import { db } from '@/lib/firebase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
 
 

@@ -7,10 +7,15 @@ export async function GET() {
   try {
     const snapshot = await db.collection('live_matches')
       .where('is_active', '==', true)
-      .orderBy('match_date', 'asc')
       .get();
 
-    const matches = await Promise.all(snapshot.docs.map(async (doc: any) => {
+    const matches = await Promise.all(snapshot.docs
+      .sort((a: any, b: any) => {
+        const aDate = a.data().match_date || '';
+        const bDate = b.data().match_date || '';
+        return aDate.localeCompare(bDate);
+      })
+      .map(async (doc: any) => {
       const lm = doc.data();
       let fixtureData: any = {};
 

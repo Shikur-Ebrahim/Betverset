@@ -45,10 +45,11 @@ export async function GET(req: Request) {
     // 3. Top Leagues
     const leaguesSnapshot = await db.collection('leagues')
       .where('is_top', '==', true)
-      .orderBy('top_rank', 'asc')
       .limit(15)
       .get();
-    const topLeagues = leaguesSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    const topLeagues = leaguesSnapshot.docs
+      .map((doc: any) => ({ id: doc.id, ...doc.data() }))
+      .sort((a: any, b: any) => (a.top_rank ?? 999) - (b.top_rank ?? 999));
 
     // 4. Meta (simplified for Firestore)
     const countriesMap = new Map();

@@ -29,7 +29,7 @@ async function checkAndIncrementQuota(): Promise<void> {
   await ref.update({ requests_today: FieldValue.increment(1), limit: DAILY_LIMIT });
 }
 
-async function apiFetch(endpoint: string, params: Record<string, string | number> = {}) {
+export async function apiFetch(endpoint: string, params: Record<string, string | number> = {}) {
   await checkAndIncrementQuota();
 
   const url = new URL(`${API_BASE}${endpoint}`);
@@ -115,92 +115,15 @@ export async function fetchAndStoreLeagues(leagueIds?: number[]) {
   return { leaguesSeen: data.length, stored };
 }
 
-export async function fetchAndStoreFixturesForWindow(season?: number) {
-  // We fetch the next 50 upcoming fixtures globally to guarantee matches are always available
-  // Fetch all fixtures for today to guarantee we hit active summer leagues with odds
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const data = await apiFetch('/fixtures', { date: today });
-    
-    // Sample 40 random matches from today to find ones with odds
-    const shuffled = data.sort(() => 0.5 - Math.random());
-    const sample = shuffled.slice(0, 40);
-
-    const batch = db.batch();
-    let count = 0;
-    let total = 0;
-
-    for (const item of sample) {
-      const f = item?.fixture;
-      const teams = item?.teams;
-      const league = item?.league;
-      const goals = item?.goals;
-      if (!f?.id) continue;
-
-      try {
-        // 1. Fetch Odds FIRST before saving the match
-        const oddsCount = await fetchAndStoreOddsForFixture(f.id);
-        
-        // 2. Only save the match if it actually has odds!
-        if (oddsCount > 0) {
-          const ref = db.collection('fixtures').doc(String(f.id));
-          await ref.set({
-            api_fixture_id: f.id,
-            match_date: f.date || null,
-            status: f.status?.short || 'NS',
-            elapsed: f.status?.elapsed || null,
-            referee: f.referee || null,
-            home_team_id: String(teams?.home?.id || ''),
-            away_team_id: String(teams?.away?.id || ''),
-            home_team_name: teams?.home?.name || '',
-            away_team_name: teams?.away?.name || '',
-            home_team_logo: teams?.home?.logo || null,
-            away_team_logo: teams?.away?.logo || null,
-            home_goals: goals?.home ?? null,
-            away_goals: goals?.away ?? null,
-            league_id: String(league?.id || ''),
-            league_name: league?.name || '',
-            league_logo: league?.logo || null,
-            api_league_id: league?.id || 0,
-            country_name: league?.country || null,
-            venue_name: f.venue?.name || null,
-            venue_city: f.venue?.city || null,
-            updated_at: new Date().toISOString(),
-          }, { merge: true });
-          
-          count++;
-          total++;
-        }
-      } catch (err: any) {
-        if (err.message && err.message.includes('daily limit reached')) {
-          console.warn(`[sync] Quota hit while verifying odds. Stopping.`);
-          break; // Stop iterating fixtures if quota is hit
-        }
-        console.error(`[sync] Failed odds verification for fixture ${f.id}:`, err.message);
-      }
-    }
-    return { fixturesSeen: total };
-  } catch (err) {
-    console.error(`[sync] Failed to sync fixtures:`, err);
-    return { fixturesSeen: 0 };
-  }
-}
-
-export async function fetchAndStoreOddsForFixture(fixtureId: number) {
-  const data = await apiFetch('/odds', { fixture: fixtureId });
-  if (!data.length) return 0;
-
+// Helper: store odds from already-fetched data (no extra API call)
+async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Promise<number> {
   const batch = db.batch();
   let count = 0;
-
-  for (const item of data) {
+  for (const item of oddsItems) {
     const bookmakers: any[] = item?.bookmakers ?? [];
-    
     for (const bookmaker of bookmakers) {
       if (!bookmaker?.id) continue;
-      const bets: any[] = bookmaker?.bets ?? [];
-
-      for (const bet of bets) {
+      for (const bet of bookmaker?.bets ?? []) {
         for (const value of bet?.values ?? []) {
           const oddId = `${fixtureId}_${bookmaker.id}_${bet.id}_${value.value}`.replace(/\//g, '-').replace(/\s+/g, '_');
           const ref = db.collection('odds').doc(oddId);
@@ -221,8 +144,93 @@ export async function fetchAndStoreOddsForFixture(fixtureId: number) {
       }
     }
   }
-  await batch.commit();
+  if (count % 400 !== 0) await batch.commit();
   return count;
+}
+
+export async function fetchAndStoreFixturesForWindow() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    console.log(`[sync] Fetching odds page 1 for date ${today}...`);
+
+    // Step 1: Fetch odds by date - this guarantees matches have odds
+    const oddsPage = await apiFetch('/odds', { date: today, page: 1 });
+    if (!oddsPage || oddsPage.length === 0) {
+      console.log('[sync] No odds available for today. Skipping.');
+      return { fixturesSeen: 0 };
+    }
+
+    console.log(`[sync] Got ${oddsPage.length} fixtures with odds. Processing...`);
+
+    // Step 2: Build a map of fixtureId -> odds items (already in memory)
+    const oddsMap = new Map<number, any[]>();
+    for (const item of oddsPage) {
+      const fid: number = item?.fixture?.id;
+      if (!fid) continue;
+      oddsMap.set(fid, [item]);
+    }
+
+    // Step 3: Fetch fixture details for up to 20 at a time
+    const allIds = Array.from(oddsMap.keys()).slice(0, 20);
+    const fixtureDetails = await apiFetch('/fixtures', { id: allIds.join('-') });
+
+    let fixturesStored = 0;
+    const batch = db.batch();
+
+    for (const item of fixtureDetails) {
+      const f = item?.fixture;
+      const teams = item?.teams;
+      const league = item?.league;
+      const goals = item?.goals;
+      if (!f?.id) continue;
+
+      const oddsItems = oddsMap.get(f.id) || [];
+      if (oddsItems.length === 0) continue;
+
+      // Save fixture
+      const ref = db.collection('fixtures').doc(String(f.id));
+      batch.set(ref, {
+        api_fixture_id: f.id,
+        match_date: f.date || null,
+        status: f.status?.short || 'NS',
+        elapsed: f.status?.elapsed || null,
+        referee: f.referee || null,
+        home_team_id: String(teams?.home?.id || ''),
+        away_team_id: String(teams?.away?.id || ''),
+        home_team_name: teams?.home?.name || '',
+        away_team_name: teams?.away?.name || '',
+        home_team_logo: teams?.home?.logo || null,
+        away_team_logo: teams?.away?.logo || null,
+        home_goals: goals?.home ?? null,
+        away_goals: goals?.away ?? null,
+        league_id: String(league?.id || ''),
+        league_name: league?.name || '',
+        league_logo: league?.logo || null,
+        api_league_id: league?.id || 0,
+        country_name: league?.country || null,
+        venue_name: f.venue?.name || null,
+        venue_city: f.venue?.city || null,
+        updated_at: new Date().toISOString(),
+      }, { merge: true });
+
+      // Save odds from memory (no extra API call)
+      await storeOddsFromData(f.id, oddsItems);
+      fixturesStored++;
+    }
+
+    await batch.commit();
+    console.log(`[sync] Stored ${fixturesStored} fixtures with odds.`);
+    return { fixturesSeen: fixturesStored };
+  } catch (err) {
+    console.error(`[sync] Failed to sync fixtures:`, err);
+    return { fixturesSeen: 0 };
+  }
+}
+
+export async function fetchAndStoreOddsForFixture(fixtureId: number) {
+  const data = await apiFetch('/odds', { fixture: fixtureId });
+  if (!data.length) return 0;
+  return storeOddsFromData(fixtureId, data);
 }
 
 export async function settleFinishedBets() {

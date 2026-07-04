@@ -30,6 +30,9 @@ export async function GET(req: Request) {
 type ManualMatchInput = {
   home_team_id: string;
   away_team_id: string;
+  home_team_name?: string;
+  away_team_name?: string;
+  league_name?: string;
   selection: string;
   odd: number;
   market_name?: string;

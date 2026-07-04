@@ -144,7 +144,7 @@ export async function fetchAndStoreFixturesForWindow(season?: number) {
         // 2. Only save the match if it actually has odds!
         if (oddsCount > 0) {
           const ref = db.collection('fixtures').doc(String(f.id));
-          batch.set(ref, {
+          await ref.set({
             api_fixture_id: f.id,
             match_date: f.date || null,
             status: f.status?.short || 'NS',
@@ -170,7 +170,6 @@ export async function fetchAndStoreFixturesForWindow(season?: number) {
           
           count++;
           total++;
-          if (count % 100 === 0) await batch.commit();
         }
       } catch (err: any) {
         if (err.message && err.message.includes('daily limit reached')) {
@@ -180,7 +179,6 @@ export async function fetchAndStoreFixturesForWindow(season?: number) {
         console.error(`[sync] Failed odds verification for fixture ${f.id}:`, err.message);
       }
     }
-    await batch.commit();
     return { fixturesSeen: total };
   } catch (err) {
     console.error(`[sync] Failed to sync fixtures:`, err);

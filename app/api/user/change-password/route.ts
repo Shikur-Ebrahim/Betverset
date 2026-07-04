@@ -38,12 +38,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Incorrect current password' }, { status: 400 });
     }
 
+    const verifyData = await verifyRes.json();
+    const freshIdToken = verifyData.idToken;
+
     // Now update the password using the REST API
     const updateRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        idToken,
+        idToken: freshIdToken,
         password: newPassword,
         returnSecureToken: true
       }),

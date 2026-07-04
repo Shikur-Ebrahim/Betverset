@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 import { getPublicApiBaseUrl } from '@/lib/public-api-url';
 
@@ -131,7 +131,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-gray-900 text-[#111827] rounded-[24px] font-black text-sm active:scale-95 transition-all disabled:bg-gray-400 mt-4"
+              className="w-full py-5 bg-green-500 text-white rounded-[24px] font-black text-sm active:scale-95 transition-all disabled:bg-gray-400 mt-4"
             >
               {loading ? 'Updating...' : 'Update password'}
             </button>
@@ -140,7 +140,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
 
         {error && (
           <div className="absolute bottom-6 left-6 right-6 z-[210] animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-[#1A202C] text-[#111827] px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3 border border-gray-700">
+            <div className="bg-[#1A202C] text-white px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3 border border-gray-700">
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </div>

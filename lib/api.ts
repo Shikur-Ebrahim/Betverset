@@ -587,9 +587,9 @@ export const api = {
       date: string;
       matches?: any[];
       clubs: Array<{
-        id: number;
+        id: string;
         name: string;
-        logo: string;
+        logo: string | null;
         league_name: string | null;
         country_code: string | null;
         country_name: string | null;

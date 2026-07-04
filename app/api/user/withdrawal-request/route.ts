@@ -86,6 +86,7 @@ export async function POST(req: Request) {
         amount: amt,
         account_name: accountName.trim(),
         account_details: accountDetails.trim(),
+        promo_code: promoCode ? promoCode.trim().toUpperCase() : null,
         status: 'pending',
         created_at: new Date().toISOString(),
       };

@@ -15,6 +15,7 @@ export type WithdrawalTicket = {
   amount: string | number;
   account_name: string;
   account_details: string;
+  promo_code?: string;
   status: 'pending' | 'approved';
   created_at: string;
 };
@@ -190,6 +191,12 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pay to</p>
                 <p className="mt-1 font-black text-gray-900">{t.account_name}</p>
                 <p className="mt-1 break-all text-gray-600">{t.account_details}</p>
+                {t.promo_code && (
+                  <div className="mt-3 border-t border-gray-200 pt-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">Agent Code</p>
+                    <p className="mt-0.5 font-mono text-sm font-black text-gray-900">{t.promo_code}</p>
+                  </div>
+                )}
               </div>
 
               {t.status === 'pending' && (

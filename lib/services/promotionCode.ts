@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase-admin';
 
-const CODE_PATTERN = /^T\d{2}[A-Z]{2}\d{2}[A-Z]{2}\d$/;
+const CODE_PATTERN = /^B\d{2}[A-Z]{2}\d{2}[A-Z]{2}\d$/;
 
 function randomDigit(): string {
   return String(Math.floor(Math.random() * 10));
@@ -12,7 +12,7 @@ function randomLetter(): string {
 
 export function buildPromotionCode(): string {
   return (
-    'T' +
+    'B' +
     randomDigit() +
     randomDigit() +
     randomLetter() +

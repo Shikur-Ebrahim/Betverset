@@ -291,11 +291,11 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                   key={bet.id}
                   className="overflow-hidden rounded-2xl border border-slate-200/90 bg-[#FFFFFF] shadow-sm ring-1 ring-black/[0.03]"
                 >
-                  <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-slate-100 sm:aspect-[21/8] sm:min-h-[5.5rem]">
+                  <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-black sm:aspect-[21/8] sm:min-h-[5.5rem]">
                     <img
                       src="/ticket/ticket.jpg"
                       alt=""
-                      className="absolute inset-0 h-full w-full object-cover object-center"
+                      className="absolute inset-0 h-full w-full object-contain object-center"
                       loading="lazy"
                       decoding="async"
                     />

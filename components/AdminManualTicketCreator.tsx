@@ -105,9 +105,11 @@ type Props = {
 export default function AdminManualTicketCreator({ onClose }: Props) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [savedMatches, setSavedMatches] = useState<any[]>([]);
   const [smallLeagues, setSmallLeagues] = useState<SmallLeagueRow[]>([]);
   const [clubsLoading, setClubsLoading] = useState(true);
   const [clubsError, setClubsError] = useState<string | null>(null);
+  const [refreshingMatches, setRefreshingMatches] = useState(false);
   const [matches, setMatches] = useState<MatchDraft[]>(() => initialThreeMatches());
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -122,10 +124,12 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
     try {
       const data = await api.getAdminManualTicketClubs(date);
       setClubs(data.clubs || []);
+      setSavedMatches(data.matches || []);
       setSmallLeagues(Array.isArray(data.small_leagues) ? data.small_leagues : []);
     } catch (e) {
       setClubsError(e instanceof Error ? e.message : 'Failed to load clubs');
       setClubs([]);
+      setSavedMatches([]);
       setSmallLeagues([]);
     } finally {
       setClubsLoading(false);
@@ -143,6 +147,18 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
       setListLoading(false);
     }
   }, []);
+
+  const handleRefreshClubs = async () => {
+    setRefreshingMatches(true);
+    try {
+      await api.refreshAdminManualTicketMatches();
+      await loadClubs();
+    } catch (e) {
+      setClubsError(e instanceof Error ? e.message : 'Failed to refresh matches');
+    } finally {
+      setRefreshingMatches(false);
+    }
+  };
 
   useEffect(() => {
     void loadClubs();
@@ -265,26 +281,41 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
             </label>
             <button
               type="button"
-              onClick={() => void loadClubs()}
-              className="rounded-full bg-[#1A202C] px-4 py-1.5 text-xs font-bold text-white"
+              onClick={handleRefreshClubs}
+              disabled={refreshingMatches}
+              className="rounded-full bg-[#1A202C] px-4 py-1.5 text-xs font-bold text-white disabled:bg-gray-400"
             >
-              Refresh clubs
+              {refreshingMatches ? 'Fetching...' : 'Refresh clubs'}
             </button>
           </div>
           {clubsLoading && (
             <p className="text-sm text-[#64748B]">
-              Loading 20 clubs from smaller / regional leagues worldwide (excludes top-tier leagues in your DB)…
+              Loading saved matches from database...
             </p>
           )}
           {clubsError && <p className="text-sm text-red-600">{clubsError}</p>}
           {!clubsLoading && !clubsError && (
             <p className="mb-3 text-[11px] leading-relaxed text-[#64748B]">
-              Club pool uses <span className="font-bold text-[#334155]">non–elite leagues only</span> (developing
-              &amp; developed countries, but not leagues flagged as top tier in your sync — avoids household-name
-              divisions). Same 20 teams rotate by the date above; pick any for home/away.{' '}
+              Club pool is populated from the most recent 100 non-elite league matches saved in the database.
+              <br />
               <span className="font-bold text-[#334155]">Ticket defaults:</span> Match 1 &amp; 2 — Correct score; Match
               3 — Draw. After each leg&apos;s end time, every manual leg is marked won (preset has no wallet balance).
             </p>
+          )}
+          {!clubsLoading && !clubsError && savedMatches.length > 0 && (
+            <div className="mb-4 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-wider text-[#64748B]">
+                Matches Database (Most recent {savedMatches.length} shown)
+              </div>
+              <div className="max-h-48 overflow-y-auto text-[10px] leading-snug text-[#475569] space-y-1">
+                {savedMatches.map((m) => (
+                  <div key={m.id} className="border-b border-[#E2E8F0] pb-1 last:border-0 flex justify-between">
+                    <span className="font-bold text-[#334155]">{m.home_team_name} vs {m.away_team_name}</span>
+                    <span className="text-[#64748B]">{new Date(m.match_date).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
           {!clubsLoading && !clubsError && smallLeagues.length > 0 && (
             <div className="mb-4 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3">
@@ -304,7 +335,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
           {!clubsLoading && !clubsError && (
             <>
               <div className="mb-2 text-[10px] font-black uppercase tracking-wider text-[#64748B]">
-                Today&apos;s 20-club picker (logos)
+                Club Picker (Clubs from saved matches)
               </div>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-10">
                 {clubs.map((c) => (

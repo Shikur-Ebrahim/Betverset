@@ -560,6 +560,19 @@ export const api = {
     };
   },
 
+  refreshAdminManualTicketMatches: async () => {
+    if (typeof window === 'undefined') throw new Error('Admin API is browser-only');
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_URL}/admin/manual-ticket-matches/refresh`, {
+      method: 'POST',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      cache: 'no-store',
+    });
+    const data = await parseJsonResponse(res);
+    if (!res.ok) throw new Error((data.message as string) || `Refresh failed (${res.status})`);
+    return data as { message: string; saved: number };
+  },
+
   getAdminManualTicketClubs: async (date?: string) => {
     if (typeof window === 'undefined') throw new Error('Admin API is browser-only');
     const token = localStorage.getItem('token');
@@ -572,6 +585,7 @@ export const api = {
     if (!res.ok) throw new Error((data.message as string) || `Clubs failed (${res.status})`);
     return data as {
       date: string;
+      matches?: any[];
       clubs: Array<{
         id: number;
         name: string;

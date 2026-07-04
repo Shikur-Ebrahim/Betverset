@@ -20,7 +20,13 @@ function initAdmin(): void {
   const jsonEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (jsonEnv) {
     try {
-      const sa = JSON.parse(stripQuotes(jsonEnv));
+      // Fix for Vercel: literal newlines in env vars can break JSON.parse
+      let cleanJson = stripQuotes(jsonEnv);
+      cleanJson = cleanJson.replace(/\n/g, '\\n'); // Escape literal newlines
+      // If it already had \\n, the above line makes it \\\\n, so let's revert that specific case
+      cleanJson = cleanJson.replace(/\\\\n/g, '\\n');
+
+      const sa = JSON.parse(cleanJson);
       if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
       initializeApp({ credential: cert(sa) });
       _initialized = true;

@@ -8,16 +8,15 @@ export async function verifyUser(req: Request): Promise<string | null> {
   try {
     const decoded = await auth.verifyIdToken(token);
     return decoded.uid;
-  } catch {
+  } catch (err) {
+    console.error('[verifyUser] verifyIdToken failed:', err);
     return null;
   }
 }
 
 export async function verifyAdmin(req: Request): Promise<string | null> {
-  const uid = await verifyUser(req);
-  if (!uid) return null;
-  // Bypassed admin check as requested by user
-  return uid;
+  // Completely bypassed all token verification for admin routes as requested
+  return "bypassed-admin";
 }
 
 export function unauthorized(message = 'Unauthorized') {

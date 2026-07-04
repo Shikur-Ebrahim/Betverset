@@ -173,8 +173,8 @@ const META_REFRESH_INTERVAL_MS = 180_000;
 
 const HOME_PROMO_BANNERS = [
   '/banner/banner1.jpg',
-  '/banner/banner8.png',
-  '/banner/banner6.png',
+  '/banner/banner8.jpg',
+  '/banner/banner6.jpg',
 ] as const;
 
 function dayIdToLabel(dayId: string) {

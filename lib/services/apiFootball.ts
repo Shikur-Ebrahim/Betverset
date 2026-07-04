@@ -10,23 +10,27 @@ const API_BASE = `https://${API_HOST}`;
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
 const DAILY_LIMIT = 7500;
 
+// In-memory quota cache to avoid blocking Firestore reads on every API call
+let quotaCache: { date: string; count: number } = { date: '', count: 0 };
+
 async function checkAndIncrementQuota(): Promise<void> {
-  const ref = db.collection('app_settings').doc('api_quota');
   const today = new Date().toISOString().slice(0, 10);
   
-  const doc = await ref.get();
-  const data = doc.data();
-
-  if (!doc.exists || data?.date !== today) {
-    await ref.set({ date: today, requests_today: 1, limit: DAILY_LIMIT });
-    return;
+  // Reset cache on new day
+  if (quotaCache.date !== today) {
+    quotaCache = { date: today, count: 0 };
   }
-
-  if (data.requests_today >= DAILY_LIMIT) {
+  
+  quotaCache.count++;
+  
+  if (quotaCache.count > DAILY_LIMIT) {
     throw new Error(`API-Football daily limit reached (${DAILY_LIMIT}). Wait for tomorrow.`);
   }
-
-  await ref.update({ requests_today: FieldValue.increment(1), limit: DAILY_LIMIT });
+  
+  // Fire-and-forget Firestore update — don't block the API call on this
+  const ref = db.collection('app_settings').doc('api_quota');
+  ref.set({ date: today, requests_today: quotaCache.count, limit: DAILY_LIMIT }, { merge: true })
+    .catch(() => {}); // Silently ignore Firestore write errors
 }
 
 export async function apiFetch(endpoint: string, params: Record<string, string | number> = {}) {

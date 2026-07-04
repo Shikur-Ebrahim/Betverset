@@ -98,27 +98,18 @@ export async function validatePromotionCodeForUser(
   const userPhone = userDoc.data()?.phone;
   if (!userPhone) return { valid: false, message: 'User phone missing' };
 
-  const lookupPhone = normalizePhone(userPhone);
   const code = String(promoCode ?? '').trim().toUpperCase();
   
-  if (!code || !CODE_PATTERN.test(code)) {
+  if (!code) {
     return { valid: false, message: 'Please enter correct agent ID code' };
   }
 
   const codesRef = db.collection('user_promotion_codes');
-  const row = await codesRef.where('phone', 'in', [userPhone, lookupPhone]).get();
+  const row = await codesRef.where('code', '==', code).get();
   
   if (row.empty) {
-    return {
-      valid: false,
-      message: 'No promotion code has been issued for your account. Contact support.',
-    };
-  }
-  
-  const matched = row.docs.some(doc => doc.data().code === code);
-  
-  if (!matched) {
     return { valid: false, message: 'Please enter correct agent ID code' };
   }
+  
   return { valid: true };
 }

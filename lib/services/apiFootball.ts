@@ -289,8 +289,8 @@ export async function settleFinishedBets() {
       if (newStatus === 'won') {
         const userRef = db.collection('users').doc(String(slip.user_id));
         const userDoc = await tx.get(userRef);
-        const currentBalance = Number(userDoc.data()?.balance) || 0;
-        tx.update(userRef, { balance: currentBalance + Number(slip.possible_win) });
+        const currentBalance = Number(userDoc.data()?.wallet_balance) || 0;
+        tx.update(userRef, { wallet_balance: currentBalance + Number(slip.possible_win) });
       }
     });
     settled++;

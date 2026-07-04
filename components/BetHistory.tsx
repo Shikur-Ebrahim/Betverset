@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
@@ -414,18 +414,18 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                     })}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-[#111827] sm:px-4">
+                  <div className="grid grid-cols-3 gap-2 rounded-b-xl border-t border-[#1E40AF] bg-[#1E40AF] px-3 py-4 text-white sm:px-4">
                     <div>
-                      <p className="text-[10px] font-medium text-emerald-100/90 sm:text-xs">Stake</p>
+                      <p className="text-[10px] font-medium text-blue-100/90 sm:text-xs">Stake</p>
                       <p className="mt-0.5 text-sm font-semibold tabular-nums">{Number(bet.stake).toFixed(2)} ETB</p>
                     </div>
                     <div>
-                      <p className="text-[10px] font-medium text-emerald-100/90 sm:text-xs">Total odds</p>
+                      <p className="text-[10px] font-medium text-blue-100/90 sm:text-xs">Total odds</p>
                       <p className="mt-0.5 text-sm font-semibold tabular-nums">{Number(bet.total_odds).toFixed(2)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-medium text-amber-100/95 sm:text-xs">Potential win</p>
-                      <p className="mt-0.5 text-sm font-bold tabular-nums text-amber-50">
+                      <p className="text-[10px] font-medium text-amber-200/95 sm:text-xs">Potential win</p>
+                      <p className="mt-0.5 text-sm font-bold tabular-nums text-amber-400">
                         {Number(bet.possible_win).toFixed(2)} ETB
                       </p>
                     </div>

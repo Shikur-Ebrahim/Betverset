@@ -14,9 +14,6 @@ export async function GET(req: Request) {
     // Fetch all non-preset bet slips with user phone
     const snapshot = await db.collection('bet_slips')
       .where('is_manual_preset', '!=', true)
-      .orderBy('is_manual_preset', 'asc')
-      .orderBy('created_at', 'desc')
-      .limit(500)
       .get();
 
     const tickets = await Promise.all(snapshot.docs.map(async (doc: any) => {
@@ -29,7 +26,13 @@ export async function GET(req: Request) {
       return { id: doc.id, ...data, user_phone };
     }));
 
-    return NextResponse.json(tickets);
+    tickets.sort((a, b) => {
+      const ta = new Date(a.created_at || 0).getTime();
+      const tb = new Date(b.created_at || 0).getTime();
+      return tb - ta;
+    });
+
+    return NextResponse.json(tickets.slice(0, 500));
   } catch (err: any) {
     console.error('Admin bet tickets error:', err);
     return NextResponse.json({ message: 'Failed to fetch bet tickets' }, { status: 500 });

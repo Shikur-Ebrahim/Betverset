@@ -182,6 +182,11 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
       return;
     }
 
+    if (ticketImportBlocked && ticketBlockedMessage) {
+      setError(ticketBlockedMessage);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -396,9 +401,9 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                   </button>
                 </div>
               </div>
-              {ticketLoadError && (
+              {(ticketLoadError || ticketBlockedMessage) && (
                 <p className="px-4 py-2 text-[10px] font-bold text-[#EF4444]" style={{background:'rgba(239,68,68,0.08)', borderTop:'1px solid rgba(239,68,68,0.15)'}}>
-                  {ticketLoadError}
+                  {ticketLoadError || ticketBlockedMessage}
                 </p>
               )}
             </div>

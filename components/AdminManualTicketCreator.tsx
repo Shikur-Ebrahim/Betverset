@@ -353,7 +353,11 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                     className="flex flex-col items-center gap-1 rounded-xl border border-[#F1F5F9] bg-[#F8FAFC] p-2 text-center"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={c.logo} alt="" className="h-8 w-8 object-contain" />
+                    {c.logo ? (
+                      <img src={c.logo} alt="" className="h-8 w-8 object-contain" />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-[#E2E8F0]" />
+                    )}
                     <span className="line-clamp-2 text-[9px] font-bold leading-tight text-[#334155]">{c.name}</span>
                     <span className="line-clamp-2 text-[8px] font-semibold leading-tight text-[#64748B]">
                       {c.league_name || '—'}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BETVERS_DEPOSIT_PROOF_SUBMITTED_EVENT } from '@/lib/ui-events';
@@ -237,7 +237,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   <input
                     type="number"
                     placeholder={`Min: ${minAllowedAmount.toFixed(2)}`}
-                    className="w-full rounded-[24px] border-2 border-transparent bg-[#EEF4FF] px-6 py-5 text-2xl font-black text-white shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[#FFFFFF]"
+                    className="w-full rounded-[24px] border-2 border-transparent bg-[#EEF4FF] px-6 py-5 text-2xl font-black text-[#111827] shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[#FFFFFF]"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);

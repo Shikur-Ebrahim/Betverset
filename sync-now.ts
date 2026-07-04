@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 import { fetchAndStoreFixturesForWindow } from './lib/services/apiFootball';
 
 async function main() {

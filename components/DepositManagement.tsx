@@ -44,7 +44,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
     try {
       const response = await fetch(`${API_BASE}/admin/deposit-methods`);
       const data = await response.json();
-      setMethods(data);
+      setMethods(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Failed to fetch methods:', error);
     }

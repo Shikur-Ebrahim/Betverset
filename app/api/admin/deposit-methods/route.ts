@@ -38,12 +38,13 @@ export async function GET(req: Request) {
   try {
     const snapshot = await db.collection('deposit_methods')
       .where('active', '==', true)
-      .orderBy('name', 'asc')
       .get();
-    const methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    let methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    methods.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
     return NextResponse.json(methods);
   } catch (err: any) {
-    return NextResponse.json({ message: 'Failed to fetch deposit methods' }, { status: 500 });
+    console.error(err);
+    return NextResponse.json([], { status: 500 });
   }
 }
 

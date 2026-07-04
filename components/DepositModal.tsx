@@ -219,7 +219,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full rounded-[20px] bg-gray-900 py-4.5 text-sm font-bold text-[#111827] shadow-lg shadow-gray-200 transition-all active:scale-95"
+                className="w-full rounded-[20px] bg-green-500 py-4.5 text-sm font-bold text-white shadow-lg shadow-green-100 transition-all active:scale-95"
               >
                 Close
               </button>

@@ -23,14 +23,16 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
       const { user_id, amount } = depositDoc.data()!;
       const userRef = db.collection('users').doc(String(user_id));
+      
+      // READS MUST COME BEFORE WRITES in a Firestore transaction
+      const userDoc = await transaction.get(userRef);
+      const currentBalance = Number(userDoc.data()?.balance) || 0;
 
+      // WRITES
       transaction.update(depositRef, {
         status: 'approved',
         updated_at: new Date().toISOString(),
       });
-
-      const userDoc = await transaction.get(userRef);
-      const currentBalance = Number(userDoc.data()?.balance) || 0;
       transaction.update(userRef, { balance: currentBalance + Number(amount) });
     });
 

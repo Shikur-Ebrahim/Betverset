@@ -119,8 +119,7 @@ export async function fetchAndStoreFixturesForWindow(season?: number) {
   // We fetch the next 50 upcoming fixtures globally to guarantee matches are always available
   // Fetch all fixtures for today to guarantee we hit active summer leagues with odds
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const data = await apiFetch('/fixtures', { date: today });
+    const data = await apiFetch('/fixtures', { next: 50 });
     const batch = db.batch();
     let count = 0;
     let total = 0;

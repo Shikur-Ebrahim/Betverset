@@ -308,7 +308,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col bg-[#F8FAFC] text-[#111827] ${isOpen ? '' : 'pointer-events-none invisible'}`}
+      className={`fixed inset-0 z-[200] flex flex-col bg-[#EEF4FF] text-[#111827] ${isOpen ? '' : 'pointer-events-none invisible'}`}
       aria-hidden={!isOpen}
     >
       <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-[#FFFFFF] px-4 py-4 sm:px-5">
@@ -431,7 +431,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
             {step === 'details' && selectedMethod && !hasPending && (
               <form onSubmit={handleSubmit} className="space-y-6 animate-in slide-in-from-right duration-300">
                 <div className="flex items-center gap-4 rounded-2xl bg-[#FFFFFF] p-4 shadow-sm ring-1 ring-slate-100">
-                  <div className="h-12 w-12 rounded-xl bg-[#F8FAFC] p-2 shadow-inner">
+                  <div className="h-12 w-12 rounded-xl bg-[#EEF4FF] p-2 shadow-inner">
                     <img src={selectedMethod.logo_url} alt="" className="h-full w-full object-contain" />
                   </div>
                   <div>

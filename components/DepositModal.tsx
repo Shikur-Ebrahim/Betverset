@@ -237,7 +237,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   <input
                     type="number"
                     placeholder={`Min: ${minAllowedAmount.toFixed(2)}`}
-                    className="w-full rounded-[24px] border-2 border-transparent bg-[#F8FAFC] px-6 py-5 text-2xl font-black text-white shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[#FFFFFF]"
+                    className="w-full rounded-[24px] border-2 border-transparent bg-[#EEF4FF] px-6 py-5 text-2xl font-black text-white shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[#FFFFFF]"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
@@ -349,7 +349,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                     onChange={handleFileChange}
                     className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                   />
-                  <div className="flex w-full flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-gray-100 bg-[#F8FAFC] p-6 transition-all group-hover:border-orange-500/30">
+                  <div className="flex w-full flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-gray-100 bg-[#EEF4FF] p-6 transition-all group-hover:border-orange-500/30">
                     {previewUrl ? (
                       <div className="relative h-20 w-20 rounded-lg bg-[#FFFFFF] p-1.5 shadow-sm">
                         <img src={previewUrl} className="h-full w-full rounded object-contain" alt="Preview" />

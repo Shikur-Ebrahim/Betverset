@@ -39,8 +39,8 @@ function renderStatusBadge(fixture: Fixture) {
     );
   }
   let bgColor = 'bg-black/40';
-  let textColor = 'text-[#10B981]';
-  let borderColor = 'border-[#10B981]/30';
+  let textColor = 'text-[#2563EB]';
+  let borderColor = 'border-[#2563EB]/30';
   let label = s;
 
   if (s === 'NS' || s === 'TBD') {
@@ -178,7 +178,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
     !isMatchClosedForBetting(fixture);
 
   return (
-    <div className="site-shell bg-[#F8FAFC] min-h-screen text-[#111827] pb-[70px]">
+    <div className="site-shell bg-[#EEF4FF] min-h-screen text-[#111827] pb-[70px]">
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
@@ -216,7 +216,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
         <span className="text-[#30363D]">›</span>
         <span>{fixture.country_name || 'World'}</span>
         <span className="text-[#30363D]">›</span>
-        <span className="text-[#10B981] truncate">{fixture.league_name}</span>
+        <span className="text-[#2563EB] truncate">{fixture.league_name}</span>
       </div>
 
       <section className="mx-3 mt-1 rounded-[1.25rem] overflow-hidden relative shadow-2xl border border-[rgba(0,0,0,0.05)]">
@@ -257,7 +257,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
                 >
                   {fixture.home_score ?? '-'}
                 </span>
-                <span className="text-2xl text-[#10B981] font-black opacity-80">:</span>
+                <span className="text-2xl text-[#2563EB] font-black opacity-80">:</span>
                 <span
                   className={`text-[32px] font-black ${
                     liveUi ? 'text-[#16A34A]' : 'text-[#111827]'
@@ -291,7 +291,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
       <MatchOddsClient odds={odds} fixture={fixture} oddsLoading={oddsLoading} />
 
       <nav className="fixed bottom-0 left-0 right-0 h-[64px] bg-[#FFFFFF] border-t border-[rgba(0,0,0,0.08)] flex justify-around items-center z-50">
-        <Link href="/" className="flex flex-col items-center gap-1 text-[#10B981]">
+        <Link href="/" className="flex flex-col items-center gap-1 text-[#2563EB]">
           <svg
             className="w-6 h-6"
             viewBox="0 0 24 24"

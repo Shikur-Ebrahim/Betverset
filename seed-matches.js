@@ -20,9 +20,9 @@ async function apiFetch(endpoint, params = {}) {
 
 async function main() {
   const today = new Date().toISOString().slice(0, 10);
-  console.log(`Fetching all fixtures for today (${today})...`);
+  console.log(`Fetching next 50 upcoming fixtures globally...`);
   
-  const fixtures = await apiFetch('/fixtures', { date: today });
+  const fixtures = await apiFetch('/fixtures', { next: 50 });
   console.log(`Got ${fixtures.length} fixtures`);
 
   let saved = 0;

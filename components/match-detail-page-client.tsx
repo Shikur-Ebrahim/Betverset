@@ -20,7 +20,7 @@ type Props = {
 
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="site-shell bg-[#F8FAFC] min-h-screen text-[#111827] flex flex-col items-center justify-center gap-4 px-6">
+    <div className="site-shell bg-[#EEF4FF] min-h-screen text-[#111827] flex flex-col items-center justify-center gap-4 px-6">
       {children}
     </div>
   );
@@ -29,7 +29,7 @@ function Shell({ children }: { children: ReactNode }) {
 function Spinner() {
   return (
     <div
-      className="w-10 h-10 border-2 border-[#10B981]/30 border-t-[#10B981] rounded-full animate-spin"
+      className="w-10 h-10 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin"
       aria-hidden
     />
   );
@@ -125,7 +125,7 @@ export default function MatchDetailPageClient({
     return (
       <Shell>
         <p className="text-sm text-[#6B7280] text-center">Invalid match link.</p>
-        <Link href="/" className="text-[#10B981] font-semibold text-sm">
+        <Link href="/" className="text-[#2563EB] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>
@@ -145,7 +145,7 @@ export default function MatchDetailPageClient({
     return (
       <Shell>
         <p className="text-sm text-[#6B7280] text-center max-w-xs">{error}</p>
-        <Link href="/" className="text-[#10B981] font-semibold text-sm">
+        <Link href="/" className="text-[#2563EB] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>
@@ -156,7 +156,7 @@ export default function MatchDetailPageClient({
     return (
       <Shell>
         <p className="text-sm text-[#6B7280] text-center">Match not found.</p>
-        <Link href="/" className="text-[#10B981] font-semibold text-sm">
+        <Link href="/" className="text-[#2563EB] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>

@@ -210,11 +210,11 @@ export default function CheckTicketClient() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#F8FAFC] text-[#111827]">
+    <div className="flex min-h-dvh flex-col bg-[#EEF4FF] text-[#111827]">
       <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] px-4">
         <Link
           href="/"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F1F5F9] hover:text-[#111827]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F5F9FF] hover:text-[#111827]"
           aria-label="Back to home"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -265,7 +265,7 @@ export default function CheckTicketClient() {
             <button
               type="button"
               onClick={reset}
-              className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#F1F5F9]"
+              className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#F5F9FF]"
             >
               Check another ticket
             </button>

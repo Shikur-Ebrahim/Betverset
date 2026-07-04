@@ -97,7 +97,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#EEF4FF] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Enter current password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -109,7 +109,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#EEF4FF] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Minimum 6 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -121,7 +121,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#EEF4FF] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Repeat new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

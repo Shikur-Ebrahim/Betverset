@@ -89,7 +89,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
         aria-hidden
       />
 
-      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[#F8FAFC] shadow-2xl animate-in slide-in-from-bottom duration-300 sm:h-auto sm:rounded-[32px]">
+      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[#EEF4FF] shadow-2xl animate-in slide-in-from-bottom duration-300 sm:h-auto sm:rounded-[32px]">
         <header className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-[#FFFFFF] px-6 py-6">
           <div className="text-2xl font-black tracking-tighter text-[#111827]">My Uploads</div>
           <button

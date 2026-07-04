@@ -86,21 +86,21 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
       {/* Modal */}
       <div className="relative z-10 w-full max-w-[420px] animate-scale-in">
         {/* Glow effect */}
-        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[rgba(16,185,129,0.1)] to-transparent pointer-events-none" />
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[rgba(37,99,235,0.1)] to-transparent pointer-events-none" />
 
         <div
           className="relative rounded-2xl overflow-hidden bg-white"
           style={{
-            border: '1px solid #E5E7EB',
-            boxShadow: '0 24px 80px rgba(0,0,0,0.1), 0 0 0 1px rgba(16,185,129,0.05)',
+            border: '1px solid #D9E5FF',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.1), 0 0 0 1px rgba(37,99,235,0.05)',
           }}
         >
           {/* Top accent line */}
-          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#10B981] to-transparent opacity-60" />
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#2563EB] to-transparent opacity-60" />
 
           <div className="px-7 py-8">
             {/* Tab switcher */}
-            <div className="flex rounded-xl p-1 mb-8 bg-[#F3F4F6]">
+            <div className="flex rounded-xl p-1 mb-8 bg-[#E6EEFF]">
               {(['login', 'signup'] as const).map((tab) => (
                 <button
                   key={tab}
@@ -148,9 +148,9 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                   Phone Number
                 </label>
                 <div
-                  className="flex rounded-xl overflow-hidden transition-all duration-200 bg-[#F9FAFB] border border-[#E5E7EB]"
+                  className="flex rounded-xl overflow-hidden transition-all duration-200 bg-[#F9FAFB] border border-[#D9E5FF]"
                 >
-                  <div className="px-4 py-3 flex items-center justify-center border-r border-[#E5E7EB] bg-[#F3F4F6] select-none">
+                  <div className="px-4 py-3 flex items-center justify-center border-r border-[#D9E5FF] bg-[#E6EEFF] select-none">
                     <span className="text-[#111827] font-bold text-sm">+251</span>
                   </div>
                   <input
@@ -160,7 +160,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                     onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="9XX XXX XXX"
                     className="flex-1 bg-transparent px-4 py-3 text-[#111827] text-sm font-semibold placeholder-[#9CA3AF] outline-none focus:ring-0"
-                    style={{ caretColor: '#10B981' }}
+                    style={{ caretColor: '#2563EB' }}
                   />
                 </div>
               </div>
@@ -176,10 +176,10 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-xl px-4 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200 border border-[#E5E7EB]"
-                  style={{ caretColor: '#10B981' }}
-                  onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)'; }}
-                  onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none'; }}
+                  className="w-full rounded-xl px-4 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200 border border-[#D9E5FF]"
+                  style={{ caretColor: '#2563EB' }}
+                  onFocus={(e) => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = '#D9E5FF'; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
 
@@ -197,11 +197,11 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                     placeholder="••••••••"
                     className="w-full rounded-xl px-4 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200"
                     style={{
-                      border: `1px solid ${confirmPassword && password !== confirmPassword ? '#EF4444' : '#E5E7EB'}`,
-                      caretColor: '#10B981',
+                      border: `1px solid ${confirmPassword && password !== confirmPassword ? '#EF4444' : '#D9E5FF'}`,
+                      caretColor: '#2563EB',
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = confirmPassword && password !== confirmPassword ? '#EF4444' : '#E5E7EB'; e.target.style.boxShadow = 'none'; }}
+                    onFocus={(e) => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = confirmPassword && password !== confirmPassword ? '#EF4444' : '#D9E5FF'; e.target.style.boxShadow = 'none'; }}
                   />
                   {confirmPassword && password !== confirmPassword && (
                     <p className="text-xs text-[#EF4444] ml-1">Passwords do not match</p>
@@ -216,13 +216,13 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                   disabled={isSubmitDisabled}
                   className="w-full rounded-xl py-3.5 font-bold text-sm transition-all duration-200 flex justify-center items-center gap-2 active:scale-[0.98]"
                   style={isSubmitDisabled ? {
-                    background: '#F3F4F6',
+                    background: '#E6EEFF',
                     color: '#9CA3AF',
                     cursor: 'not-allowed',
                   } : {
-                    background: '#10B981',
+                    background: '#2563EB',
                     color: '#FFFFFF',
-                    boxShadow: '0 4px 12px rgba(16,185,129,0.25)',
+                    boxShadow: '0 4px 12px rgba(37,99,235,0.25)',
                   }}
                 >
                   {isLoading ? (
@@ -244,17 +244,17 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
 
             {/* Divider */}
             <div className="mt-7 flex items-center gap-3">
-              <div className="flex-1 h-px bg-[#E5E7EB]" />
+              <div className="flex-1 h-px bg-[#D9E5FF]" />
               <span className="text-xs text-[#6B7280] font-medium">
                 {view === 'login' ? "New to BetVerse?" : "Already have an account?"}
               </span>
-              <div className="flex-1 h-px bg-[#E5E7EB]" />
+              <div className="flex-1 h-px bg-[#D9E5FF]" />
             </div>
             <button
               type="button"
               onClick={() => { setView(view === 'login' ? 'signup' : 'login'); setError(null); }}
-              className="mt-4 w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 text-[#10B981] hover:bg-[#F0FDF4]"
-              style={{ border: '1px solid rgba(16,185,129,0.2)' }}
+              className="mt-4 w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 text-[#2563EB] hover:bg-[#F0FDF4]"
+              style={{ border: '1px solid rgba(37,99,235,0.2)' }}
             >
               {view === 'login' ? 'Create a free account →' : 'Log in instead →'}
             </button>
@@ -264,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-[#111827] bg-white shadow-md transition-colors z-20 border border-[#E5E7EB]"
+          className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-[#111827] bg-white shadow-md transition-colors z-20 border border-[#D9E5FF]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

@@ -17,11 +17,16 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
     const slipsRef = db.collection('bet_slips');
     const snapshot = await slipsRef
       .where('user_id', '==', requestedUserId)
-      .orderBy('created_at', 'desc')
       .get();
 
-    const history = await Promise.all(snapshot.docs.map(async (doc: any) => {
-      const data = doc.data();
+    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    docs.sort((a: any, b: any) => {
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+
+    const history = await Promise.all(docs.map(async (data: any) => {
       const selectionsRaw = data.selections || [];
 
       // We need to map selections to format expected by frontend

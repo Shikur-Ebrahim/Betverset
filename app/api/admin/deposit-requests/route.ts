@@ -12,13 +12,19 @@ export async function GET(req: Request) {
   }
 
   try {
-    const snapshot = await db.collection('deposit_requests')
-      .where('status', 'in', ['pending', 'approved'])
-      .orderBy('created_at', 'desc')
-      .get();
+    const snapshot = await db.collection('deposit_requests').get();
 
-    const requests = await Promise.all(snapshot.docs.map(async (doc: any) => {
-      const data = doc.data();
+    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    // Filter in memory to avoid composite index requirements
+    docs = docs.filter((d: any) => d.status === 'pending' || d.status === 'approved');
+    // Sort descending by created_at
+    docs.sort((a: any, b: any) => {
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+
+    const requests = await Promise.all(docs.map(async (data: any) => {
       let phone = '';
       let method_name = '';
 

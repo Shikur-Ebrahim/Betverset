@@ -40,11 +40,10 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const snapshot = await db.collection('withdrawal_methods')
-      .where('active', '==', true)
-      .orderBy('name', 'asc')
-      .get();
-    const methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await db.collection('withdrawal_methods').get();
+    let methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    methods = methods.filter((m: any) => m.active === true);
+    methods.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
     return NextResponse.json(methods);
   } catch (err: any) {
     console.error('Fetch withdrawal methods error:', err);

@@ -10,11 +10,16 @@ export async function GET(req: Request) {
   try {
     const snapshot = await db.collection('deposit_requests')
       .where('user_id', '==', userId)
-      .orderBy('created_at', 'desc')
       .get();
 
-    const history = await Promise.all(snapshot.docs.map(async (doc: any) => {
-      const data = doc.data();
+    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    docs.sort((a: any, b: any) => {
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+
+    const history = await Promise.all(docs.map(async (data: any) => {
       let method_name = '';
       let method_logo = '';
       

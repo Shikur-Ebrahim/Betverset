@@ -8,21 +8,21 @@ export async function GET(req: Request) {
   if (!userId) return unauthorized();
 
   try {
-    const [pendingSnapshot, methodsSnapshot] = await Promise.all([
+    const [requestsSnapshot, methodsSnapshot] = await Promise.all([
       db.collection('deposit_requests')
         .where('user_id', '==', userId)
-        .where('status', '==', 'pending')
-        .limit(1)
         .get(),
       db.collection('deposit_methods')
         .where('active', '==', true)
         .get(),
     ]);
 
-    const methods = methodsSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    const hasPending = requestsSnapshot.docs.some((doc: any) => doc.data().status === 'pending');
+    let methods = methodsSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    methods.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
 
     return NextResponse.json({
-      hasPending: !pendingSnapshot.empty,
+      hasPending,
       methods,
     });
   } catch (err: any) {

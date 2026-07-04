@@ -205,12 +205,12 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
     setMatches((prev) => prev.map((m, j) => (j === i ? { ...m, ...patch } : m)));
   };
 
-  const applyEndPlus90 = (i: number) => {
+  const applyEndPlus105 = (i: number) => {
     const m = matches[i];
     if (!m.kickoff) return;
     const d = new Date(m.kickoff);
     if (Number.isNaN(d.getTime())) return;
-    setMatch(i, { end: toDatetimeLocalValue(new Date(d.getTime() + 90 * 60 * 1000)) });
+    setMatch(i, { end: toDatetimeLocalValue(new Date(d.getTime() + 105 * 60 * 1000)) });
   };
 
   const submit = async () => {
@@ -227,9 +227,15 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
         const end = new Date(m.end);
         if (Number.isNaN(kick.getTime()) || Number.isNaN(end.getTime())) throw new Error('Invalid times');
         if (end <= kick) throw new Error('End time must be after kickoff');
+        const homeClub = clubs.find(c => c.id === hid);
+        const awayClub = clubs.find(c => c.id === aid);
+        
         return {
           home_team_id: hid,
           away_team_id: aid,
+          home_team_name: homeClub?.name || 'Unknown Home',
+          away_team_name: awayClub?.name || 'Unknown Away',
+          league_name: homeClub?.league_name || awayClub?.league_name || 'League',
           selection: m.selection.trim(),
           odd,
           market_name: m.market_name.trim() || '1X2',
@@ -452,10 +458,10 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 </label>
                 <button
                   type="button"
-                  onClick={() => applyEndPlus90(i)}
-                  className="mt-1 text-[10px] font-bold uppercase text-emerald-600"
+                  onClick={() => applyEndPlus105(i)}
+                  className="mt-2 text-[10px] font-black uppercase tracking-widest text-[#059669] hover:text-[#047857]"
                 >
-                  Set end = kickoff + 90m
+                  SET END = KICKOFF + 105M
                 </button>
               </div>
             </div>

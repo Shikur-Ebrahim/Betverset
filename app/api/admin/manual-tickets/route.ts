@@ -73,35 +73,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: 'Selection required on each leg' }, { status: 400 });
       }
 
-      // Load team info from Firestore
-      const [homeDoc, awayDoc] = await Promise.all([
-        db.collection('teams').doc(String(m.home_team_id)).get(),
-        db.collection('teams').doc(String(m.away_team_id)).get(),
-      ]);
-
-      if (!homeDoc.exists || !awayDoc.exists) {
-        return NextResponse.json({ message: 'Unknown team id' }, { status: 400 });
-      }
-
-      const home = homeDoc.data()!;
-      const away = awayDoc.data()!;
-
       if (String(m.home_team_id) === String(m.away_team_id)) {
         return NextResponse.json({ message: 'Each match needs two different team ids' }, { status: 400 });
       }
 
-      const leagueLabel = [home.league_name, away.league_name].filter(Boolean).join(' / ') || 'Football';
+      const leagueLabel = m.league_name || 'Football';
       totalOdds *= odd;
 
       selectionsToInsert.push({
         selection: sel,
         odd,
         market_name: String(m.market_name || '1X2').trim() || '1X2',
-        home_team: home.name,
-        away_team: away.name,
-        home_logo: home.logo || null,
-        away_logo: away.logo || null,
-        league_name: leagueLabel,
+        home_team: String(m.home_team_name || 'Home'),
+        away_team: String(m.away_team_name || 'Away'),
+        home_team_id: String(m.home_team_id),
+        away_team_id: String(m.away_team_id),
+        league: leagueLabel,
+        is_manual: true,
+        status: 'pending',
         manual_kickoff_at: kick.toISOString(),
         manual_end_at: end.toISOString(),
         is_manual_fixture: true,

@@ -58,9 +58,6 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
 
   const refreshBootstrap = useCallback(
     async (opts?: { silent?: boolean }) => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (!user?.id || !token) return;
-
       const gen = ++fetchGenRef.current;
       if (!opts?.silent && !getCachedDepositBootstrap()) {
         setRefreshing(true);
@@ -72,14 +69,12 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
         applyBootstrap(data);
       } catch (e) {
         console.error('Failed to load deposit:', e);
-        if (fetchGenRef.current === gen && !getCachedDepositBootstrap()) {
-          setError('Could not load deposit methods. Check your connection and try again.');
-        }
+        // Silently fail - don't show error for methods loading
       } finally {
         if (fetchGenRef.current === gen) setRefreshing(false);
       }
     },
-    [user?.id, applyBootstrap]
+    [applyBootstrap]
   );
 
   useEffect(() => {
@@ -392,15 +387,8 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
         </main>
 
         {error && (
-          <div className="absolute bottom-6 left-6 right-6 z-[210]">
-            <div className="flex items-center gap-3 rounded-[18px] border border-gray-700/50 bg-[#1A202C] px-5 py-3.5 text-[#111827] shadow-2xl backdrop-blur-sm">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M18 6L6 18M6 6l12 12" />
-                </svg>
-              </div>
-              <div className="text-[13px] font-bold tracking-tight">{error}</div>
-            </div>
+          <div className="absolute bottom-6 left-6 right-6 z-[210] text-center">
+            <span className="text-[13px] font-bold text-green-500">{error}</span>
           </div>
         )}
       </div>

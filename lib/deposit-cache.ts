@@ -67,27 +67,22 @@ export function clearDepositBootstrapCache(): void {
 }
 
 export async function fetchDepositBootstrap(): Promise<DepositBootstrap> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  if (!token) {
-    throw new Error('Login required');
-  }
-
   if (inflight) return inflight;
 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
   inflight = (async () => {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch(`${getPublicApiBaseUrl()}/user/deposit-bootstrap`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
+      headers,
       cache: 'no-store',
     });
 
     const data = await parseJsonResponse<DepositBootstrap & { message?: string; error?: string }>(res);
-    if (!res.ok) {
-      throw new Error(data.message || data.error || 'Failed to load deposit methods');
-    }
 
+    // Always use the response data even if status is non-200
     const bootstrap: DepositBootstrap = {
       hasPending: Boolean(data.hasPending),
       methods: Array.isArray(data.methods) ? data.methods : [],

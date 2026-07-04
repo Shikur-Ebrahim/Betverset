@@ -511,7 +511,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   <button
                     type="submit"
                     disabled={loading || !depositEligible}
-                    className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-[#111827] shadow-xl shadow-gray-100 transition-all active:scale-95 disabled:bg-gray-300"
+                    className="w-full rounded-[24px] bg-green-500 py-5 text-sm font-black text-white shadow-xl shadow-green-100 transition-all active:scale-95 disabled:bg-gray-300 disabled:text-gray-500"
                   >
                     {loading ? 'Submitting…' : 'Withdraw'}
                   </button>

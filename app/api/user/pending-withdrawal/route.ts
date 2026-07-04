@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       hasPending: true,
-      request: { id: doc.id, ...data, method_name },
+      request: { ...data, method_name },
     });
   } catch (err: any) {
     console.error('pending-withdrawal error:', err);

@@ -56,7 +56,6 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
       }));
 
       return {
-        id: doc.id,
         ...data,
         selections
       };

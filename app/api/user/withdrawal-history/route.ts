@@ -33,7 +33,6 @@ export async function GET(req: Request) {
       }
 
       return {
-        id: doc.id,
         ...data,
         method_name,
         method_type,

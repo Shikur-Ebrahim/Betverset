@@ -12,11 +12,8 @@ export async function GET(req: Request) {
 
     let query: any = db.collection('fixtures');
 
-    // To properly support this in Firestore without a complex composite index, 
-    // we may need to fetch and filter, or create specific indexes.
-    // For migration purposes, we will query upcoming fixtures.
     const now = new Date();
-    // Simplified: fetch recent and upcoming
+    // Fetch recent and upcoming fixtures
     query = query.where('match_date', '>=', new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString());
     query = query.orderBy('match_date', 'asc').limit(limit);
 
@@ -24,41 +21,26 @@ export async function GET(req: Request) {
 
     const fixtures: any[] = [];
     const odds: Record<string, any[]> = {};
-    const fixtureIds: string[] = [];
 
     snapshot.docs.forEach((doc: any) => {
       const data = doc.data();
       
-      // Filter in memory for parameters that don't have composite indexes yet
+      // Filter in memory for parameters that don't have composite indexes
       if (country && country !== 'All countries' && data.country_name !== country) return;
       if (api_league_id && String(data.api_league_id) !== api_league_id) return;
       
       fixtures.push({ id: doc.id, ...data });
-      fixtureIds.push(doc.id);
-    });
 
-    // Fetch odds for these fixtures
-    if (fixtureIds.length > 0) {
-      // In a real scenario, this would be optimized, e.g. with subcollections or batched 'in' queries
-      // We chunk the fixtureIds into arrays of 10 for 'in' queries
-      const chunks: string[][] = [];
-      for (let i = 0; i < fixtureIds.length; i += 10) {
-        chunks.push(fixtureIds.slice(i, i + 10));
+      // Build odds from embedded fields if available (fast path - no extra DB query)
+      if (data.home_odds || data.draw_odds || data.away_odds) {
+        const fid = String(doc.id);
+        odds[fid] = [
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Home', odd_value: data.home_odds || null },
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Draw', odd_value: data.draw_odds || null },
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Away', odd_value: data.away_odds || null },
+        ].filter(o => o.odd_value !== null);
       }
-
-      await Promise.all(chunks.map(async (chunk) => {
-        const oddsSnapshot = await db.collection('odds')
-          .where('fixture_id', 'in', chunk)
-          .get();
-          
-        oddsSnapshot.docs.forEach((doc: any) => {
-          const oddData = doc.data();
-          const fid = String(oddData.fixture_id);
-          if (!odds[fid]) odds[fid] = [];
-          odds[fid].push({ id: doc.id, ...oddData });
-        });
-      }));
-    }
+    });
 
     return NextResponse.json({ fixtures, odds });
   } catch (err: any) {

@@ -12,12 +12,16 @@ export async function POST(req: Request) {
 
   try {
     const { name, type, logoUrl } = await req.json();
-    // Check for duplicates
+    if (!name || !type) {
+      return NextResponse.json({ message: 'Name and type are required' }, { status: 400 });
+    }
+
+    // Check for duplicates using a single-field query (no composite index needed)
     const existing = await db.collection('withdrawal_methods')
       .where('name', '==', name)
-      .where('active', '==', true)
       .get();
-    if (!existing.empty) {
+    const activeDuplicate = existing.docs.some((doc: any) => doc.data().active === true);
+    if (activeDuplicate) {
       return NextResponse.json({ message: 'This method already exists' }, { status: 400 });
     }
 

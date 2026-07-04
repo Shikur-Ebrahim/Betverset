@@ -10,15 +10,15 @@ export async function GET(req: Request) {
   try {
     const snapshot = await db.collection('withdrawal_requests')
       .where('user_id', '==', userId)
-      .where('status', '==', 'pending')
-      .limit(1)
       .get();
 
-    if (snapshot.empty) {
+    const pendingDoc = snapshot.docs.find((doc: any) => doc.data().status === 'pending');
+
+    if (!pendingDoc) {
       return NextResponse.json({ hasPending: false, request: null });
     }
 
-    const doc = snapshot.docs[0];
+    const doc = pendingDoc;
     const data = doc.data();
 
     let method_name = '';

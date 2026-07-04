@@ -15,17 +15,24 @@ export async function getDailyWithdrawalLimitInfo(userId: string): Promise<{
 }> {
   const { start, end } = getTodayRangeUTC();
 
-  // Firestore doesn't easily sum across queries like SQL SUM() with date filters without indexes and pulling all docs.
-  // We'll query today's non-rejected withdrawals for the user.
+  // Single-field query to avoid composite index requirement
   const snapshot = await db.collection('withdrawal_requests')
     .where('user_id', '==', userId)
-    .where('created_at', '>=', start)
-    .where('created_at', '<=', end)
     .get();
 
   const withdrawnToday = snapshot.docs
-    .filter(doc => doc.data().status !== 'rejected' && doc.data().status !== 'failed')
-    .reduce((sum, doc) => sum + (Number(doc.data().amount) || 0), 0);
+    .filter((doc: any) => {
+      const d = doc.data();
+      // Filter: today's date range and not rejected/failed
+      const createdAt = d.created_at || '';
+      return (
+        createdAt >= start &&
+        createdAt <= end &&
+        d.status !== 'rejected' &&
+        d.status !== 'failed'
+      );
+    })
+    .reduce((sum: number, doc: any) => sum + (Number(doc.data().amount) || 0), 0);
 
   const remainingToday = Math.max(0, MAX_DAILY_WITHDRAWAL_ETB - withdrawnToday);
   

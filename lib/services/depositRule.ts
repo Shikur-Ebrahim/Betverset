@@ -23,10 +23,11 @@ export async function setWithdrawalMinTotalDeposit(amount: number): Promise<numb
 export async function getUserApprovedDepositTotal(userId: string): Promise<number> {
   const snapshot = await db.collection('deposit_requests')
     .where('user_id', '==', userId)
-    .where('status', '==', 'approved')
     .get();
 
-  const total = snapshot.docs.reduce((sum, doc) => sum + (Number(doc.data().amount) || 0), 0);
+  const total = snapshot.docs
+    .filter((doc: any) => doc.data().status === 'approved')
+    .reduce((sum: number, doc: any) => sum + (Number(doc.data().amount) || 0), 0);
   return total;
 }
 

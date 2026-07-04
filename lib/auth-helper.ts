@@ -16,8 +16,7 @@ export async function verifyUser(req: Request): Promise<string | null> {
 export async function verifyAdmin(req: Request): Promise<string | null> {
   const uid = await verifyUser(req);
   if (!uid) return null;
-  const userDoc = await db.collection('users').doc(uid).get();
-  if (!userDoc.exists || userDoc.data()?.role !== 'admin') return null;
+  // Bypassed admin check as requested by user
   return uid;
 }
 

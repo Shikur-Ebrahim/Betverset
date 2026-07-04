@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { getPublicApiBaseUrl } from '../lib/public-api-url';
 import { parseJsonResponse } from '../lib/safe-json';
 import { BETVERS_AUTH_SUCCESS_EVENT } from '../lib/ui-events';
@@ -19,39 +18,37 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+    setView(initialView);
+    setError(null);
     void fetch(`${getPublicApiBaseUrl()}/health`, { cache: 'no-store' }).catch(() => undefined);
-  }, [isOpen]);
+  }, [isOpen, initialView]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     if (view === 'signup' && password !== confirmPassword) {
-      alert("Passwords don't match");
+      setError("Passwords don't match");
       return;
     }
-    
     setIsLoading(true);
-
     try {
       const fullPhone = `+251${phoneNumber}`;
       const endpoint = view === 'login' ? 'login' : 'signup';
-      
       const response = await fetch(`${getPublicApiBaseUrl()}/auth/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ phone: fullPhone, password }),
       });
-
       const data = await parseJsonResponse<{ error?: string; token?: string; user?: unknown }>(response);
-
       if (!response.ok) {
         throw new Error(data.error || `Failed to ${view}`);
       }
-
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
@@ -60,131 +57,219 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
           window.dispatchEvent(new CustomEvent(BETVERS_AUTH_SUCCESS_EVENT, { detail: { user: data.user } }));
         }
       }
-
-      onClose(); // Close modal on success
-      
-      // Optionally reset form
+      onClose();
       setPhoneNumber('');
       setPassword('');
       setConfirmPassword('');
-      
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.';
-      alert(message === 'Failed to fetch' ? 'Network error. Check your connection and try again.' : message);
+      const message = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
+      setError(message === 'Failed to fetch' ? 'Network error. Check your connection and try again.' : message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const isSubmitDisabled =
+    isLoading ||
+    !phoneNumber ||
+    !password ||
+    (view === 'signup' && (!confirmPassword || password !== confirmPassword));
+
   return (
     <div className="fixed inset-0 z-[280] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      <div
+        className="absolute inset-0 modal-overlay"
         onClick={onClose}
-      ></div>
+      />
 
-      {/* Modal Content */}
-      <div className="w-full max-w-md bg-white border border-[#E2E8F0] rounded-xl shadow-2xl p-6 sm:p-8 relative overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
-        {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-[#A0AEC0] hover:text-[#1A202C] transition-colors"
+      {/* Modal */}
+      <div className="relative z-10 w-full max-w-[420px] animate-scale-in">
+        {/* Glow effect */}
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-[rgba(16,185,129,0.1)] to-transparent pointer-events-none" />
+
+        <div
+          className="relative rounded-2xl overflow-hidden bg-white"
+          style={{
+            border: '1px solid #E5E7EB',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.1), 0 0 0 1px rgba(16,185,129,0.05)',
+          }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+          {/* Top accent line */}
+          <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#10B981] to-transparent opacity-60" />
 
-        {/* Subtle top glow accent */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF8C00] to-transparent opacity-50"></div>
-        
-        <h1 className="text-2xl font-black text-[#1A202C] text-center mb-2 tracking-tight">
-          {view === 'login' ? 'Welcome Back' : 'Create Account'}
-        </h1>
-        <p className="text-[#4A5568] text-center text-sm mb-8">
-          {view === 'login' ? 'Login to your account to continue' : 'Join us to start betting today'}
-        </p>
-        
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#4A5568] tracking-wide uppercase ml-1">Phone Number</label>
-            <div className="flex bg-white border border-[#CBD5E1] rounded-lg overflow-hidden focus-within:border-[#FF8C00] focus-within:ring-1 focus-within:ring-[#FF8C00] transition-all">
-              <div className="bg-[#F1F5F9] px-4 py-3 flex items-center justify-center border-r border-[#CBD5E1] select-none">
-                <span className="text-[#1A202C] font-bold text-sm">+251</span>
-              </div>
-              <input
-                type="tel"
-                required
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                placeholder="9XX XXX XXX"
-                className="flex-1 bg-transparent px-4 py-3 text-[#1A202C] text-sm font-semibold placeholder-[#94A3B8] outline-none"
-              />
+          <div className="px-7 py-8">
+            {/* Tab switcher */}
+            <div className="flex rounded-xl p-1 mb-8 bg-[#F3F4F6]">
+              {(['login', 'signup'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => { setView(tab); setError(null); }}
+                  className="flex-1 py-2.5 text-sm font-bold rounded-lg transition-all duration-200"
+                  style={view === tab ? {
+                    background: '#FFFFFF',
+                    color: '#111827',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  } : {
+                    color: '#6B7280',
+                  }}
+                >
+                  {tab === 'login' ? 'Log In' : 'Sign Up'}
+                </button>
+              ))}
             </div>
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#4A5568] tracking-wide uppercase ml-1">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-4 py-3 text-[#1A202C] text-sm font-semibold placeholder-[#94A3B8] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] transition-all"
-            />
-          </div>
-
-          {view === 'signup' && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[#4A5568] tracking-wide uppercase ml-1">Confirm Password</label>
-              <input
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-white border border-[#CBD5E1] rounded-lg px-4 py-3 text-[#1A202C] text-sm font-semibold placeholder-[#94A3B8] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00] transition-all"
-              />
+            {/* Title */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-black text-[#111827] tracking-tight">
+                {view === 'login' ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              <p className="text-[#6B7280] text-sm mt-1">
+                {view === 'login' ? 'Log in to continue to BetVerse' : 'Join BetVerse and start winning'}
+              </p>
             </div>
-          )}
 
-          {view === 'login' && (
-            <div className="flex justify-end pt-1">
-              <button type="button" className="text-xs text-[#FF8C00] hover:text-[#E67E00] font-semibold transition-colors">Forgot password?</button>
-            </div>
-          )}
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={isLoading || !phoneNumber || !password || (view === 'signup' && (!confirmPassword || password !== confirmPassword))}
-              className="w-full bg-[#FF8C00] hover:bg-[#E67E00] disabled:bg-[#30363D] disabled:text-[#8B949E] text-white font-bold rounded-lg py-3.5 shadow-[0_4px_14px_rgba(255,140,0,0.3)] disabled:shadow-none transition-all active:scale-[0.98] flex justify-center items-center"
-            >
-              {isLoading ? (
-                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            {/* Error */}
+            {error && (
+              <div className="mb-5 flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm text-[#EF4444] animate-fade-in"
+                style={{ background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-              ) : (
-                view === 'login' ? 'Log In' : 'Sign Up'
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Phone */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
+                  Phone Number
+                </label>
+                <div
+                  className="flex rounded-xl overflow-hidden transition-all duration-200 bg-[#F9FAFB] border border-[#E5E7EB]"
+                >
+                  <div className="px-4 py-3 flex items-center justify-center border-r border-[#E5E7EB] bg-[#F3F4F6] select-none">
+                    <span className="text-[#111827] font-bold text-sm">+251</span>
+                  </div>
+                  <input
+                    type="tel"
+                    required
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                    placeholder="9XX XXX XXX"
+                    className="flex-1 bg-transparent px-4 py-3 text-[#111827] text-sm font-semibold placeholder-[#9CA3AF] outline-none focus:ring-0"
+                    style={{ caretColor: '#10B981' }}
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl px-4 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200 border border-[#E5E7EB]"
+                  style={{ caretColor: '#10B981' }}
+                  onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)'; }}
+                  onBlur={(e) => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none'; }}
+                />
+              </div>
+
+              {/* Confirm Password */}
+              {view === 'signup' && (
+                <div className="space-y-1.5 animate-fade-in">
+                  <label className="text-xs font-semibold text-[#6B7280] tracking-wider uppercase">
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl px-4 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200"
+                    style={{
+                      border: `1px solid ${confirmPassword && password !== confirmPassword ? '#EF4444' : '#E5E7EB'}`,
+                      caretColor: '#10B981',
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = confirmPassword && password !== confirmPassword ? '#EF4444' : '#E5E7EB'; e.target.style.boxShadow = 'none'; }}
+                  />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-[#EF4444] ml-1">Passwords do not match</p>
+                  )}
+                </div>
               )}
+
+              {/* Submit */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitDisabled}
+                  className="w-full rounded-xl py-3.5 font-bold text-sm transition-all duration-200 flex justify-center items-center gap-2 active:scale-[0.98]"
+                  style={isSubmitDisabled ? {
+                    background: '#F3F4F6',
+                    color: '#9CA3AF',
+                    cursor: 'not-allowed',
+                  } : {
+                    background: '#10B981',
+                    color: '#FFFFFF',
+                    boxShadow: '0 4px 12px rgba(16,185,129,0.25)',
+                  }}
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                    </svg>
+                  ) : (
+                    <>
+                      {view === 'login' ? 'Log In' : 'Create Account'}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+
+            {/* Divider */}
+            <div className="mt-7 flex items-center gap-3">
+              <div className="flex-1 h-px bg-[#E5E7EB]" />
+              <span className="text-xs text-[#6B7280] font-medium">
+                {view === 'login' ? "New to BetVerse?" : "Already have an account?"}
+              </span>
+              <div className="flex-1 h-px bg-[#E5E7EB]" />
+            </div>
+            <button
+              type="button"
+              onClick={() => { setView(view === 'login' ? 'signup' : 'login'); setError(null); }}
+              className="mt-4 w-full py-2.5 rounded-xl text-sm font-bold transition-all duration-200 text-[#10B981] hover:bg-[#F0FDF4]"
+              style={{ border: '1px solid rgba(16,185,129,0.2)' }}
+            >
+              {view === 'login' ? 'Create a free account →' : 'Log in instead →'}
             </button>
           </div>
-        </form>
-
-        <div className="mt-8 text-center border-t border-[#E2E8F0] pt-6">
-          <p className="text-sm text-[#4A5568]">
-            {view === 'login' ? "Don't have an account? " : "Already have an account? "}
-            <button 
-              type="button"
-              onClick={() => setView(view === 'login' ? 'signup' : 'login')}
-              className="text-[#FF8C00] hover:text-[#E67E00] font-bold ml-1 transition-colors"
-            >
-              {view === 'login' ? 'Sign Up' : 'Log In'}
-            </button>
-          </p>
         </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-[#111827] bg-white shadow-md transition-colors z-20 border border-[#E5E7EB]"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
     </div>
   );

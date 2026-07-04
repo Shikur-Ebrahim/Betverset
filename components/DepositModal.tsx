@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { BETVERS_DEPOSIT_PROOF_SUBMITTED_EVENT } from '@/lib/ui-events';
@@ -191,9 +191,9 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
     >
       <MotionlessBackdrop isOpen={isOpen} onClose={onClose} />
 
-      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-white shadow-2xl sm:h-auto sm:rounded-[32px]">
+      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[#FFFFFF] shadow-2xl sm:h-auto sm:rounded-[32px]">
         <header className="flex shrink-0 items-center justify-between border-b border-gray-50 px-6 py-6">
-          <div className="text-2xl font-black tracking-tighter text-[#1A202C]">Deposit</div>
+          <div className="text-2xl font-black tracking-tighter text-[#111827]">Deposit</div>
           <button
             type="button"
             onClick={onClose}
@@ -224,7 +224,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full rounded-[20px] bg-gray-900 py-4.5 text-sm font-bold text-white shadow-lg shadow-gray-200 transition-all active:scale-95"
+                className="w-full rounded-[20px] bg-gray-900 py-4.5 text-sm font-bold text-[#111827] shadow-lg shadow-gray-200 transition-all active:scale-95"
               >
                 Close
               </button>
@@ -237,7 +237,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   <input
                     type="number"
                     placeholder={`Min: ${minAllowedAmount.toFixed(2)}`}
-                    className="w-full rounded-[24px] border-2 border-transparent bg-[#F8FAFC] px-6 py-5 text-2xl font-black text-black shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-white"
+                    className="w-full rounded-[24px] border-2 border-transparent bg-[#F8FAFC] px-6 py-5 text-2xl font-black text-white shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[#FFFFFF]"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
@@ -277,7 +277,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                           setSelectedMethod(m);
                           setStep('details');
                         }}
-                        className="flex flex-col items-center gap-4 rounded-[28px] border-2 border-gray-50 bg-white p-6 shadow-sm transition-all hover:border-orange-500 active:scale-95"
+                        className="flex flex-col items-center gap-4 rounded-[28px] border-2 border-gray-50 bg-[#FFFFFF] p-6 shadow-sm transition-all hover:border-orange-500 active:scale-95"
                       >
                         <div className="flex h-14 w-16 items-center justify-center">
                           <img src={m.logo_url} alt={m.name} className="h-full w-full object-contain" />
@@ -293,7 +293,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
             <div className="space-y-6">
               <div className="rounded-[28px] border border-orange-100/50 bg-[#FFF9F5] p-5">
                 <div className="mb-5 flex items-center gap-3">
-                  <div className="h-11 w-11 rounded-xl border border-orange-100 bg-white p-1.5 shadow-sm">
+                  <div className="h-11 w-11 rounded-xl border border-orange-100 bg-[#FFFFFF] p-1.5 shadow-sm">
                     <img src={selectedMethod?.logo_url} className="h-full w-full object-contain" alt="" />
                   </div>
                   <div>
@@ -302,12 +302,12 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-[20px] border border-orange-50/50 bg-white p-4 shadow-sm">
+                <div className="flex items-center justify-between rounded-[20px] border border-orange-50/50 bg-[#FFFFFF] p-4 shadow-sm">
                   <div className="overflow-hidden">
                     <div className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                       Name: {selectedMethod?.account_name}
                     </div>
-                    <div className="truncate text-lg font-black tracking-tighter text-black">
+                    <div className="truncate text-lg font-black tracking-tighter text-white">
                       {selectedMethod?.account_details}
                     </div>
                   </div>
@@ -351,11 +351,11 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   />
                   <div className="flex w-full flex-col items-center justify-center gap-3 rounded-[24px] border-2 border-dashed border-gray-100 bg-[#F8FAFC] p-6 transition-all group-hover:border-orange-500/30">
                     {previewUrl ? (
-                      <div className="relative h-20 w-20 rounded-lg bg-white p-1.5 shadow-sm">
+                      <div className="relative h-20 w-20 rounded-lg bg-[#FFFFFF] p-1.5 shadow-sm">
                         <img src={previewUrl} className="h-full w-full rounded object-contain" alt="Preview" />
                       </div>
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400 shadow-sm">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFFFFF] text-gray-400 shadow-sm">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                           <polyline points="17 8 12 3 7 8" />
@@ -382,7 +382,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   type="button"
                   onClick={handleSubmit}
                   disabled={uploading}
-                  className="flex-[2] rounded-[20px] bg-orange-500 py-4.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60"
+                  className="flex-[2] rounded-[20px] bg-orange-500 py-4.5 text-sm font-bold text-[#111827] shadow-lg shadow-orange-100 transition-all active:scale-95 disabled:opacity-60"
                 >
                   Confirm deposit
                 </button>
@@ -393,7 +393,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
 
         {error && (
           <div className="absolute bottom-6 left-6 right-6 z-[210]">
-            <div className="flex items-center gap-3 rounded-[18px] border border-gray-700/50 bg-[#1A202C] px-5 py-3.5 text-white shadow-2xl backdrop-blur-sm">
+            <div className="flex items-center gap-3 rounded-[18px] border border-gray-700/50 bg-[#1A202C] px-5 py-3.5 text-[#111827] shadow-2xl backdrop-blur-sm">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-500">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                   <path d="M18 6L6 18M6 6l12 12" />

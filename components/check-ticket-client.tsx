@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { FormEvent, useCallback, useState } from 'react';
@@ -116,7 +116,7 @@ function TicketCard({ bet }: { bet: TicketCheckResponse }) {
   const status = String(bet.status || 'pending').toLowerCase();
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]">
+    <article className="overflow-hidden rounded-2xl border border-slate-200/90 bg-[#FFFFFF] shadow-sm ring-1 ring-black/[0.03]">
       <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-slate-100 sm:aspect-[21/8] sm:min-h-[5.5rem]">
         <img
           src="/ticket/ticket.jpg"
@@ -152,7 +152,7 @@ function TicketCard({ bet }: { bet: TicketCheckResponse }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-white sm:px-4">
+      <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-[#111827] sm:px-4">
         <div>
           <p className="text-[10px] font-medium text-emerald-100/90 sm:text-xs">Stake</p>
           <p className="mt-0.5 text-sm font-semibold tabular-nums">{Number(bet.stake).toFixed(2)} ETB</p>
@@ -210,11 +210,11 @@ export default function CheckTicketClient() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#0D1117] text-white">
-      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[#30363D] bg-[#161B22] px-4">
+    <div className="flex min-h-dvh flex-col bg-[#F8FAFC] text-[#111827]">
+      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] px-4">
         <Link
           href="/"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#8B949E] transition hover:bg-[#21262D] hover:text-white"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F1F5F9] hover:text-[#111827]"
           aria-label="Back to home"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -229,7 +229,7 @@ export default function CheckTicketClient() {
           <div className="mx-auto w-full max-w-md">
             <form onSubmit={onSubmit} className="space-y-4">
               <label className="block">
-                <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-[#8B949E]">
+                <span className="mb-2 block text-xs font-medium uppercase tracking-wide text-[#6B7280]">
                   Ticket code
                 </span>
                 <input
@@ -242,7 +242,7 @@ export default function CheckTicketClient() {
                   autoComplete="off"
                   autoCapitalize="characters"
                   spellCheck={false}
-                  className="w-full rounded-xl border border-[#30363D] bg-[#161B22] px-4 py-3.5 font-mono text-base text-white placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
+                  className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] px-4 py-3.5 font-mono text-base text-[#111827] placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
                 />
               </label>
               {error ? (
@@ -253,7 +253,7 @@ export default function CheckTicketClient() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-xl bg-[#FF8C00] py-3.5 text-sm font-bold text-black transition hover:bg-[#e67e00] disabled:opacity-60"
+                className="w-full rounded-xl bg-[#FF8C00] py-3.5 text-sm font-bold text-white transition hover:bg-[#e67e00] disabled:opacity-60"
               >
                 {loading ? 'Looking up…' : 'Check ticket'}
               </button>
@@ -265,7 +265,7 @@ export default function CheckTicketClient() {
             <button
               type="button"
               onClick={reset}
-              className="w-full rounded-xl border border-[#30363D] bg-[#161B22] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#21262D]"
+              className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#F1F5F9]"
             >
               Check another ticket
             </button>

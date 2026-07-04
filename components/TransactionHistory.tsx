@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BETVERS_DEPOSIT_PROOF_SUBMITTED_EVENT } from '@/lib/ui-events';
@@ -90,8 +90,8 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
       />
 
       <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[#F8FAFC] shadow-2xl animate-in slide-in-from-bottom duration-300 sm:h-auto sm:rounded-[32px]">
-        <header className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white px-6 py-6">
-          <div className="text-2xl font-black tracking-tighter text-[#1A202C]">My Uploads</div>
+        <header className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-[#FFFFFF] px-6 py-6">
+          <div className="text-2xl font-black tracking-tighter text-[#111827]">My Uploads</div>
           <button
             type="button"
             onClick={onClose}
@@ -124,7 +124,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
               {transactions.map((t) => (
                 <div
                   key={t.id}
-                  className="group relative aspect-[3/4] animate-in overflow-hidden rounded-[24px] border border-gray-100 bg-white shadow-sm zoom-in-95 duration-300"
+                  className="group relative aspect-[3/4] animate-in overflow-hidden rounded-[24px] border border-gray-100 bg-[#FFFFFF] shadow-sm zoom-in-95 duration-300"
                 >
                   <img
                     src={t.screenshot_url}
@@ -135,7 +135,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
 
                   <div className="absolute right-2 top-2">
                     <div
-                      className={`h-3 w-3 rounded-full border-2 border-white shadow-sm ${
+                      className={`h-3 w-3 rounded-full border-2 border-[rgba(0,0,0,0.12)] shadow-sm ${
                         t.status === 'approved'
                           ? 'bg-green-500'
                           : t.status === 'rejected'
@@ -146,7 +146,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-white">
+                    <div className="text-[9px] font-black uppercase tracking-widest text-[#111827]">
                       {new Date(t.created_at).toLocaleDateString()}
                     </div>
                   </div>

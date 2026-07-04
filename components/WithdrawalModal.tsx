@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api';
@@ -308,12 +308,12 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col bg-[#F8FAFC] text-[#1A202C] ${isOpen ? '' : 'pointer-events-none invisible'}`}
+      className={`fixed inset-0 z-[200] flex flex-col bg-[#F8FAFC] text-[#111827] ${isOpen ? '' : 'pointer-events-none invisible'}`}
       aria-hidden={!isOpen}
     >
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-[#FFFFFF] px-4 py-4 sm:px-5">
         <div>
-          <h1 className="text-lg font-black tracking-tight text-[#1A202C] sm:text-xl">Withdrawal</h1>
+          <h1 className="text-lg font-black tracking-tight text-[#111827] sm:text-xl">Withdrawal</h1>
           <p className="mt-0.5 text-[11px] font-bold text-slate-500">Funds are held until support completes payout</p>
         </div>
         <button
@@ -350,7 +350,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
             {step === 'selection' && !hasPending && (
               <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-[#FFFFFF] p-4 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Available</p>
                   <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
                     {Number(user?.balance || 0).toFixed(2)} <span className="text-sm text-orange-600">ETB</span>
@@ -363,7 +363,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     <input
                       type="number"
                       placeholder="0.00"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-white px-6 py-4 text-lg font-black text-gray-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-6 py-4 text-lg font-black text-gray-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                     />
@@ -406,7 +406,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                           key={m.id}
                           type="button"
                           onClick={() => handleMethodSelect(m)}
-                          className="relative flex h-[64px] items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+                          className="relative flex h-[64px] items-center justify-center rounded-2xl border border-slate-100 bg-[#FFFFFF] shadow-sm transition-all hover:bg-gray-50 active:scale-95"
                         >
                           <img src={m.logo_url} alt="" className="h-full w-full object-contain p-2" />
                         </button>
@@ -430,7 +430,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
             {step === 'details' && selectedMethod && !hasPending && (
               <form onSubmit={handleSubmit} className="space-y-6 animate-in slide-in-from-right duration-300">
-                <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+                <div className="flex items-center gap-4 rounded-2xl bg-[#FFFFFF] p-4 shadow-sm ring-1 ring-slate-100">
                   <div className="h-12 w-12 rounded-xl bg-[#F8FAFC] p-2 shadow-inner">
                     <img src={selectedMethod.logo_url} alt="" className="h-full w-full object-contain" />
                   </div>
@@ -449,7 +449,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-name"
                       type="text"
                       placeholder="Account holder name"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-white px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
                     />
@@ -463,7 +463,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-details"
                       type="text"
                       placeholder={selectedMethod.type === 'bank' ? 'Enter bank account' : 'Enter phone number'}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-white px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountDetails}
                       onChange={(e) => setAccountDetails(e.target.value)}
                     />
@@ -491,7 +491,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       autoComplete="off"
                       spellCheck={false}
                       maxLength={10}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-white px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={promoCode}
                       onChange={(e) => {
                         setPromoCode(e.target.value.toUpperCase());
@@ -510,7 +510,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   <button
                     type="submit"
                     disabled={loading || !depositEligible}
-                    className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-white shadow-xl shadow-gray-100 transition-all active:scale-95 disabled:bg-gray-300"
+                    className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-[#111827] shadow-xl shadow-gray-100 transition-all active:scale-95 disabled:bg-gray-300"
                   >
                     {loading ? 'Submitting…' : 'Withdraw'}
                   </button>
@@ -549,7 +549,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     setStep('selection');
                     void loadUserWithdrawalState();
                   }}
-                  className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-white transition-all active:scale-95"
+                  className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-[#111827] transition-all active:scale-95"
                 >
                   Done
                 </button>
@@ -569,7 +569,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   {history.map((h) => (
                     <li
                       key={h.id}
-                      className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-3 text-xs shadow-sm"
+                      className="flex items-center justify-between rounded-xl border border-slate-100 bg-[#FFFFFF] px-3 py-3 text-xs shadow-sm"
                     >
                       <div className="min-w-0">
                         <p className="font-black text-slate-900">{h.method_name || 'Withdrawal'}</p>

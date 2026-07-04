@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type TicketByCodeSelection } from '../lib/api';
@@ -327,29 +327,18 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
     <>
       <button
         id="betslip-toggle-btn"
-        onClick={() => {
-          setError(null);
-          setIsOpen((o) => !o);
-        }}
-        className="relative flex flex-col items-center gap-1 text-[#8B949E] hover:text-white transition-colors"
+        onClick={() => { setError(null); setIsOpen((o) => !o); }}
+        className="relative flex flex-col items-center gap-1 text-[#6B7280] hover:text-[#111827] transition-colors"
       >
         <div className="relative">
-          <svg
-            className="w-6 h-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
             <rect x="9" y="3" width="6" height="4" rx="1" ry="1" />
             <line x1="9" y1="12" x2="15" y2="12" />
             <line x1="9" y1="16" x2="13" y2="16" />
           </svg>
           {items.length > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 bg-[#3B82F6] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center leading-none">
+            <span className="absolute -top-1.5 -right-1.5 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center leading-none" style={{background:'#10B981'}}>
               {items.length}
             </span>
           )}
@@ -359,16 +348,19 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
 
       {isOpen && (
         <div className="fixed inset-0 z-[220]">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setIsOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-[#F8FAFC] rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden sm:rounded-t-[32px]">
-            <div className="shrink-0 border-b border-gray-100 bg-white">
-              <div className="flex items-center gap-2 px-3 py-2.5 sm:gap-2.5 sm:px-5 sm:py-3">
-                <div className="w-7 h-7 shrink-0 bg-orange-100 rounded-md flex items-center justify-center text-orange-500 font-black text-[10px] sm:w-8 sm:h-8 sm:rounded-lg sm:text-xs">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up"
+            style={{background:'#F1F5F9', border:'1px solid rgba(0,0,0,0.08)', borderBottom:'none'}}>
+
+            {/* Header */}
+            <div className="shrink-0" style={{borderBottom:'1px solid rgba(0,0,0,0.08)'}}>
+              <div className="flex items-center gap-2 px-4 py-3">
+                <div className="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-white font-black text-[10px]" style={{background:'#10B981'}}>
                   BS
                 </div>
-                <span className="shrink-0 font-black text-gray-900 text-sm tracking-tight sm:text-base">Betslip</span>
+                <span className="shrink-0 font-black text-[#111827] text-sm tracking-tight">Betslip</span>
                 {items.length > 0 && (
-                  <span className="shrink-0 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full sm:text-[10px] sm:px-2">
+                  <span className="shrink-0 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{background:'#10B981'}}>
                     {items.length}
                   </span>
                 )}
@@ -376,128 +368,103 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                   <input
                     type="text"
                     value={ticketInput}
-                    onChange={(e) => {
-                      setTicketInput(e.target.value);
-                      setTicketLoadError(null);
-                    }}
+                    onChange={(e) => { setTicketInput(e.target.value); setTicketLoadError(null); }}
                     aria-label="Ticket code"
                     autoCapitalize="characters"
                     autoCorrect="off"
                     spellCheck={false}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-2.5 pr-8 text-[11px] font-mono font-bold text-slate-900 outline-none placeholder:text-transparent focus:border-orange-400 focus:bg-white sm:py-2 sm:pl-3 sm:pr-9 sm:text-xs"
+                    placeholder="Ticket code..."
+                    className="w-full rounded-lg py-1.5 pl-2.5 pr-8 text-[11px] font-mono font-bold text-[#111827] outline-none"
+                    style={{background:'rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.08)'}}
+                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,0,0,0.08)'; }}
                   />
-                  {ticketLoadLoading ? (
-                    <span className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500 sm:right-2.5 sm:h-4 sm:w-4" />
-                  ) : null}
+                  {ticketLoadLoading && (
+                    <span className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-2 border-[rgba(255,255,255,0.15)] border-t-[#10B981]" />
+                  )}
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                <div className="flex shrink-0 items-center gap-1.5">
                   {items.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleClearAll}
-                      className="text-[10px] text-gray-400 hover:text-red-500 font-black transition-colors sm:text-[11px]"
-                    >
-                      Clear all
+                    <button type="button" onClick={handleClearAll} className="text-[10px] text-[#6B7280] hover:text-[#EF4444] font-bold transition-colors">
+                      Clear
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setIsOpen(false)}
-                    className="text-gray-400 hover:text-gray-900 transition-colors"
-                    aria-label="Close"
-                  >
-                    <svg className="h-[18px] w-[18px] sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
+                  <button type="button" onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-[#111827] transition-colors">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
                   </button>
                 </div>
               </div>
-              {ticketLoadError ? (
-                <p className="border-t border-red-100 bg-red-50/80 px-3 py-1.5 text-[10px] font-bold text-red-600 sm:px-5 sm:text-[11px]">
+              {ticketLoadError && (
+                <p className="px-4 py-2 text-[10px] font-bold text-[#EF4444]" style={{background:'rgba(239,68,68,0.08)', borderTop:'1px solid rgba(239,68,68,0.15)'}}>
                   {ticketLoadError}
                 </p>
-              ) : null}
+              )}
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-2 p-3 sm:space-y-3 sm:p-4">
+            {/* Bet items */}
+            <div className="flex-1 overflow-y-auto space-y-2 p-3">
               {success ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-12 animate-in zoom-in-95 duration-300 sm:gap-4 sm:py-16">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-green-500 shadow-inner sm:h-20 sm:w-20">
-                    <svg className="h-8 w-8 sm:h-10 sm:w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4">
+                <div className="flex flex-col items-center justify-center gap-4 py-12 animate-scale-in">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full" style={{background:'rgba(16,185,129,0.12)', border:'1px solid rgba(16,185,129,0.3)'}}>
+                    <svg className="h-8 w-8 text-[#10B981]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-black tracking-tight text-gray-900 sm:text-xl">Bet placed!</p>
-                    {placedTicketDisplay ? (
-                      <p className="mt-1.5 font-mono text-xs font-black tracking-wide text-slate-800 sm:mt-2 sm:text-sm">
-                        {placedTicketDisplay}
-                      </p>
-                    ) : null}
-                    <p className="text-xs font-medium italic text-gray-400 sm:text-sm">Good luck!</p>
+                    <p className="text-lg font-black tracking-tight text-[#111827]">Bet Placed! 🎉</p>
+                    {placedTicketDisplay && (
+                      <p className="mt-1.5 font-mono text-xs font-black tracking-wide text-[#10B981]">{placedTicketDisplay}</p>
+                    )}
+                    <p className="text-xs font-medium text-[#6B7280] mt-1">Good luck!</p>
                     {walletBalance !== null && (
-                      <p className="mt-2 text-[11px] font-black text-slate-700 sm:mt-3 sm:text-[13px]">
-                        New balance: {walletBalance.toFixed(2)} {walletCurrency}
+                      <p className="mt-2 text-[11px] font-black text-[#4B5563]">
+                        New balance: <span className="text-[#111827]">{walletBalance.toFixed(2)} {walletCurrency}</span>
                       </p>
                     )}
                   </div>
                 </div>
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-14 text-gray-300 sm:gap-3 sm:py-20">
-                  <svg className="h-14 w-14 opacity-10 sm:h-16 sm:w-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <div className="flex flex-col items-center justify-center gap-3 py-14 text-[#6B7280]">
+                  <svg className="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
                     <rect x="9" y="3" width="6" height="4" rx="1" ry="1" />
                   </svg>
-                  <p className="text-[11px] font-black text-gray-400 sm:text-[13px]">Betslip empty</p>
+                  <p className="text-sm font-bold text-[#6B7280]">Your betslip is empty</p>
+                  <p className="text-xs text-[#3F3F46]">Pick matches to add selections</p>
                 </div>
               ) : (
                 items.map((bet) => (
-                  <div
-                    key={bet.id}
-                    className="group relative flex flex-col gap-1.5 overflow-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all active:scale-[0.98] sm:gap-2 sm:rounded-2xl sm:p-4"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex min-w-0 flex-1 flex-col gap-1 sm:gap-1.5">
-                        <p className="text-[9px] font-black tracking-tight text-gray-400 sm:text-[10px]">{bet.league}</p>
-                        <div className="flex flex-col gap-1.5 sm:gap-2">
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            {bet.homeLogo ? (
-                              <img src={bet.homeLogo} alt="" className="h-4 w-4 object-contain sm:h-5 sm:w-5" />
-                            ) : (
-                              <div className="h-4 w-4 rounded-full border border-gray-100 bg-gray-50 sm:h-5 sm:w-5" />
-                            )}
-                            <span className="truncate text-[11px] font-black tracking-tight text-gray-800 sm:text-[13px]">
-                              {bet.homeTeam}
-                            </span>
+                  <div key={bet.id}
+                    className="group relative flex flex-col gap-2 overflow-hidden rounded-xl p-3 transition-all"
+                    style={{background:'#18181B', border:'1px solid rgba(0,0,0,0.06)'}}>
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <p className="text-[9px] font-bold tracking-tight text-[#6B7280] uppercase">{bet.league}</p>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            {bet.homeLogo ? <img src={bet.homeLogo} alt="" className="h-4 w-4 object-contain" /> : <div className="h-4 w-4 rounded-full bg-[#F3F4F6]" />}
+                            <span className="truncate text-[12px] font-bold text-[#111827]">{bet.homeTeam}</span>
                           </div>
-                          <div className="flex items-center gap-2 sm:gap-3">
-                            {bet.awayLogo ? (
-                              <img src={bet.awayLogo} alt="" className="h-4 w-4 object-contain sm:h-5 sm:w-5" />
-                            ) : (
-                              <div className="h-4 w-4 rounded-full border border-gray-100 bg-gray-50 sm:h-5 sm:w-5" />
-                            )}
-                            <span className="truncate text-[11px] font-black tracking-tight text-gray-800 sm:text-[13px]">
-                              {bet.awayTeam}
-                            </span>
+                          <div className="flex items-center gap-2">
+                            {bet.awayLogo ? <img src={bet.awayLogo} alt="" className="h-4 w-4 object-contain" /> : <div className="h-4 w-4 rounded-full bg-[#F3F4F6]" />}
+                            <span className="truncate text-[12px] font-bold text-[#111827]">{bet.awayTeam}</span>
                           </div>
                         </div>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5 sm:mt-2 sm:gap-2">
-                          <span className="text-[9px] font-bold text-gray-400 sm:text-[10px]">{bet.market}:</span>
-                          <span className="text-[9px] font-black text-orange-500 sm:text-[10px]">{bet.selection}</span>
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <span className="text-[9px] font-bold text-[#6B7280]">{bet.market}:</span>
+                          <span className="text-[9px] font-black text-[#10B981]">{bet.selection}</span>
                         </div>
                       </div>
-                      <div className="ml-3 flex shrink-0 flex-col items-end gap-2 sm:ml-4 sm:gap-3">
-                        <div className="min-w-[44px] rounded-lg bg-blue-50 px-2 py-1 text-center text-[12px] font-black text-blue-600 shadow-sm sm:min-w-[50px] sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-[15px]">
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <div className="min-w-[44px] rounded-lg px-2 py-1 text-center text-[13px] font-black text-[#10B981]"
+                          style={{background:'rgba(16,185,129,0.10)', border:'1px solid rgba(16,185,129,0.2)'}}>
                           {bet.odds.toFixed(2)}
                         </div>
-                        <button
-                          onClick={() => handleRemoveBet(bet.id)}
-                          className="flex h-7 w-7 items-center justify-center text-gray-200 transition-colors hover:text-red-500 sm:h-8 sm:w-8"
-                        >
-                          <svg className="h-4 w-4 sm:h-[18px] sm:w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
+                        <button onClick={() => handleRemoveBet(bet.id)} className="flex h-7 w-7 items-center justify-center text-[#3F3F46] hover:text-[#EF4444] transition-colors">
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                           </svg>
                         </button>
                       </div>
@@ -507,35 +474,30 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
               )}
             </div>
 
+            {/* Footer */}
             {items.length > 0 && !success && (
-              <div className="shrink-0 space-y-3 border-t border-gray-100 bg-white p-3 shadow-2xl sm:space-y-4 sm:p-5">
-                {ticketImportBlocked && ticketBlockedMessage ? (
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-center text-[10px] font-bold leading-snug text-amber-900 sm:text-[11px]">
+              <div className="shrink-0 space-y-3 p-4" style={{borderTop:'1px solid rgba(0,0,0,0.08)', background:'#0D0D10'}}>
+                {ticketImportBlocked && ticketBlockedMessage && (
+                  <div className="rounded-xl px-3 py-2.5 text-center text-[10px] font-bold leading-snug text-[#FACC15]"
+                    style={{background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.2)'}}>
                     {ticketBlockedMessage}
                   </div>
-                ) : null}
+                )}
                 {!hasSession && items.length > 0 && (
-                  <p className="text-center text-[10px] font-medium leading-snug text-slate-600 sm:text-[12px]">
-                    Please log in to place your bet. After you sign in, your bet will be placed automatically.
+                  <p className="text-center text-[11px] font-medium leading-snug text-[#6B7280]">
+                    Please log in to place your bet.
                   </p>
                 )}
-
                 {hasSession && walletBalance !== null && (
-                  <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5 sm:rounded-2xl sm:px-4 sm:py-3">
-                    <span className="text-[10px] font-black tracking-tight text-slate-500 sm:text-[11px]">Available balance</span>
-                    <span className="text-[13px] font-black tabular-nums text-slate-900 sm:text-[15px]">
-                      {walletBalance.toFixed(2)} {walletCurrency}
-                    </span>
+                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5" style={{background:'rgba(0,0,0,0.04)', border:'1px solid rgba(0,0,0,0.06)'}}>
+                    <span className="text-[10px] font-bold text-[#6B7280]">Available balance</span>
+                    <span className="text-[13px] font-black tabular-nums text-[#111827]">{walletBalance.toFixed(2)} <span className="text-[#10B981]">{walletCurrency}</span></span>
                   </div>
                 )}
-
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-black tracking-tight text-gray-400 sm:text-[12px]">Total odds</span>
-                  <span className="text-[17px] font-black tabular-nums tracking-tighter text-gray-900 sm:text-[20px]">
-                    {totalOdds.toFixed(2)}
-                  </span>
+                  <span className="text-[11px] font-bold text-[#6B7280]">Total odds</span>
+                  <span className="text-[20px] font-black tabular-nums text-[#111827]">{totalOdds.toFixed(2)}</span>
                 </div>
-
                 <div className="relative">
                   <input
                     type="number"
@@ -543,44 +505,39 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                     placeholder="Enter stake..."
                     value={stake}
                     onChange={(e) => setStake(e.target.value)}
-                    className="w-full rounded-2xl border-2 border-transparent bg-[#F8FAFC] py-3 pl-4 pr-14 text-sm font-black text-gray-900 shadow-inner outline-none transition-all focus:border-orange-500 sm:rounded-[20px] sm:py-4 sm:pl-6 sm:pr-16 sm:text-base"
+                    className="w-full rounded-xl py-3.5 pl-4 pr-14 text-sm font-black text-[#111827] outline-none transition-all"
+                    style={{background:'rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.1)'}}
+                    onFocus={(e) => { e.target.style.borderColor = '#10B981'; e.target.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,0,0,0.1)'; e.target.style.boxShadow = 'none'; }}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300 sm:right-6 sm:text-[11px]">
-                    {walletCurrency}
-                  </span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#6B7280]">{walletCurrency}</span>
                 </div>
-
                 {potentialWin && (
-                  <div className="flex items-center justify-between rounded-2xl border border-green-100 bg-green-50 px-3 py-2.5 sm:rounded-[20px] sm:px-5 sm:py-3">
-                    <span className="text-[11px] font-black tracking-tight text-green-600 sm:text-[12px]">Potential win</span>
-                    <span className="text-[15px] font-black tabular-nums tracking-tighter text-green-600 sm:text-[18px]">
-                      {potentialWin} {walletCurrency}
-                    </span>
+                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5"
+                    style={{background:'rgba(16,185,129,0.06)', border:'1px solid rgba(16,185,129,0.15)'}}>
+                    <span className="text-[11px] font-bold text-[#10B981]">Potential win</span>
+                    <span className="text-[16px] font-black tabular-nums text-[#10B981]">{potentialWin} {walletCurrency}</span>
                   </div>
                 )}
-
                 {insufficientFunds && (
-                  <div className="rounded-xl border border-amber-100 bg-amber-50 p-2.5 text-center text-[10px] font-bold text-amber-800 sm:p-3 sm:text-[11px]">
-                    Stake exceeds balance. Lower the stake or add funds.
+                  <div className="rounded-xl p-2.5 text-center text-[10px] font-bold text-[#FACC15]"
+                    style={{background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.2)'}}>
+                    Stake exceeds balance. Add funds or lower stake.
                   </div>
                 )}
-
                 {error && (
-                  <div className="rounded-xl bg-red-50 p-3 text-center text-[9px] font-black text-red-500 sm:p-4 sm:text-[10px]">
+                  <div className="rounded-xl p-3 text-center text-[10px] font-black text-[#EF4444]"
+                    style={{background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)'}}>
                     {error}
                   </div>
                 )}
-
                 <button
                   onClick={() => void handlePlaceBet()}
                   disabled={placeDisabled}
-                  className="w-full rounded-2xl bg-gray-900 py-4 text-[13px] font-black text-white shadow-xl shadow-gray-200 transition-all hover:bg-black active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 sm:rounded-[24px] sm:py-5 sm:text-[15px]"
+                  className="w-full rounded-xl py-4 text-[14px] font-black transition-all active:scale-95"
+                  style={placeDisabled ? {background:'#F3F4F6', color:'#9CA3AF', cursor:'not-allowed'} : {background:'#10B981', color:'#FFFFFF', boxShadow:'0 0 24px rgba(16,185,129,0.35)'}}
                 >
-                  {loading
-                    ? 'Processing...'
-                    : insufficientFunds
-                      ? 'Insufficient balance'
-                      : `Place bet — ${items.length} selection${items.length === 1 ? '' : 's'}`}
+                  {loading ? 'Processing...' : insufficientFunds ? 'Insufficient balance' : `Place Bet — ${items.length} selection${items.length === 1 ? '' : 's'}`}
                 </button>
               </div>
             )}
@@ -590,3 +547,4 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
     </>
   );
 }
+

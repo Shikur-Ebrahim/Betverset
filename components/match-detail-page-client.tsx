@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
@@ -20,7 +20,7 @@ type Props = {
 
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="site-shell bg-[#0D1117] min-h-screen text-white flex flex-col items-center justify-center gap-4 px-6">
+    <div className="site-shell bg-[#F8FAFC] min-h-screen text-[#111827] flex flex-col items-center justify-center gap-4 px-6">
       {children}
     </div>
   );
@@ -29,7 +29,7 @@ function Shell({ children }: { children: ReactNode }) {
 function Spinner() {
   return (
     <div
-      className="w-10 h-10 border-2 border-[#FF8C00]/30 border-t-[#FF8C00] rounded-full animate-spin"
+      className="w-10 h-10 border-2 border-[#10B981]/30 border-t-[#10B981] rounded-full animate-spin"
       aria-hidden
     />
   );
@@ -124,8 +124,8 @@ export default function MatchDetailPageClient({
   if (!Number.isFinite(matchId) || matchId <= 0) {
     return (
       <Shell>
-        <p className="text-sm text-[#8B949E] text-center">Invalid match link.</p>
-        <Link href="/" className="text-[#FF8C00] font-semibold text-sm">
+        <p className="text-sm text-[#6B7280] text-center">Invalid match link.</p>
+        <Link href="/" className="text-[#10B981] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>
@@ -136,7 +136,7 @@ export default function MatchDetailPageClient({
     return (
       <Shell>
         <Spinner />
-        <p className="text-sm text-[#8B949E]">Loading match…</p>
+        <p className="text-sm text-[#6B7280]">Loading match…</p>
       </Shell>
     );
   }
@@ -144,8 +144,8 @@ export default function MatchDetailPageClient({
   if (error && !fixture) {
     return (
       <Shell>
-        <p className="text-sm text-[#8B949E] text-center max-w-xs">{error}</p>
-        <Link href="/" className="text-[#FF8C00] font-semibold text-sm">
+        <p className="text-sm text-[#6B7280] text-center max-w-xs">{error}</p>
+        <Link href="/" className="text-[#10B981] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>
@@ -155,8 +155,8 @@ export default function MatchDetailPageClient({
   if (!fixture) {
     return (
       <Shell>
-        <p className="text-sm text-[#8B949E] text-center">Match not found.</p>
-        <Link href="/" className="text-[#FF8C00] font-semibold text-sm">
+        <p className="text-sm text-[#6B7280] text-center">Match not found.</p>
+        <Link href="/" className="text-[#10B981] font-semibold text-sm">
           Back to home
         </Link>
       </Shell>

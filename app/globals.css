@@ -1,43 +1,68 @@
 @import "tailwindcss";
 
+/* ============================================
+   BETVERSE PREMIUM LIGHT DESIGN SYSTEM 2026
+   ============================================ */
+
 :root {
-  --background: #0D1117;
-  --foreground: #FFFFFF;
-  --site-bg: #0D1117;
-  --site-surface: #161B22;
-  --site-surface-strong: #21262D;
-  --site-surface-soft: #11141A;
-  --site-border: #30363D;
-  --site-muted: #8B949E;
-  --site-text-soft: #C9D1D9;
-  --site-primary: #FF8C00;
-  --site-primary-strong: #E67E00;
-  --site-primary-soft: rgba(255, 140, 0, 0.12);
-  --site-secondary: #58A6FF;
-  --site-secondary-soft: rgba(88, 166, 255, 0.14);
-  --site-live: #FF6B6B;
+  /* Backgrounds */
+  --background: #F8FAFC;
+  --foreground: #111827;
+  --site-bg: #F8FAFC;
+  --site-surface: #FFFFFF;
+  --site-surface-strong: #FFFFFF;
+  --site-surface-soft: #F1F5F9;
+  --site-elevated: #FFFFFF;
+
+  /* Borders */
+  --site-border: #E5E7EB;
+  --site-border-strong: #D1D5DB;
+
+  /* Text */
+  --site-muted: #9CA3AF;
+  --site-text-soft: #6B7280;
+
+  /* Accent - Emerald Green */
+  --site-primary: #10B981;
+  --site-primary-strong: #059669;
+  --site-primary-soft: rgba(16, 185, 129, 0.10);
+  --site-primary-glow: rgba(16, 185, 129, 0.25);
+
+  /* Secondary Accent - Blue */
+  --site-secondary: #3B82F6;
+  --site-secondary-soft: rgba(59, 130, 246, 0.12);
+
+  /* Status */
+  --site-success: #10B981;
+  --site-warning: #F59E0B;
+  --site-danger: #EF4444;
+  --site-info: #3B82F6;
+  --site-live: #EF4444;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0D1117;
-    --foreground: #FFFFFF;
-  }
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -45,74 +70,151 @@ a {
   text-decoration: none;
 }
 
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--site-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--site-border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--site-text-soft);
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
 .site-shell {
   min-height: 100vh;
   color: var(--foreground);
-  padding-bottom: 70px; /* Space for bottom nav */
+  padding-bottom: 72px;
+  background: var(--site-bg);
 }
 
+/* ============================================
+   HEADER
+   ============================================ */
+
 .site-header {
-  background: #161B22;
+  background: rgba(255, 255, 255, 0.95);
   border-bottom: 1px solid var(--site-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .site-brand {
-  color: #FFFFFF;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  color: #111827;
+  font-weight: 900;
+  letter-spacing: -0.04em;
   font-style: italic;
 }
 
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
 .site-nav-link {
-  color: var(--site-muted);
+  color: var(--site-text-soft);
   transition: color 0.2s ease;
 }
 
 .site-nav-link:hover {
-  color: #ffffff;
+  color: #111827;
 }
 
+/* ============================================
+   BUTTONS
+   ============================================ */
+
 .site-outline-btn {
-  border: 1px solid var(--site-border);
-  background: transparent;
+  border: 1px solid var(--site-border-strong);
+  background: #FFFFFF;
   color: var(--site-text-soft);
+  transition: all 0.2s ease;
+}
+
+.site-outline-btn:hover {
+  border-color: var(--site-primary);
+  color: var(--site-primary);
+  background: var(--site-primary-soft);
 }
 
 .site-primary-btn {
   background: var(--site-primary);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(255, 140, 0, 0.3);
+  font-weight: 700;
+  box-shadow: 0 4px 12px var(--site-primary-glow);
   border: none;
+  transition: all 0.2s ease;
 }
 
 .site-primary-btn:hover {
-  filter: brightness(1.1);
+  background: var(--site-primary-strong);
+  box-shadow: 0 6px 16px var(--site-primary-glow);
+  transform: translateY(-1px);
 }
+
+.site-primary-btn:active {
+  transform: scale(0.97);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
 
 .site-card {
   border: 1px solid var(--site-border);
   background: var(--site-surface);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.site-card-hover {
+  transition: all 0.2s ease;
 }
 
 .site-card-hover:hover {
-  border-color: var(--site-primary);
+  border-color: var(--site-border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
+/* ============================================
+   PILLS & CHIPS
+   ============================================ */
+
 .site-pill {
-  border: 1px solid rgba(255, 140, 0, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   background: var(--site-primary-soft);
   color: var(--site-primary);
 }
 
 .site-live-pill {
-  background: rgba(255, 107, 107, 0.12);
-  color: #ff9494;
+  background: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .site-blue-pill {
   background: var(--site-secondary-soft);
   color: var(--site-secondary);
 }
+
+/* ============================================
+   TEXT UTILITIES
+   ============================================ */
 
 .site-muted {
   color: var(--site-muted);
@@ -122,18 +224,24 @@ a {
   color: var(--site-text-soft);
 }
 
-.site-score-box {
-  background: var(--background);
-  border: 1px solid var(--site-border);
+.site-section-title {
+  color: #111827;
+  font-weight: 700;
 }
 
-.site-section-title {
-  color: #ffffff;
+/* ============================================
+   SECTION UTILITIES
+   ============================================ */
+
+.site-score-box {
+  background: var(--site-bg);
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
 }
 
 .site-accent-line {
   height: 3px;
-  width: 68px;
+  width: 48px;
   border-radius: 9999px;
   background: var(--site-primary);
 }
@@ -142,6 +250,19 @@ a {
   border: 1px solid var(--site-border);
   background: var(--site-surface);
   color: var(--site-text-soft);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.site-chip:hover {
+  border-color: var(--site-primary);
+  color: var(--site-primary);
+}
+
+.site-chip.active {
+  border-color: var(--site-primary);
+  background: var(--site-primary-soft);
+  color: var(--site-primary-strong);
 }
 
 .site-logo-shell {
@@ -155,6 +276,8 @@ a {
 .site-section-shell {
   background: var(--site-surface);
   border: 1px solid var(--site-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
 .site-divider {
@@ -163,7 +286,10 @@ a {
   background: var(--site-border);
 }
 
-/* Hide scrollbar for horizontal scrolling elements */
+/* ============================================
+   SCROLLBAR HIDE
+   ============================================ */
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -172,32 +298,40 @@ a {
   scrollbar-width: none;
 }
 
-/* Champx Specific UI Classes */
+/* ============================================
+   BOTTOM NAVIGATION
+   ============================================ */
+
 .champx-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
-  background: #161B22;
+  height: 68px;
+  background: rgba(255, 255, 255, 0.95);
   border-top: 1px solid var(--site-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 50;
-  padding: 0 2px;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .champx-bottom-nav .champx-nav-item {
   min-width: 0;
   flex: 1;
-  max-width: 72px;
+  max-width: 76px;
 }
 
 .champx-bottom-nav .champx-nav-item span {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.1;
   text-align: center;
+  font-weight: 500;
 }
 
 .champx-nav-item {
@@ -207,6 +341,14 @@ a {
   gap: 4px;
   color: var(--site-muted);
   font-size: 10px;
+  transition: color 0.2s ease;
+  cursor: pointer;
+  padding: 6px 4px;
+  border-radius: 10px;
+}
+
+.champx-nav-item:hover {
+  color: var(--site-text-soft);
 }
 
 .champx-nav-item.active {
@@ -214,52 +356,94 @@ a {
 }
 
 .champx-nav-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
 }
 
+/* ============================================
+   ODDS BUTTONS
+   ============================================ */
+
 .champx-odds-btn {
-  background: #21262D;
-  border-radius: 8px;
-  padding: 8px 0;
+  background: var(--site-bg);
+  border: 1px solid var(--site-border);
+  border-radius: 10px;
+  padding: 8px 6px;
   text-align: center;
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.champx-odds-btn:hover {
+  border-color: var(--site-primary);
+  background: var(--site-primary-soft);
+  transform: scale(1.02);
+}
+
+.champx-odds-btn.selected {
+  border-color: var(--site-primary);
+  background: var(--site-primary);
+  box-shadow: 0 4px 12px var(--site-primary-glow);
 }
 
 .champx-odds-btn span.label {
   font-size: 10px;
-  color: var(--site-muted);
+  color: var(--site-text-soft);
+  font-weight: 500;
 }
 
 .champx-odds-btn span.value {
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 700;
+  color: #111827;
+}
+
+.champx-odds-btn.selected span.label,
+.champx-odds-btn.selected span.value {
   color: #FFFFFF;
 }
 
+/* ============================================
+   LEAGUE HEADER
+   ============================================ */
+
 .champx-league-header {
-  background: #21262D;
-  border-left: 4px solid var(--site-primary);
-  padding: 8px 12px;
+  background: var(--site-surface);
+  border-left: 3px solid var(--site-primary);
+  border-bottom: 1px solid var(--site-border);
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  font-weight: bold;
-  color: #FFFFFF;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0.01em;
 }
+
+/* ============================================
+   MATCH ROWS
+   ============================================ */
 
 .champx-match-row {
   background: var(--site-surface);
   border-bottom: 1px solid var(--site-border);
-  padding: 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  transition: background 0.15s ease;
+}
+
+.champx-match-row:hover {
+  background: var(--site-surface-soft);
 }
 
 .champx-match-info {
@@ -269,16 +453,17 @@ a {
 }
 
 .champx-match-time {
-  font-size: 12px;
-  color: var(--site-primary);
+  font-size: 11px;
+  color: var(--site-text-soft);
   min-width: 45px;
+  font-weight: 600;
 }
 
 .champx-match-teams {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
 }
 
 .champx-team {
@@ -286,8 +471,9 @@ a {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #FFFFFF;
-  font-weight: 500;
+  color: #111827;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .champx-team-logo {
@@ -299,4 +485,140 @@ a {
 .champx-odds-container {
   display: flex;
   gap: 6px;
+}
+
+/* ============================================
+   GLASSMORPHISM (Replaced with Soft Shadows)
+   ============================================ */
+
+.glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--site-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.glass-strong {
+  background: #FFFFFF;
+  border: 1px solid var(--site-border);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================
+   SKELETON LOADERS
+   ============================================ */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--site-bg) 25%,
+    var(--site-surface) 50%,
+    var(--site-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.25s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease forwards;
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+.premium-input {
+  background: #FFFFFF;
+  border: 1px solid var(--site-border-strong);
+  border-radius: 10px;
+  color: #111827;
+  transition: all 0.2s ease;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.premium-input:focus {
+  border-color: var(--site-primary);
+  box-shadow: 0 0 0 3px var(--site-primary-soft), inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.premium-input::placeholder {
+  color: var(--site-muted);
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+
+.badge-won {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badge-lost {
+  background: rgba(239, 68, 68, 0.12);
+  color: #DC2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.badge-live {
+  background: rgba(239, 68, 68, 0.15);
+  color: #DC2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+.modal-overlay {
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }

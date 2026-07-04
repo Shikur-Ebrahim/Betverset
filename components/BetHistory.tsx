@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/lib/api';
@@ -204,7 +204,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
         aria-labelledby="bet-history-title"
         className="relative flex h-[min(92dvh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-slate-50 shadow-[0_-8px_40px_rgba(0,0,0,0.12)] sm:h-[min(85vh,680px)] sm:rounded-3xl sm:shadow-2xl"
       >
-        <header className="shrink-0 border-b border-slate-200/80 bg-white px-4 py-4 sm:px-5">
+        <header className="shrink-0 border-b border-slate-200/80 bg-[#FFFFFF] px-4 py-4 sm:px-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
@@ -235,7 +235,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-slate-200/80 bg-white px-2 sm:px-3">
+        <div className="shrink-0 border-b border-slate-200/80 bg-[#FFFFFF] px-2 sm:px-3">
           <nav className="flex gap-1" aria-label="Filter tickets">
             {(['all', 'pending', 'won', 'lost'] as const).map((tab) => (
               <button
@@ -269,7 +269,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
               <button
                 type="button"
                 onClick={() => void fetchHistory()}
-                className="mt-1 rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-white"
+                className="mt-1 rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-[#111827]"
               >
                 Retry
               </button>
@@ -289,7 +289,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 return (
                 <li
                   key={bet.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]"
+                  className="overflow-hidden rounded-2xl border border-slate-200/90 bg-[#FFFFFF] shadow-sm ring-1 ring-black/[0.03]"
                 >
                   <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-slate-100 sm:aspect-[21/8] sm:min-h-[5.5rem]">
                     <img
@@ -414,7 +414,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                     })}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-white sm:px-4">
+                  <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-[#111827] sm:px-4">
                     <div>
                       <p className="text-[10px] font-medium text-emerald-100/90 sm:text-xs">Stake</p>
                       <p className="mt-0.5 text-sm font-semibold tabular-nums">{Number(bet.stake).toFixed(2)} ETB</p>

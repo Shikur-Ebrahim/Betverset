@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 
 import { getPublicApiBaseUrl } from '@/lib/public-api-url';
 
@@ -77,9 +77,9 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose}></div>
       
-      <div className="relative bg-white w-full h-[92vh] sm:h-auto sm:max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col">
-        <header className="bg-white px-6 py-6 flex items-center justify-between border-b border-gray-100 shrink-0">
-          <div className="text-2xl font-black text-[#1A202C] tracking-tighter">Account settings</div>
+      <div className="relative bg-[#FFFFFF] w-full h-[92vh] sm:h-auto sm:max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-300 flex flex-col">
+        <header className="bg-[#FFFFFF] px-6 py-6 flex items-center justify-between border-b border-gray-100 shrink-0">
+          <div className="text-2xl font-black text-[#111827] tracking-tighter">Account settings</div>
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 rounded-full transition-all active:scale-90">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -97,7 +97,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-white focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Enter current password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
@@ -109,7 +109,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-white focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Minimum 6 characters"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -121,7 +121,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
               <input 
                 type="password" 
                 required
-                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-white focus:border-orange-500 outline-none transition-all"
+                className="w-full bg-[#F8FAFC] border-2 border-transparent rounded-[20px] px-5 py-4 font-bold text-gray-900 focus:bg-[#FFFFFF] focus:border-orange-500 outline-none transition-all"
                 placeholder="Repeat new password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -131,7 +131,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
             <button 
               type="submit"
               disabled={loading}
-              className="w-full py-5 bg-gray-900 text-white rounded-[24px] font-black text-sm active:scale-95 transition-all disabled:bg-gray-400 mt-4"
+              className="w-full py-5 bg-gray-900 text-[#111827] rounded-[24px] font-black text-sm active:scale-95 transition-all disabled:bg-gray-400 mt-4"
             >
               {loading ? 'Updating...' : 'Update password'}
             </button>
@@ -140,7 +140,7 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
 
         {error && (
           <div className="absolute bottom-6 left-6 right-6 z-[210] animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-[#1A202C] text-white px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3 border border-gray-700">
+            <div className="bg-[#1A202C] text-[#111827] px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3 border border-gray-700">
               <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </div>
@@ -151,8 +151,8 @@ export default function AccountSettings({ isOpen, onClose, user }: AccountSettin
 
         {success && (
           <div className="absolute bottom-6 left-6 right-6 z-[210] animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-green-600 text-white px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+            <div className="bg-green-600 text-[#111827] px-5 py-4 rounded-[18px] shadow-2xl flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#FFFFFF]/20 flex items-center justify-center shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div className="text-sm font-bold tracking-tight">Password updated successfully!</div>

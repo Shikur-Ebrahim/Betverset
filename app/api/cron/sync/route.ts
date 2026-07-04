@@ -11,15 +11,6 @@ function isAuthorized(req: Request): boolean {
   return false;
 }
 
-/**
- * Sync fixtures from API-Football to Firestore.
- * Strategy:
- * 1. Fetch odds by date (guarantees matches have odds + gives us odds data)
- * 2. Store fixture metadata + odds bookmaker counts immediately
- * 3. Use minimal Firestore writes — only one doc per fixture (no odds sub-collection in sync)
- * 
- * This is designed to complete in < 10 seconds on Vercel Hobby.
- */
 export async function POST(req: Request) {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,81 +20,71 @@ export async function POST(req: Request) {
     const today = new Date().toISOString().split('T')[0];
     console.log(`[sync] Starting sync for ${today}`);
 
-    // Step 1: Fetch odds for today from API-Football (1 API call)
-    // This endpoint returns fixtures WITH their odds in one shot
+    // ONE API call: /odds?date=today
+    // Each item has: { fixture: {...}, league: {...}, bookmakers: [...] }
     const oddsPage = await apiFetch('/odds', { date: today, page: 1 });
-    
+
     if (!oddsPage || oddsPage.length === 0) {
       console.log('[sync] No odds available for today.');
       return NextResponse.json({ ok: true, message: 'No odds today', fixturesStored: 0 });
     }
 
-    console.log(`[sync] Got ${oddsPage.length} fixtures with odds`);
+    console.log(`[sync] Got ${oddsPage.length} items from odds API`);
 
-    // Step 2: Build a lookup of fixtureId -> bookmakers data (all in memory)
-    const oddsMap = new Map<number, any[]>();
-    for (const item of oddsPage) {
-      const fid: number = item?.fixture?.id;
-      if (!fid) continue;
-      oddsMap.set(fid, item?.bookmakers ?? []);
-    }
-
-    // Step 3: Fetch fixture details for these IDs (1 API call)
-    const allIds = Array.from(oddsMap.keys()).slice(0, 20);
-    const fixtureDetails = await apiFetch('/fixtures', { id: allIds.join('-') });
-
-    // Step 4: Save all fixtures in ONE batch commit (very fast)
     const batch = db.batch();
     let fixturesStored = 0;
 
-    for (const item of fixtureDetails) {
-      const f = item?.fixture;
-      const teams = item?.teams;
+    for (const item of oddsPage.slice(0, 20)) {
+      // The odds response embeds fixture info directly
+      const fixture = item?.fixture;
       const league = item?.league;
-      const goals = item?.goals;
-      if (!f?.id) continue;
+      const bookmakers: any[] = item?.bookmakers ?? [];
 
-      const bookmakers = oddsMap.get(f.id) || [];
+      if (!fixture?.id) continue;
       if (bookmakers.length === 0) continue;
 
-      // Extract 1x2 (Match Winner) odds for quick display on the home page
-      const homeOdds: Record<string, number> = {};
-      for (const bm of bookmakers) {
-        if (!bm?.id) continue;
+      // Extract 1x2 (Match Winner) odds — Bet ID 1 on API-Football
+      let homeOdd: number | null = null;
+      let drawOdd: number | null = null;
+      let awayOdd: number | null = null;
+
+      outer: for (const bm of bookmakers) {
         for (const bet of bm?.bets ?? []) {
-          if (!bet?.name?.toLowerCase().includes('match winner') && bet?.id !== 1) continue;
+          if (bet?.id !== 1 && !bet?.name?.toLowerCase().includes('match winner')) continue;
           for (const v of bet?.values ?? []) {
-            if (!homeOdds[v.value]) homeOdds[v.value] = parseFloat(v.odd) || 0;
+            if (v.value === 'Home' && !homeOdd) homeOdd = parseFloat(v.odd) || null;
+            if (v.value === 'Draw' && !drawOdd) drawOdd = parseFloat(v.odd) || null;
+            if (v.value === 'Away' && !awayOdd) awayOdd = parseFloat(v.odd) || null;
           }
+          if (homeOdd && drawOdd && awayOdd) break outer;
         }
       }
 
-      const ref = db.collection('fixtures').doc(String(f.id));
+      const ref = db.collection('fixtures').doc(String(fixture.id));
       batch.set(ref, {
-        api_fixture_id: f.id,
-        match_date: f.date || null,
-        status: f.status?.short || 'NS',
-        elapsed: f.status?.elapsed || null,
-        referee: f.referee || null,
-        home_team_id: String(teams?.home?.id || ''),
-        away_team_id: String(teams?.away?.id || ''),
-        home_team_name: teams?.home?.name || '',
-        away_team_name: teams?.away?.name || '',
-        home_team_logo: teams?.home?.logo || null,
-        away_team_logo: teams?.away?.logo || null,
-        home_goals: goals?.home ?? null,
-        away_goals: goals?.away ?? null,
+        api_fixture_id: fixture.id,
+        match_date: fixture.date || null,
+        status: fixture.status?.short || 'NS',
+        elapsed: fixture.status?.elapsed || null,
+        referee: fixture.referee || null,
+        home_team_id: String(fixture.teams?.home?.id || ''),
+        away_team_id: String(fixture.teams?.away?.id || ''),
+        home_team_name: fixture.teams?.home?.name || '',
+        away_team_name: fixture.teams?.away?.name || '',
+        home_team_logo: fixture.teams?.home?.logo || null,
+        away_team_logo: fixture.teams?.away?.logo || null,
+        home_goals: null,
+        away_goals: null,
         league_id: String(league?.id || ''),
         league_name: league?.name || '',
         league_logo: league?.logo || null,
         api_league_id: league?.id || 0,
         country_name: league?.country || null,
-        venue_name: f.venue?.name || null,
-        venue_city: f.venue?.city || null,
-        // Store basic 1x2 odds directly on the fixture doc for fast home page display
-        home_odds: homeOdds['Home'] || homeOdds['1'] || null,
-        draw_odds: homeOdds['Draw'] || homeOdds['X'] || null,
-        away_odds: homeOdds['Away'] || homeOdds['2'] || null,
+        venue_name: fixture.venue?.name || null,
+        venue_city: fixture.venue?.city || null,
+        home_odds: homeOdd,
+        draw_odds: drawOdd,
+        away_odds: awayOdd,
         bookmakers_count: bookmakers.length,
         has_odds: true,
         updated_at: new Date().toISOString(),
@@ -112,8 +93,9 @@ export async function POST(req: Request) {
       fixturesStored++;
     }
 
-    // ONE commit for all fixtures — very fast
-    await batch.commit();
+    if (fixturesStored > 0) {
+      await batch.commit();
+    }
 
     console.log(`[sync] Stored ${fixturesStored} fixtures.`);
     return NextResponse.json({ ok: true, fixturesStored });

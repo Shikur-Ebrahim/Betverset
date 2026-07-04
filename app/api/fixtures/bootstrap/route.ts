@@ -20,27 +20,18 @@ export async function GET(req: Request) {
     const fixtures = fixturesSnapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     const fixtureIds = fixtures.map((f: any) => String(f.id));
 
-    // 2. Fetch odds
+    // 2. Build odds from embedded fields if available (fast path - zero DB reads for odds)
     const odds: Record<string, any[]> = {};
-    if (fixtureIds.length > 0) {
-      const chunks: string[][] = [];
-      for (let i = 0; i < fixtureIds.length; i += 10) {
-        chunks.push(fixtureIds.slice(i, i + 10));
+    fixtures.forEach((f: any) => {
+      if (f.home_odds || f.draw_odds || f.away_odds) {
+        const fid = String(f.id);
+        odds[fid] = [
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Home', odd_value: f.home_odds || null },
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Draw', odd_value: f.draw_odds || null },
+          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Away', odd_value: f.away_odds || null },
+        ].filter(o => o.odd_value !== null);
       }
-
-      await Promise.all(chunks.map(async (chunk) => {
-        const oddsSnapshot = await db.collection('odds')
-          .where('fixture_id', 'in', chunk)
-          .get();
-          
-        oddsSnapshot.docs.forEach((doc: any) => {
-          const oddData = doc.data();
-          const fid = String(oddData.fixture_id);
-          if (!odds[fid]) odds[fid] = [];
-          odds[fid].push({ id: doc.id, ...oddData });
-        });
-      }));
-    }
+    });
 
     // 3. Top Leagues
     const leaguesSnapshot = await db.collection('leagues')

@@ -23,6 +23,12 @@ export async function POST(req: Request) {
 
     const data = await res.json();
     if (!res.ok) {
+      if (data.error?.message === 'EMAIL_NOT_FOUND') {
+        throw new Error('This phone number is not registered, please signup now');
+      }
+      if (data.error?.message === 'INVALID_PASSWORD' || data.error?.message === 'INVALID_LOGIN_CREDENTIALS') {
+        throw new Error('Incorrect pin please enter correct password');
+      }
       throw new Error(data.error?.message || 'Login failed');
     }
 

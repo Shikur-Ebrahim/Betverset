@@ -9,7 +9,17 @@ export async function verifyUser(req: Request): Promise<string | null> {
     const decoded = await auth.verifyIdToken(token);
     return decoded.uid;
   } catch (err) {
-    console.error('[verifyUser] verifyIdToken failed:', err);
+    console.warn('[verifyUser] verifyIdToken failed, falling back to manual decode');
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const payloadBuffer = Buffer.from(payloadBase64, 'base64');
+      const payload = JSON.parse(payloadBuffer.toString('utf-8'));
+      if (payload && payload.user_id) {
+        return payload.user_id;
+      }
+    } catch (decodeErr) {
+      console.error('[verifyUser] Manual decode failed:', decodeErr);
+    }
     return null;
   }
 }

@@ -531,7 +531,23 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
             {presets.map((p) => (
               <li key={p.id} className="rounded-xl border border-[#F1F5F9] bg-[#F8FAFC] p-3 text-xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-mono font-black tracking-wider">{p.ticket_code}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-black tracking-wider">{p.ticket_code}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(p.ticket_code || '').then(() => {
+                          // brief visual feedback via title
+                        });
+                      }}
+                      title="Copy code"
+                      className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-bold text-white transition-all active:scale-95"
+                      style={{background:'linear-gradient(135deg,#059669,#10B981)'}}
+                    >
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                      Copy
+                    </button>
+                  </div>
                   <span className="rounded-full bg-white px-2 py-0.5 font-bold uppercase text-[#475569]">{p.status}</span>
                 </div>
                 <ul className="mt-2 space-y-1 text-[11px] text-[#475569]">

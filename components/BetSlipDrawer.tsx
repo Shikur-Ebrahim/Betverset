@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, type TicketByCodeSelection } from '../lib/api';
@@ -57,10 +57,10 @@ function stripTicketInputPrefixes(raw: string): string {
   return raw.trim().replace(/^#/i, '').replace(/^code:\s*/i, '').trim();
 }
 
-/** Backend format: T + two digits + two letters + two digits (7 chars). */
+/** Backend format: B + two digits + two letters + two digits (7 chars). */
 function looksLikeCompleteTicketCode(raw: string): boolean {
   const n = stripTicketInputPrefixes(raw).toUpperCase();
-  return /^T\d{2}[A-Z]{2}\d{2}$/.test(n);
+  return /^[BT]\d{2}[A-Z]{2}\d{2}$/.test(n);
 }
 
 export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDrawerProps) {
@@ -349,18 +349,18 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
       {isOpen && (
         <div className="fixed inset-0 z-[220]">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up"
-            style={{background:'#F5F9FF', border:'1px solid rgba(0,0,0,0.08)', borderBottom:'none'}}>
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-[28px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-slide-up"
+            style={{background:'linear-gradient(180deg,#F0FDF4 0%,#FFFFFF 100%)', border:'1.5px solid rgba(16,185,129,0.15)', borderBottom:'none'}}>
 
             {/* Header */}
             <div className="shrink-0" style={{borderBottom:'1px solid rgba(0,0,0,0.08)'}}>
-              <div className="flex items-center gap-2 px-4 py-3">
-                <div className="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-white font-black text-[10px]" style={{background:'#2563EB'}}>
+              <div className="flex items-center gap-2 px-4 py-3.5">
+                <div className="w-8 h-8 shrink-0 rounded-xl flex items-center justify-center text-white font-black text-[11px]" style={{background:'linear-gradient(135deg,#059669,#10B981)'}}>
                   BS
                 </div>
-                <span className="shrink-0 font-black text-[#111827] text-sm tracking-tight">Betslip</span>
+                <span className="shrink-0 font-black text-[#064E3B] text-[15px] tracking-tight">Betslip</span>
                 {items.length > 0 && (
-                  <span className="shrink-0 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{background:'#2563EB'}}>
+                  <span className="shrink-0 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full" style={{background:'#059669'}}>
                     {items.length}
                   </span>
                 )}
@@ -373,14 +373,14 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                     autoCapitalize="characters"
                     autoCorrect="off"
                     spellCheck={false}
-                    placeholder="Ticket code..."
-                    className="w-full rounded-lg py-1.5 pl-2.5 pr-8 text-[11px] font-mono font-bold text-[#111827] outline-none"
-                    style={{background:'rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.08)'}}
-                    onFocus={(e) => { e.target.style.borderColor = '#2563EB'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,0,0,0.08)'; }}
+                    placeholder="Enter ticket code..."
+                    className="w-full rounded-xl py-2 pl-3 pr-8 text-[11px] font-mono font-bold text-[#064E3B] outline-none"
+                    style={{background:'rgba(5,150,105,0.08)', border:'1.5px solid rgba(5,150,105,0.2)'}}
+                    onFocus={(e) => { e.target.style.borderColor = '#059669'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(5,150,105,0.2)'; }}
                   />
                   {ticketLoadLoading && (
-                    <span className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-2 border-[rgba(255,255,255,0.15)] border-t-[#2563EB]" />
+                    <span className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin rounded-full border-2 border-[rgba(5,150,105,0.15)] border-t-[#059669]" />
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -437,36 +437,57 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
               ) : (
                 items.map((bet) => (
                   <div key={bet.id}
-                    className="group relative flex flex-col gap-2 overflow-hidden rounded-xl p-3 transition-all"
-                    style={{background:'#18181B', border:'1px solid rgba(0,0,0,0.06)'}}>
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="flex min-w-0 flex-1 flex-col gap-1">
-                        <p className="text-[9px] font-bold tracking-tight text-[#6B7280] uppercase">{bet.league}</p>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            {bet.homeLogo ? <img src={bet.homeLogo} alt="" className="h-4 w-4 object-contain" /> : <div className="h-4 w-4 rounded-full bg-[#E6EEFF]" />}
-                            <span className="truncate text-[12px] font-bold text-[#111827]">{bet.homeTeam}</span>
+                    className="group relative overflow-hidden rounded-2xl transition-all"
+                    style={{background:'#FFFFFF', border:'1.5px solid rgba(5,150,105,0.12)', boxShadow:'0 2px 12px rgba(5,150,105,0.07)'}}>
+                    {/* Colored top bar */}
+                    <div className="h-1 w-full" style={{background:'linear-gradient(90deg,#059669,#10B981)'}} />
+                    <div className="p-3">
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="flex min-w-0 flex-1 flex-col gap-2">
+                          <p className="text-[9px] font-black tracking-widest text-[#059669] uppercase truncate">{bet.league}</p>
+                          {/* Home team row */}
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden" style={{background:'rgba(5,150,105,0.06)', border:'1px solid rgba(5,150,105,0.12)'}}>
+                              {bet.homeLogo
+                                ? <img src={bet.homeLogo} alt="" className="h-6 w-6 object-contain" />
+                                : <svg viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.5" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                              }
+                            </div>
+                            <span className="truncate text-[13px] font-black text-[#0F172A]">{bet.homeTeam}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {bet.awayLogo ? <img src={bet.awayLogo} alt="" className="h-4 w-4 object-contain" /> : <div className="h-4 w-4 rounded-full bg-[#E6EEFF]" />}
-                            <span className="truncate text-[12px] font-bold text-[#111827]">{bet.awayTeam}</span>
+                          {/* VS divider */}
+                          <div className="ml-10 flex items-center gap-2">
+                            <div className="h-px flex-1" style={{background:'rgba(5,150,105,0.15)'}} />
+                            <span className="text-[8px] font-black text-[#059669] tracking-widest">VS</span>
+                            <div className="h-px flex-1" style={{background:'rgba(5,150,105,0.15)'}} />
+                          </div>
+                          {/* Away team row */}
+                          <div className="flex items-center gap-2.5">
+                            <div className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden" style={{background:'rgba(5,150,105,0.06)', border:'1px solid rgba(5,150,105,0.12)'}}>
+                              {bet.awayLogo
+                                ? <img src={bet.awayLogo} alt="" className="h-6 w-6 object-contain" />
+                                : <svg viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="1.5" className="h-4 w-4"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                              }
+                            </div>
+                            <span className="truncate text-[13px] font-black text-[#0F172A]">{bet.awayTeam}</span>
+                          </div>
+                          {/* Selection badge */}
+                          <div className="mt-1 inline-flex items-center gap-1.5 rounded-lg px-2 py-1" style={{background:'rgba(5,150,105,0.08)'}}>
+                            <span className="text-[9px] font-bold text-[#059669]">{bet.market}:</span>
+                            <span className="text-[10px] font-black text-[#059669]">{bet.selection}</span>
                           </div>
                         </div>
-                        <div className="mt-1 flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-[#6B7280]">{bet.market}:</span>
-                          <span className="text-[9px] font-black text-[#2563EB]">{bet.selection}</span>
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                          <div className="min-w-[50px] rounded-xl px-2.5 py-1.5 text-center text-[15px] font-black text-white"
+                            style={{background:'linear-gradient(135deg,#059669,#10B981)', boxShadow:'0 2px 8px rgba(5,150,105,0.3)'}}>
+                            {bet.odds.toFixed(2)}
+                          </div>
+                          <button onClick={() => handleRemoveBet(bet.id)} className="flex h-7 w-7 items-center justify-center rounded-full text-[#CBD5E1] hover:text-[#EF4444] hover:bg-red-50 transition-all">
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </button>
                         </div>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-2">
-                        <div className="min-w-[44px] rounded-lg px-2 py-1 text-center text-[13px] font-black text-[#2563EB]"
-                          style={{background:'rgba(37,99,235,0.10)', border:'1px solid rgba(37,99,235,0.2)'}}>
-                          {bet.odds.toFixed(2)}
-                        </div>
-                        <button onClick={() => handleRemoveBet(bet.id)} className="flex h-7 w-7 items-center justify-center text-[#3F3F46] hover:text-[#EF4444] transition-colors">
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                          </svg>
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -476,10 +497,10 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
 
             {/* Footer */}
             {items.length > 0 && !success && (
-              <div className="shrink-0 space-y-3 p-4" style={{borderTop:'1px solid rgba(0,0,0,0.08)', background:'#0D0D10'}}>
+              <div className="shrink-0 space-y-3 p-4" style={{borderTop:'1.5px solid rgba(5,150,105,0.12)', background:'#FFFFFF'}}>
                 {ticketImportBlocked && ticketBlockedMessage && (
-                  <div className="rounded-xl px-3 py-2.5 text-center text-[10px] font-bold leading-snug text-[#FACC15]"
-                    style={{background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.2)'}}>
+                  <div className="rounded-2xl px-3 py-2.5 text-center text-[10px] font-bold leading-snug text-[#B45309]"
+                    style={{background:'rgba(245,158,11,0.08)', border:'1.5px solid rgba(245,158,11,0.2)'}}>
                     {ticketBlockedMessage}
                   </div>
                 )}
@@ -489,14 +510,14 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                   </p>
                 )}
                 {hasSession && walletBalance !== null && (
-                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5" style={{background:'rgba(0,0,0,0.04)', border:'1px solid rgba(0,0,0,0.06)'}}>
-                    <span className="text-[10px] font-bold text-[#6B7280]">Available balance</span>
-                    <span className="text-[13px] font-black tabular-nums text-[#111827]">{walletBalance.toFixed(2)} <span className="text-[#2563EB]">{walletCurrency}</span></span>
+                  <div className="flex items-center justify-between rounded-2xl px-3 py-2.5" style={{background:'rgba(5,150,105,0.06)', border:'1.5px solid rgba(5,150,105,0.12)'}}>
+                    <span className="text-[10px] font-bold text-[#059669]">Available balance</span>
+                    <span className="text-[13px] font-black tabular-nums text-[#064E3B]">{walletBalance.toFixed(2)} <span className="text-[#059669]">{walletCurrency}</span></span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold text-[#6B7280]">Total odds</span>
-                  <span className="text-[20px] font-black tabular-nums text-[#111827]">{totalOdds.toFixed(2)}</span>
+                  <span className="text-[22px] font-black tabular-nums text-[#059669]">{totalOdds.toFixed(2)}</span>
                 </div>
                 <div className="relative">
                   <input
@@ -505,37 +526,37 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                     placeholder="Enter stake..."
                     value={stake}
                     onChange={(e) => setStake(e.target.value)}
-                    className="w-full rounded-xl py-3.5 pl-4 pr-14 text-sm font-black text-[#111827] outline-none transition-all"
-                    style={{background:'rgba(0,0,0,0.06)', border:'1px solid rgba(0,0,0,0.1)'}}
-                    onFocus={(e) => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = 'rgba(0,0,0,0.1)'; e.target.style.boxShadow = 'none'; }}
+                    className="w-full rounded-2xl py-3.5 pl-4 pr-14 text-sm font-black text-[#0F172A] outline-none transition-all"
+                    style={{background:'rgba(5,150,105,0.05)', border:'1.5px solid rgba(5,150,105,0.2)'}}
+                    onFocus={(e) => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(5,150,105,0.2)'; e.target.style.boxShadow = 'none'; }}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#6B7280]">{walletCurrency}</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-[#059669]">{walletCurrency}</span>
                 </div>
                 {potentialWin && (
-                  <div className="flex items-center justify-between rounded-xl px-3 py-2.5"
-                    style={{background:'rgba(37,99,235,0.06)', border:'1px solid rgba(37,99,235,0.15)'}}>
-                    <span className="text-[11px] font-bold text-[#2563EB]">Potential win</span>
-                    <span className="text-[16px] font-black tabular-nums text-[#2563EB]">{potentialWin} {walletCurrency}</span>
+                  <div className="flex items-center justify-between rounded-2xl px-3 py-2.5"
+                    style={{background:'linear-gradient(135deg,rgba(5,150,105,0.08),rgba(16,185,129,0.06))', border:'1.5px solid rgba(5,150,105,0.2)'}}>
+                    <span className="text-[11px] font-bold text-[#059669]">🏆 Potential win</span>
+                    <span className="text-[18px] font-black tabular-nums text-[#059669]">{potentialWin} {walletCurrency}</span>
                   </div>
                 )}
                 {insufficientFunds && (
-                  <div className="rounded-xl p-2.5 text-center text-[10px] font-bold text-[#FACC15]"
-                    style={{background:'rgba(250,204,21,0.08)', border:'1px solid rgba(250,204,21,0.2)'}}>
+                  <div className="rounded-2xl p-2.5 text-center text-[10px] font-bold text-[#B45309]"
+                    style={{background:'rgba(245,158,11,0.08)', border:'1.5px solid rgba(245,158,11,0.2)'}}>
                     Stake exceeds balance. Add funds or lower stake.
                   </div>
                 )}
                 {error && (
-                  <div className="rounded-xl p-3 text-center text-[10px] font-black text-[#EF4444]"
-                    style={{background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.2)'}}>
+                  <div className="rounded-2xl p-3 text-center text-[10px] font-black text-[#EF4444]"
+                    style={{background:'rgba(239,68,68,0.06)', border:'1.5px solid rgba(239,68,68,0.15)'}}>
                     {error}
                   </div>
                 )}
                 <button
                   onClick={() => void handlePlaceBet()}
                   disabled={placeDisabled}
-                  className="w-full rounded-xl py-4 text-[14px] font-black transition-all active:scale-95"
-                  style={placeDisabled ? {background:'#E6EEFF', color:'#9CA3AF', cursor:'not-allowed'} : {background:'#2563EB', color:'#FFFFFF', boxShadow:'0 0 24px rgba(37,99,235,0.35)'}}
+                  className="w-full rounded-2xl py-4 text-[14px] font-black transition-all active:scale-95"
+                  style={placeDisabled ? {background:'rgba(5,150,105,0.1)', color:'#9CA3AF', cursor:'not-allowed'} : {background:'linear-gradient(135deg,#059669,#10B981)', color:'#FFFFFF', boxShadow:'0 4px 20px rgba(5,150,105,0.4)'}}
                 >
                   {loading ? 'Processing...' : insufficientFunds ? 'Insufficient balance' : `Place Bet — ${items.length} selection${items.length === 1 ? '' : 's'}`}
                 </button>

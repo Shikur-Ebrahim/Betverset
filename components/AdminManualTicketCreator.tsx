@@ -217,16 +217,17 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
     setSubmitError(null);
     setSubmitting(true);
     try {
-      const payload = matches.map((m) => {
-        if (!m.home_team_id || !m.away_team_id) throw new Error('Pick home and away club for each match');
+      const payload = matches.map((m, idx) => {
+        if (!m.home_team_id || !m.away_team_id) throw new Error(`Match ${idx + 1}: Pick both home and away clubs`);
         const hid = String(m.home_team_id);
         const aid = String(m.away_team_id);
+        if (hid === aid) throw new Error(`Match ${idx + 1}: Home and Away clubs cannot be the same team!`);
         const odd = parseFloat(m.odd);
-        if (!Number.isFinite(odd) || odd < 1.01) throw new Error('Invalid odds');
+        if (!Number.isFinite(odd) || odd < 1.01) throw new Error(`Match ${idx + 1}: Invalid odds`);
         const kick = new Date(m.kickoff);
         const end = new Date(m.end);
-        if (Number.isNaN(kick.getTime()) || Number.isNaN(end.getTime())) throw new Error('Invalid times');
-        if (end <= kick) throw new Error('End time must be after kickoff');
+        if (Number.isNaN(kick.getTime()) || Number.isNaN(end.getTime())) throw new Error(`Match ${idx + 1}: Invalid times`);
+        if (end <= kick) throw new Error(`Match ${idx + 1}: End time must be after kickoff`);
         const homeClub = clubs.find(c => String(c.id) === hid);
         const awayClub = clubs.find(c => String(c.id) === aid);
         

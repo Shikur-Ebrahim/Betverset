@@ -242,18 +242,21 @@ export async function settleFinishedBets() {
     const selections: any[] = slip.selections || [];
 
     let allResolved = true;
-    let allWon = true;
     let anyLost = false;
+    let updatedManual = false;
 
     for (const s of selections) {
       if (s.is_manual || s.manual_end_at) {
         // Manual match: check if end time has passed
-        const ended = new Date(s.manual_end_at).getTime() <= Date.now();
-        if (!ended) {
-          allResolved = false;
-        } else {
-          // If ended, it's an automatic win
-          s.result = 'won';
+        if (s.result !== 'won' && s.result !== 'lost') {
+          const ended = new Date(s.manual_end_at).getTime() <= Date.now();
+          if (!ended) {
+            allResolved = false;
+          } else {
+            // If ended, it's an automatic win
+            s.result = 'won';
+            updatedManual = true;
+          }
         }
       } else {
         // Real match
@@ -262,10 +265,8 @@ export async function settleFinishedBets() {
         } else if (s.result === 'won') {
           // already resolved
         } else if (finishedFixtureIds.has(String(s.fixture_id))) {
-          // It's finished, but we don't have the real result here?
-          // Wait, the real result logic seems missing here! Let's keep it as is.
           if (s.result !== 'won' && s.result !== 'lost') {
-            allResolved = false; // We need actual result logic for real matches
+            allResolved = false; 
           }
         } else {
           allResolved = false;
@@ -273,22 +274,26 @@ export async function settleFinishedBets() {
       }
     }
 
-    if (!allResolved) continue;
-
-    const newStatus = anyLost ? 'lost' : 'won';
-
-    if (newStatus !== 'pending' || selections.some((s: any) => s.result === 'won')) {
-      await db.runTransaction(async (tx: any) => {
-        tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
-        if (newStatus === 'won') {
-          const userRef = db.collection('users').doc(String(slip.user_id));
-          const userDoc = await tx.get(userRef);
-          const currentBalance = Number(userDoc.data()?.balance) || 0;
-          tx.update(userRef, { balance: currentBalance + Number(slip.possible_win) });
-        }
-      });
-      settled++;
+    if (!allResolved) {
+      // Save partial progress if any manual legs were just marked won
+      if (updatedManual) {
+        await slipDoc.ref.update({ selections, updated_at: new Date().toISOString() });
+      }
+      continue;
     }
+
+    const newStatus: string = anyLost ? 'lost' : 'won';
+
+    await db.runTransaction(async (tx: any) => {
+      tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
+      if (newStatus === 'won') {
+        const userRef = db.collection('users').doc(String(slip.user_id));
+        const userDoc = await tx.get(userRef);
+        const currentBalance = Number(userDoc.data()?.balance) || 0;
+        tx.update(userRef, { balance: currentBalance + Number(slip.possible_win) });
+      }
+    });
+    settled++;
   }
 
   return { settled };

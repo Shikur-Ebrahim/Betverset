@@ -550,7 +550,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     setStep('selection');
                     void loadUserWithdrawalState();
                   }}
-                  className="w-full rounded-[24px] bg-[#1A202C] py-5 text-sm font-black text-[#111827] transition-all active:scale-95"
+                  className="w-full rounded-[24px] bg-green-500 py-5 text-sm font-black text-white transition-all active:scale-95"
                 >
                   Done
                 </button>

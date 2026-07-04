@@ -575,7 +575,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       <div className="min-w-0">
                         <p className="font-black text-slate-900">{h.method_name || 'Withdrawal'}</p>
                         <p className="text-[10px] font-semibold capitalize text-slate-500">
-                          {h.status} · {new Date(h.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
+                          <span className={h.status === 'approved' ? 'font-bold text-green-500' : ''}>{h.status}</span> · {new Date(h.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                         </p>
                       </div>
                       <span className="shrink-0 font-black tabular-nums text-slate-900">{h.amount} ETB</span>

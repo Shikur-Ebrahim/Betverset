@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, type AdminManualTicketRow } from '../lib/api';
 
 type Club = {
-  id: number;
+  id: string;
   name: string;
-  logo: string;
+  logo: string | null;
   league_name: string | null;
   country_code: string | null;
   country_name: string | null;
@@ -20,8 +20,8 @@ type SmallLeagueRow = {
 };
 
 type MatchDraft = {
-  home_team_id: number | '';
-  away_team_id: number | '';
+  home_team_id: string | '';
+  away_team_id: string | '';
   selection: string;
   odd: string;
   market_name: string;
@@ -168,7 +168,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
     void loadPresets();
   }, [loadPresets]);
 
-  const clubById = useMemo(() => new Map(clubs.map((c) => [c.id, c])), [clubs]);
+  const clubById = useMemo(() => new Map(clubs.map((c) => [String(c.id), c])), [clubs]);
 
   const copyCodeText = useCallback(async (text: string) => {
     const t = String(text || '')
@@ -218,23 +218,25 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
     setSubmitting(true);
     try {
       const payload = matches.map((m) => {
-        const hid = Number(m.home_team_id);
-        const aid = Number(m.away_team_id);
+        if (!m.home_team_id || !m.away_team_id) throw new Error('Pick home and away club for each match');
+        const hid = String(m.home_team_id);
+        const aid = String(m.away_team_id);
         const odd = parseFloat(m.odd);
-        if (!Number.isFinite(hid) || !Number.isFinite(aid)) throw new Error('Pick home and away club for each match');
         if (!Number.isFinite(odd) || odd < 1.01) throw new Error('Invalid odds');
         const kick = new Date(m.kickoff);
         const end = new Date(m.end);
         if (Number.isNaN(kick.getTime()) || Number.isNaN(end.getTime())) throw new Error('Invalid times');
         if (end <= kick) throw new Error('End time must be after kickoff');
-        const homeClub = clubs.find(c => c.id === hid);
-        const awayClub = clubs.find(c => c.id === aid);
+        const homeClub = clubs.find(c => String(c.id) === hid);
+        const awayClub = clubs.find(c => String(c.id) === aid);
         
         return {
           home_team_id: hid,
           away_team_id: aid,
-          home_team_name: homeClub?.name || 'Unknown Home',
-          away_team_name: awayClub?.name || 'Unknown Away',
+          home_team_name: homeClub?.name || m.home_team_id,
+          away_team_name: awayClub?.name || m.away_team_id,
+          home_team_logo: homeClub?.logo || null,
+          away_team_logo: awayClub?.logo || null,
           league_name: homeClub?.league_name || awayClub?.league_name || 'League',
           selection: m.selection.trim(),
           odd,
@@ -380,8 +382,8 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
               <label className="block text-xs font-bold text-[#475569]">
                 Home club
                 <select
-                  value={matches[i].home_team_id === '' ? '' : String(matches[i].home_team_id)}
-                  onChange={(e) => setMatch(i, { home_team_id: e.target.value ? Number(e.target.value) : '' })}
+                  value={matches[i].home_team_id}
+                  onChange={(e) => setMatch(i, { home_team_id: e.target.value })}
                   className="mt-1 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
@@ -395,8 +397,8 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
               <label className="block text-xs font-bold text-[#475569]">
                 Away club
                 <select
-                  value={matches[i].away_team_id === '' ? '' : String(matches[i].away_team_id)}
-                  onChange={(e) => setMatch(i, { away_team_id: e.target.value ? Number(e.target.value) : '' })}
+                  value={matches[i].away_team_id}
+                  onChange={(e) => setMatch(i, { away_team_id: e.target.value })}
                   className="mt-1 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
@@ -466,14 +468,18 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
               </div>
             </div>
             {matches[i].home_team_id && matches[i].away_team_id && (() => {
-              const home = clubById.get(Number(matches[i].home_team_id));
-              const away = clubById.get(Number(matches[i].away_team_id));
+              const home = clubById.get(String(matches[i].home_team_id));
+              const away = clubById.get(String(matches[i].away_team_id));
               const loc = countryLabel(home);
               return (
-                <p className="mt-2 text-[11px] text-[#64748B]">
-                  {home?.name ?? '?'} vs {away?.name ?? '?'} — {home?.league_name || 'League'}
-                  {loc ? <span className="text-[#94A3B8]"> ({loc})</span> : null}
-                </p>
+                <div className="mt-2 flex items-center gap-3">
+                  {home?.logo && <img src={home.logo} alt="" className="h-6 w-6 object-contain" />}
+                  <p className="text-[11px] text-[#64748B]">
+                    {home?.name ?? '?'} vs {away?.name ?? '?'} — {home?.league_name || 'League'}
+                    {loc ? <span className="text-[#94A3B8]"> ({loc})</span> : null}
+                  </p>
+                  {away?.logo && <img src={away.logo} alt="" className="h-6 w-6 object-contain" />}
+                </div>
               );
             })()}
           </section>

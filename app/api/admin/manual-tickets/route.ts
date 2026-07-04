@@ -33,6 +33,8 @@ type ManualMatchInput = {
   away_team_id: string;
   home_team_name?: string;
   away_team_name?: string;
+  home_team_logo?: string | null;
+  away_team_logo?: string | null;
   league_name?: string;
   selection: string;
   odd: number;
@@ -90,9 +92,11 @@ export async function POST(req: Request) {
         market_name: String(m.market_name || '1X2').trim() || '1X2',
         home_team: String(m.home_team_name || 'Home'),
         away_team: String(m.away_team_name || 'Away'),
+        home_logo: m.home_team_logo || null,
+        away_logo: m.away_team_logo || null,
         home_team_id: String(m.home_team_id),
         away_team_id: String(m.away_team_id),
-        league: leagueLabel,
+        league_name: leagueLabel,
         is_manual: true,
         status: 'pending',
         manual_kickoff_at: kick.toISOString(),

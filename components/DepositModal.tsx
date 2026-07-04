@@ -302,7 +302,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                     <div className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                       Name: {selectedMethod?.account_name}
                     </div>
-                    <div className="truncate text-lg font-black tracking-tighter text-white">
+                    <div className="truncate text-lg font-black tracking-tighter text-gray-900">
                       {selectedMethod?.account_details}
                     </div>
                   </div>

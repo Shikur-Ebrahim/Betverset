@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '../lib/api';
@@ -109,14 +109,15 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
     setEligibilityLoaded(false);
     setHistoryLoading(true);
     try {
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       const [pendRes, histRes, eligRes] = await Promise.all([
-        fetch(`${API_BASE}/user/pending-withdrawal`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/user/withdrawal-history`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_BASE}/user/withdrawal-eligibility`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/user/pending-withdrawal`, { headers }),
+        fetch(`${API_BASE}/user/withdrawal-history`, { headers }),
+        fetch(`${API_BASE}/user/withdrawal-eligibility`, { headers }),
       ]);
       const pendData = pendRes.ok ? await pendRes.json().catch(() => ({})) : {};
       const histData = histRes.ok ? await histRes.json().catch(() => []) : [];
-      const eligData = eligRes.ok ? await eligRes.json().catch(() => ({})) : {};
+      const eligData = await eligRes.json().catch(() => ({}));
       if (userStateGenRef.current !== gen) return;
 
       const pending = Boolean(pendData?.hasPending);
@@ -125,7 +126,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
       const td = Number((eligData as { totalDeposits?: number }).totalDeposits);
       const mr = Number((eligData as { minRequired?: number }).minRequired);
       setTotalDeposits(Number.isFinite(td) ? td : 0);
-      setMinDepositRequired(Number.isFinite(mr) ? mr : 6665);
+      setMinDepositRequired(Number.isFinite(mr) && mr > 0 ? mr : 200);
       const wt = Number((eligData as { withdrawnToday?: number }).withdrawnToday);
       const rt = Number((eligData as { remainingToday?: number }).remainingToday);
       setWithdrawnToday(Number.isFinite(wt) ? wt : 0);
@@ -415,7 +416,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   )}
                 </div>
 
-                {eligibilityLoaded && !depositEligible && (
+                {eligibilityLoaded && !depositEligible && amount && Number(amount) > 0 && (user?.balance ?? 0) > 0 && (
                   <WithdrawalDepositRuleBanner
                     minDepositRequired={minDepositRequired}
                     totalDeposits={totalDeposits}

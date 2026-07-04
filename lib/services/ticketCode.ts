@@ -10,7 +10,7 @@ function randomLetter(): string {
 
 function buildTicketCode(): string {
   return (
-    'T' +
+    'B' +
     randomDigit() +
     randomDigit() +
     randomLetter() +

@@ -15,11 +15,12 @@ export async function GET(req: Request) {
   try {
     const snapshot = await db.collection('bet_slips')
       .where('is_manual_preset', '==', true)
-      .orderBy('created_at', 'desc')
       .limit(100)
       .get();
 
-    const tickets = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+    const tickets = snapshot.docs
+      .map((doc: any) => ({ id: doc.id, ...doc.data() }))
+      .sort((a: any, b: any) => (b.created_at || '').localeCompare(a.created_at || ''));
     return NextResponse.json(tickets);
   } catch (err: any) {
     console.error('manual-tickets list:', err);

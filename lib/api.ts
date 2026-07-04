@@ -605,8 +605,13 @@ export const api = {
 
   createAdminManualTicket: async (
     matches: Array<{
-      home_team_id: number;
-      away_team_id: number;
+      home_team_id: string;
+      away_team_id: string;
+      home_team_name?: string;
+      away_team_name?: string;
+      home_team_logo?: string | null;
+      away_team_logo?: string | null;
+      league_name?: string;
       selection: string;
       odd: number;
       market_name?: string;

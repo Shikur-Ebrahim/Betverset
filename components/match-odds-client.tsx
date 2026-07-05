@@ -125,43 +125,21 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
   };
 
   const displayed = useMemo(() => {
-    let entries = activeTab === 'All'
-      ? marketNames.map(n => [n, markets.get(n)!] as [string, Odd[]])
-      : [[activeTab, markets.get(activeTab) ?? []] as [string, Odd[]]];
-      
-    if (activeTab === 'All' && !showAllMarkets) {
-      entries = entries.slice(0, 4);
-    }
-    return entries;
-  }, [activeTab, marketNames, markets, showAllMarkets]);
+    return marketNames.map(n => [n, markets.get(n)!] as [string, Odd[]]);
+  }, [marketNames, markets]);
 
   const isFinished = isMatchClosedForBetting(fixture);
   const isLive = !isFinished && ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes((fixture.status || '').toUpperCase());
 
   return (
     <>
-      {/* Sticky tab bar */}
-      <div className="sticky top-14 z-30 bg-[#0D1117] shadow-lg">
-        {isLive && (
-          <p className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#16A34A] border-b border-[#16A34A]/20">
+      {isLive && (
+        <div className="bg-[#0D1117] sticky top-14 z-30 shadow-md">
+          <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#16A34A] border-b border-[#16A34A]/20">
             ● Live odds update ~30s
           </p>
-        )}
-        <div className="relative px-2 py-2">
-          <button onClick={() => scrollBy('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1C2128] border border-[#30363D] flex items-center justify-center text-white shadow-md">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
-          </button>
-          <div ref={scrollRef} className="flex overflow-x-auto hide-scrollbar gap-2 px-8">
-            <TabBtn label="All" active={activeTab === 'All'} onClick={() => { setActiveTab('All'); setShowAllMarkets(false); }} />
-            {marketNames.map(name => (
-              <TabBtn key={name} label={name} active={activeTab === name} onClick={() => setActiveTab(name)} />
-            ))}
-          </div>
-          <button onClick={() => scrollBy('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1C2128] border border-[#30363D] flex items-center justify-center text-white shadow-md">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Odds body */}
       <div className="px-3 pb-8 space-y-3 mt-2">
@@ -249,19 +227,6 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
             </div>
           );
         })}
-
-        {/* View More Markets Button */}
-        {activeTab === 'All' && !showAllMarkets && marketNames.length > 4 && (
-          <div className="flex justify-center mt-6 mb-4">
-            <button
-              onClick={() => setShowAllMarkets(true)}
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-[13px] text-white font-bold py-3.5 px-8 rounded-[12px] shadow-lg shadow-[#2563EB]/20 border border-[#1D4ED8] transition-all transform active:scale-95 flex items-center gap-2"
-            >
-              <span>View {marketNames.length - 4} Additional Markets</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-          </div>
-        )}
 
         {/* Loading skeleton */}
         {markets.size === 0 && oddsLoading && (

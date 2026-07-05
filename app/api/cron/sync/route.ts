@@ -102,7 +102,8 @@ export async function POST(req: Request) {
               if (v.value === 'Draw' && (!drawOdd || odd > drawOdd)) drawOdd = odd;
               if (v.value === 'Away' && (!awayOdd || odd > awayOdd)) awayOdd = odd;
             }
-            const key = `${bet.id}_${v.value}`.replace(/\s+/g, '_');
+            // Sanitize key (replace spaces with _, and / with -)
+            const key = `${bet.id}_${v.value}`.replace(/\s+/g, '_').replace(/\//g, '-');
             const existing = bestMap.get(key);
             if (!existing || odd > existing.odd) {
               bestMap.set(key, {

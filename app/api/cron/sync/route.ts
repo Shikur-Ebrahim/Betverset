@@ -17,28 +17,41 @@ export async function POST(req: Request) {
   }
 
   try {
-    const today = new Date().toISOString().split('T')[0];
-    console.log(`[sync] Starting sync for ${today}`);
+    const now = new Date();
+    const d1 = now.toISOString().split('T')[0];
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const d2 = tomorrow.toISOString().split('T')[0];
 
-    // Fetch the next 50 upcoming fixtures so there are always matches available
-    const fixturesPage = await apiFetch('/fixtures', { next: 50 });
+    console.log(`[sync] Starting multi-day sync for ${d1} and ${d2}`);
+
+    // Fetch the next 100 upcoming fixtures
+    const fixturesPage = await apiFetch('/fixtures', { next: 100 });
     
-    // Attempt to fetch real odds (may fail on Free API-Football plan)
-    let oddsPage: any[] = [];
+    // Fetch multiple pages of real odds across today and tomorrow using PRO limits
+    let allOdds: any[] = [];
     let isMockOdds = false;
+    
     try {
-      oddsPage = await apiFetch('/odds', { date: today, page: 1, bet: 1 });
+      for (const date of [d1, d2]) {
+        for (let page = 1; page <= 5; page++) {
+          const oddsPage = await apiFetch('/odds', { date, page, bet: 1 });
+          if (!oddsPage || oddsPage.length === 0) break;
+          allOdds.push(...oddsPage);
+          if (oddsPage.length < 10) break; // Reached end of pagination
+        }
+      }
     } catch (err: any) {
       console.log(`[sync] Could not fetch real odds (${err.message}). Falling back to mock odds.`);
       isMockOdds = true;
     }
 
-    if (!oddsPage || oddsPage.length === 0) {
+    if (!allOdds || allOdds.length === 0) {
       console.log('[sync] No real odds available. Using mock odds.');
       isMockOdds = true;
     }
 
-    console.log(`[sync] Got ${fixturesPage.length} fixtures.`);
+    console.log(`[sync] Got ${fixturesPage.length} fixtures and ${allOdds.length} odds.`);
 
     const batch = db.batch();
     let fixturesStored = 0;
@@ -56,7 +69,7 @@ export async function POST(req: Request) {
 
     // 1. Process real odds if available
     if (!isMockOdds) {
-      for (const item of oddsPage) {
+      for (const item of allOdds) {
         const fixture = item?.fixture;
         const league = item?.league;
         const bookmakers: any[] = item?.bookmakers ?? [];
@@ -120,9 +133,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Pad with mock odds up to 50 fixtures to ensure the app always has matches to display
+    // 2. Pad with mock odds up to 100 fixtures to ensure the app always has matches to display
     for (const item of fixturesPage) {
-      if (fixturesStored >= 50) break;
+      if (fixturesStored >= 100) break;
       
       const f = item?.fixture;
       const teams = item?.teams;

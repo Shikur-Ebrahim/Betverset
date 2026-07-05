@@ -302,8 +302,8 @@ export async function settleFinishedBets() {
 
     try {
       await db.runTransaction(async (tx: any) => {
-        let userDoc = null;
-        let userRef = null;
+        let userDoc: any = null;
+        let userRef: any = null;
 
         if (newStatus === 'won' && slip.user_id) {
           userRef = db.collection('users').doc(String(slip.user_id));

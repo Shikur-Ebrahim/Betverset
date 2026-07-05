@@ -4,6 +4,10 @@ import { apiFetch } from '@/lib/services/apiFootball';
 
 const CRON_SECRET = process.env.CRON_SECRET || '';
 
+// All bet markets are saved — no filter (saves every market the API returns)
+// Cap total odds docs to 3000 to prevent Vercel timeout
+const MAX_ODDS_DOCS = 3000;
+
 function isAuthorized(req: Request): boolean {
   const auth = req.headers.get('authorization');
   if (CRON_SECRET && auth === `Bearer ${CRON_SECRET}`) return true;
@@ -14,16 +18,15 @@ function isAuthorized(req: Request): boolean {
 const mockOdd = (min: number, max: number) =>
   Number((Math.random() * (max - min) + min).toFixed(2));
 
-/** Commit a list of {ref, data, merge} docs in batches of 400 */
-async function commitDocs(docs: Array<{ ref: any; data: any; merge?: boolean }>) {
-  const BATCH_SIZE = 400;
-  for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-    const slice = docs.slice(i, i + BATCH_SIZE);
-    const batch = db.batch();
-    for (const { ref, data, merge } of slice) {
-      batch.set(ref, data, merge ? { merge: true } : {});
+/** Commit an array of {ref, data} in Firestore batches of 400 */
+async function batchWrite(docs: Array<{ ref: any; data: any }>) {
+  const SIZE = 400;
+  for (let i = 0; i < docs.length; i += SIZE) {
+    const b = db.batch();
+    for (const { ref, data } of docs.slice(i, i + SIZE)) {
+      b.set(ref, data, { merge: true });
     }
-    await batch.commit();
+    await b.commit();
   }
 }
 
@@ -39,181 +42,155 @@ export async function POST(req: Request) {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const d2 = tomorrow.toISOString().split('T')[0];
 
-    console.log(`[sync] Starting multi-day sync for ${d1} and ${d2}`);
+    console.log(`[sync] Starting for ${d1} / ${d2}`);
 
-    // 1. Fetch fixtures for today + tomorrow in parallel (2 API calls)
-    const [fixturesDay1, fixturesDay2] = await Promise.all([
+    // Fetch today + tomorrow fixtures AND today + tomorrow odds in parallel (4 API calls)
+    const [fixturesDay1, fixturesDay2, oddsDay1Raw, oddsDay2Raw] = await Promise.allSettled([
       apiFetch('/fixtures', { date: d1 }),
       apiFetch('/fixtures', { date: d2 }),
+      apiFetch('/odds', { date: d1, page: 1 }),
+      apiFetch('/odds', { date: d2, page: 1 }),
     ]);
-    const fixturesPage = [...fixturesDay1, ...fixturesDay2];
 
-    // 2. Fetch odds for today + tomorrow — page 1 only (2 API calls, fast & avoids timeout)
-    let allOdds: any[] = [];
-    let isMockOdds = false;
-    try {
-      const [oddsToday, oddsTomorrow] = await Promise.all([
-        apiFetch('/odds', { date: d1, page: 1 }),
-        apiFetch('/odds', { date: d2, page: 1 }),
-      ]);
-      allOdds = [...(oddsToday || []), ...(oddsTomorrow || [])];
-      
-    } catch (err: any) {
-      console.log(`[sync] Odds fetch failed (${err.message}). Using mock odds.`);
-      isMockOdds = true;
+    const fixturesDay1Data = fixturesDay1.status === 'fulfilled' ? fixturesDay1.value : [];
+    const fixturesDay2Data = fixturesDay2.status === 'fulfilled' ? fixturesDay2.value : [];
+    const oddsDay1 = oddsDay1Raw.status === 'fulfilled' ? (oddsDay1Raw.value ?? []) : [];
+    const oddsDay2 = oddsDay2Raw.status === 'fulfilled' ? (oddsDay2Raw.value ?? []) : [];
+
+    const allFixtures = [...fixturesDay1Data, ...fixturesDay2Data];
+    const allOdds = [...oddsDay1, ...oddsDay2];
+
+    console.log(`[sync] ${allFixtures.length} fixtures, ${allOdds.length} odds items`);
+
+    // Build fixture lookup map
+    const fixtureMap = new Map<number, any>();
+    for (const f of allFixtures) {
+      if (f?.fixture?.id) fixtureMap.set(f.fixture.id, f);
     }
 
-    if (allOdds.length === 0) {
-      console.log('[sync] No real odds — using mock odds.');
-      isMockOdds = true;
-    }
+    // Build docs arrays in memory
+    const fixtureDocs: Array<{ ref: any; data: any }> = [];
+    const oddsDocs: Array<{ ref: any; data: any }> = [];
+    const processedIds = new Set<number>();
 
-    console.log(`[sync] Got ${fixturesPage.length} fixtures, ${allOdds.length} odds items.`);
+    // Process real odds (keep best price per market+selection, key markets only)
+    for (const item of allOdds) {
+      const fid = item?.fixture?.id;
+      if (!fid) continue;
 
-    // 3. Build a lookup map: fixture ID → full fixture object
-    const fixtureInfoMap = new Map<number, any>();
-    for (const f of fixturesPage) {
-      if (f?.fixture?.id) fixtureInfoMap.set(f.fixture.id, f);
-    }
+      const bookmakers: any[] = item?.bookmakers ?? [];
+      const full = fixtureMap.get(fid);
+      const fx = full?.fixture || item?.fixture;
+      const teams = full?.teams;
+      const league = full?.league || item?.league;
 
-    // 4. Collect all docs in memory before writing — avoids sequential commits
-    const fixtureDocs: Array<{ ref: FirebaseFirestore.DocumentReference; data: any; merge: boolean }> = [];
-    const oddsDocs: Array<{ ref: FirebaseFirestore.DocumentReference; data: any; merge: boolean }> = [];
+      // Extract Match Winner for the summary card
+      let homeOdd: number | null = null, drawOdd: number | null = null, awayOdd: number | null = null;
 
-    const processedFixtureIds = new Set<number>();
-    let fixturesStored = 0;
+      // Best price map: `betId_selection` → best odd
+      const bestMap = new Map<string, { betName: string; betKey: string; selection: string; odd: number }>();
 
-    // 4a. Process real odds items
-    if (!isMockOdds) {
-      for (const item of allOdds) {
-        const fixture = item?.fixture;
-        const league = item?.league;
-        const bookmakers: any[] = item?.bookmakers ?? [];
-
-        if (!fixture?.id || bookmakers.length === 0) continue;
-
-        // Extract Match Winner (Bet ID 1) odds for the fixture summary card
-        let homeOdd: number | null = null;
-        let drawOdd: number | null = null;
-        let awayOdd: number | null = null;
-        outer: for (const bm of bookmakers) {
-          for (const bet of bm?.bets ?? []) {
-            if (bet?.id !== 1 && !bet?.name?.toLowerCase().includes('match winner')) continue;
-            for (const v of bet?.values ?? []) {
-              if (v.value === 'Home' && !homeOdd) homeOdd = parseFloat(v.odd) || null;
-              if (v.value === 'Draw' && !drawOdd) drawOdd = parseFloat(v.odd) || null;
-              if (v.value === 'Away' && !awayOdd) awayOdd = parseFloat(v.odd) || null;
+      for (const bm of bookmakers) {
+        for (const bet of bm?.bets ?? []) {
+          // Save ALL markets (no filter)
+          for (const v of bet?.values ?? []) {
+            const odd = parseFloat(v.odd) || 0;
+            if (!odd) continue;
+            // Track Match Winner for fixture summary
+            if (bet.id === 1) {
+              if (v.value === 'Home' && (!homeOdd || odd > homeOdd)) homeOdd = odd;
+              if (v.value === 'Draw' && (!drawOdd || odd > drawOdd)) drawOdd = odd;
+              if (v.value === 'Away' && (!awayOdd || odd > awayOdd)) awayOdd = odd;
             }
-            if (homeOdd && drawOdd && awayOdd) break outer;
-          }
-        }
-
-        const full = fixtureInfoMap.get(fixture.id);
-        const f = full?.fixture || fixture;
-        const teams = full?.teams;
-        const l = full?.league || league;
-
-        // Fixture summary doc
-        fixtureDocs.push({
-          ref: db.collection('fixtures').doc(String(fixture.id)),
-          data: {
-            api_fixture_id: fixture.id,
-            match_date: f.date || null,
-            status: f.status?.short || 'NS',
-            elapsed: f.status?.elapsed || null,
-            referee: f.referee || null,
-            home_team_id: String(teams?.home?.id || ''),
-            away_team_id: String(teams?.away?.id || ''),
-            home_team_name: teams?.home?.name || '',
-            away_team_name: teams?.away?.name || '',
-            home_team_logo: teams?.home?.logo || null,
-            away_team_logo: teams?.away?.logo || null,
-            home_goals: null,
-            away_goals: null,
-            league_id: String(l?.id || ''),
-            league_name: l?.name || '',
-            league_logo: l?.logo || null,
-            api_league_id: l?.id || 0,
-            country_name: l?.country || null,
-            venue_name: f.venue?.name || null,
-            venue_city: f.venue?.city || null,
-            home_odds: homeOdd,
-            draw_odds: drawOdd,
-            away_odds: awayOdd,
-            bookmakers_count: bookmakers.length,
-            has_odds: true,
-            updated_at: new Date().toISOString(),
-          },
-          merge: true,
-        });
-
-        // Collect best odds per market+selection (deduplicate across bookmakers)
-        // Key: `fixtureId_marketId_selection` → best odd value
-        const bestOddsMap = new Map<string, { marketName: string; marketKey: string; selection: string; odd: number }>();
-        for (const bm of bookmakers) {
-          if (!bm?.id) continue;
-          for (const bet of bm?.bets ?? []) {
-            for (const value of bet?.values ?? []) {
-              const odd = parseFloat(value.odd) || 0;
-              if (!odd) continue;
-              const key = `${fixture.id}_${bet.id}_${value.value}`.replace(/\s+/g, '_');
-              const existing = bestOddsMap.get(key);
-              // Keep the highest available odd (best price for user)
-              if (!existing || odd > existing.odd) {
-                bestOddsMap.set(key, {
-                  marketName: bet.name || '',
-                  marketKey: bet.name?.toLowerCase().replace(/\s+/g, '_') || '',
-                  selection: value.value || '',
-                  odd,
-                });
-              }
+            const key = `${bet.id}_${v.value}`.replace(/\s+/g, '_');
+            const existing = bestMap.get(key);
+            if (!existing || odd > existing.odd) {
+              bestMap.set(key, {
+                betName: bet.name || '',
+                betKey: (bet.name || '').toLowerCase().replace(/\s+/g, '_'),
+                selection: v.value || '',
+                odd,
+              });
             }
           }
         }
-        // Write one doc per unique market+selection
-        for (const [key, { marketName, marketKey, selection, odd }] of bestOddsMap) {
-          oddsDocs.push({
-            ref: db.collection('odds').doc(key),
-            data: {
-              fixture_id: String(fixture.id),
-              bookmaker_id: 'best',
-              bookmaker_name: 'Best Available',
-              market_id: key.split('_')[2] || '',
-              market_name: marketName,
-              market_key: marketKey,
-              selection,
-              odd_value: odd,
-              last_update: new Date().toISOString(),
-            },
-            merge: true,
-          });
-        }
-
-        processedFixtureIds.add(fixture.id);
-        fixturesStored++;
       }
-    }
-
-    // 4b. Pad with mock-odds fixtures up to 100
-    for (const item of fixturesPage) {
-      if (fixturesStored >= 100) break;
-      const f = item?.fixture;
-      const teams = item?.teams;
-      const l = item?.league;
-      if (!f?.id || processedFixtureIds.has(f.id)) continue;
-
-      const hOdd = mockOdd(1.20, 4.50);
-      const dOdd = mockOdd(2.80, 4.00);
-      const aOdd = mockOdd(1.50, 6.00);
 
       fixtureDocs.push({
-        ref: db.collection('fixtures').doc(String(f.id)),
+        ref: db.collection('fixtures').doc(String(fid)),
         data: {
-          api_fixture_id: f.id,
-          match_date: f.date || null,
-          status: f.status?.short || 'NS',
-          elapsed: f.status?.elapsed || null,
-          referee: f.referee || null,
+          api_fixture_id: fid,
+          match_date: fx?.date || null,
+          status: fx?.status?.short || 'NS',
+          elapsed: fx?.status?.elapsed || null,
+          referee: fx?.referee || null,
+          home_team_id: String(teams?.home?.id || ''),
+          away_team_id: String(teams?.away?.id || ''),
+          home_team_name: teams?.home?.name || '',
+          away_team_name: teams?.away?.name || '',
+          home_team_logo: teams?.home?.logo || null,
+          away_team_logo: teams?.away?.logo || null,
+          home_goals: null,
+          away_goals: null,
+          league_id: String(league?.id || ''),
+          league_name: league?.name || '',
+          league_logo: league?.logo || null,
+          api_league_id: league?.id || 0,
+          country_name: league?.country || null,
+          venue_name: fx?.venue?.name || null,
+          venue_city: fx?.venue?.city || null,
+          home_odds: homeOdd,
+          draw_odds: drawOdd,
+          away_odds: awayOdd,
+          bookmakers_count: bookmakers.length,
+          has_odds: true,
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      // Write one odds doc per unique market+selection (best price), cap total
+      for (const [mapKey, { betName, betKey, selection, odd }] of bestMap) {
+        if (oddsDocs.length >= MAX_ODDS_DOCS) break;
+        oddsDocs.push({
+          ref: db.collection('odds').doc(`${fid}_${mapKey}`),
+          data: {
+            fixture_id: String(fid),
+            bookmaker_id: 'best',
+            bookmaker_name: 'Best Available',
+            market_name: betName,
+            market_key: betKey,
+            selection,
+            odd_value: odd,
+            last_update: new Date().toISOString(),
+          },
+        });
+      }
+
+      processedIds.add(fid);
+    }
+
+    const realOddsCount = fixtureDocs.length;
+
+    // Pad with mock-odds fixtures so the site always shows 50+ matches
+    for (const item of allFixtures) {
+      if (fixtureDocs.length >= 80) break;
+      const fx = item?.fixture;
+      const teams = item?.teams;
+      const l = item?.league;
+      if (!fx?.id || processedIds.has(fx.id)) continue;
+
+      const h = mockOdd(1.30, 4.20);
+      const d = mockOdd(2.80, 3.90);
+      const a = mockOdd(1.40, 5.50);
+
+      fixtureDocs.push({
+        ref: db.collection('fixtures').doc(String(fx.id)),
+        data: {
+          api_fixture_id: fx.id,
+          match_date: fx?.date || null,
+          status: fx?.status?.short || 'NS',
+          elapsed: fx?.status?.elapsed || null,
+          referee: fx?.referee || null,
           home_team_id: String(teams?.home?.id || ''),
           away_team_id: String(teams?.away?.id || ''),
           home_team_name: teams?.home?.name || '',
@@ -227,50 +204,79 @@ export async function POST(req: Request) {
           league_logo: l?.logo || null,
           api_league_id: l?.id || 0,
           country_name: l?.country || null,
-          venue_name: f.venue?.name || null,
-          venue_city: f.venue?.city || null,
-          home_odds: hOdd,
-          draw_odds: dOdd,
-          away_odds: aOdd,
+          venue_name: fx?.venue?.name || null,
+          venue_city: fx?.venue?.city || null,
+          home_odds: h,
+          draw_odds: d,
+          away_odds: a,
           bookmakers_count: 1,
           has_odds: true,
           updated_at: new Date().toISOString(),
         },
-        merge: true,
       });
 
-      // Add mock Match Winner rows to the odds collection too
-      for (const [sel, oddVal] of [['Home', hOdd], ['Draw', dOdd], ['Away', aOdd]] as const) {
+      // --- Mock odds: 7 standard markets ---
+      const pushMock = (docKey: string, market_name: string, market_key: string, selection: string, odd: number) => {
         oddsDocs.push({
-          ref: db.collection('odds').doc(`${f.id}_mock_1_${sel}`),
-          data: {
-            fixture_id: String(f.id),
-            bookmaker_id: 'mock',
-            bookmaker_name: 'Mock',
-            market_id: '1',
-            market_name: 'Match Winner',
-            market_key: 'match_winner',
-            selection: sel,
-            odd_value: oddVal,
-            last_update: new Date().toISOString(),
-          },
-          merge: true,
+          ref: db.collection('odds').doc(`${fx.id}_${docKey}`),
+          data: { fixture_id: String(fx.id), bookmaker_id: 'mock', bookmaker_name: 'Mock',
+            market_name, market_key, selection, odd_value: odd, last_update: new Date().toISOString() },
         });
-      }
+      };
 
-      processedFixtureIds.add(f.id);
-      fixturesStored++;
+      // 1. Match Winner
+      pushMock('1_Home', 'Match Winner', 'match_winner', 'Home', h);
+      pushMock('1_Draw', 'Match Winner', 'match_winner', 'Draw', d);
+      pushMock('1_Away', 'Match Winner', 'match_winner', 'Away', a);
+
+      // 2. Double Chance
+      pushMock('3_1X', 'Double Chance', 'double_chance', '1X', mockOdd(1.08, 1.55));
+      pushMock('3_X2', 'Double Chance', 'double_chance', 'X2', mockOdd(1.10, 1.65));
+      pushMock('3_12', 'Double Chance', 'double_chance', '12', mockOdd(1.12, 1.60));
+
+      // 3. Goals Over/Under
+      pushMock('5_over1.5',  'Goals Over/Under', 'goals_over/under', 'Over 1.5',  mockOdd(1.10, 1.60));
+      pushMock('5_under1.5', 'Goals Over/Under', 'goals_over/under', 'Under 1.5', mockOdd(2.10, 4.50));
+      pushMock('5_over2.5',  'Goals Over/Under', 'goals_over/under', 'Over 2.5',  mockOdd(1.60, 2.80));
+      pushMock('5_under2.5', 'Goals Over/Under', 'goals_over/under', 'Under 2.5', mockOdd(1.40, 2.30));
+      pushMock('5_over3.5',  'Goals Over/Under', 'goals_over/under', 'Over 3.5',  mockOdd(2.50, 5.00));
+      pushMock('5_under3.5', 'Goals Over/Under', 'goals_over/under', 'Under 3.5', mockOdd(1.10, 1.55));
+
+      // 4. Both Teams To Score
+      pushMock('8_Yes', 'Both Teams To Score', 'both_teams_to_score', 'Yes', mockOdd(1.60, 2.20));
+      pushMock('8_No',  'Both Teams To Score', 'both_teams_to_score', 'No',  mockOdd(1.60, 2.00));
+
+      // 5. First Half Winner
+      pushMock('13_Home', 'First Half Winner', 'first_half_winner', 'Home', mockOdd(2.00, 5.00));
+      pushMock('13_Draw', 'First Half Winner', 'first_half_winner', 'Draw', mockOdd(1.50, 2.50));
+      pushMock('13_Away', 'First Half Winner', 'first_half_winner', 'Away', mockOdd(2.50, 6.00));
+
+      // 6. Asian Handicap -0.5
+      pushMock('35_home_-0.5', 'Asian Handicap', 'asian_handicap', `Home -0.5`, mockOdd(1.60, 2.80));
+      pushMock('35_away_-0.5', 'Asian Handicap', 'asian_handicap', `Away -0.5`, mockOdd(1.60, 2.80));
+
+      // 7. Home/Away (2-way, no draw)
+      pushMock('2_Home', 'Home/Away', 'home/away', 'Home', mockOdd(1.30, 2.80));
+      pushMock('2_Away', 'Home/Away', 'home/away', 'Away', mockOdd(1.40, 3.00));
+
+      processedIds.add(fx.id);
     }
 
-    // 5. Write everything in batches of 400 (no sequential per-fixture commits)
-    console.log(`[sync] Writing ${fixtureDocs.length} fixture docs and ${oddsDocs.length} odds docs...`);
-    await Promise.all([
-      commitDocs(fixtureDocs),
-      commitDocs(oddsDocs),
-    ]);
+    console.log(`[sync] Writing ${fixtureDocs.length} fixtures, ${oddsDocs.length} odds docs...`);
 
-    console.log(`[sync] Done. ${fixturesStored} fixtures stored.`);
-    return NextResponse.json({ ok: true, fixturesStored, oddsDocsWritten: oddsDocs.length });
+    // Write everything — batchWrite handles auto-chunking into 400-doc batches
+    await batchWrite(fixtureDocs);
+    await batchWrite(oddsDocs);
+
+    const fixturesStored = fixtureDocs.length;
+    console.log(`[sync] Done. ${fixturesStored} fixtures (${realOddsCount} with real odds), ${oddsDocs.length} odds docs.`);
+
+    return NextResponse.json({
+      ok: true,
+      fixturesStored,
+      withRealOdds: realOddsCount,
+      oddsDocsWritten: oddsDocs.length,
+    });
   } catch (err: any) {
     console.error('[sync] Failed:', err);
     return NextResponse.json({ error: err.message || 'Sync failed' }, { status: 500 });

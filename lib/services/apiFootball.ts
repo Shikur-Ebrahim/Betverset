@@ -120,7 +120,7 @@ export async function fetchAndStoreLeagues(leagueIds?: number[]) {
 }
 
 // Helper: store odds from already-fetched data (no extra API call)
-async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Promise<number> {
+export async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Promise<number> {
   const batch = db.batch();
   let count = 0;
   for (const item of oddsItems) {

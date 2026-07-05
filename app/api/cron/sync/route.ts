@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase-admin';
-import { apiFetch } from '@/lib/services/apiFootball';
+import { apiFetch, storeOddsFromData } from '@/lib/services/apiFootball';
 
 const CRON_SECRET = process.env.CRON_SECRET || '';
 
@@ -132,6 +132,9 @@ export async function POST(req: Request) {
           updated_at: new Date().toISOString(),
         }, { merge: true });
         
+        // Also save all available odds markers (Over/Under, Double chance, etc.) to the odds collection
+        await storeOddsFromData(fixture.id, [item]);
+
         processedFixtureIds.add(fixture.id);
         fixturesStored++;
       }

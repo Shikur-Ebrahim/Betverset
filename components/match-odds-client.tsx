@@ -82,6 +82,7 @@ type Props = { odds: Odd[]; fixture: Fixture; oddsLoading?: boolean };
 
 export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: Props) {
   const [activeTab, setActiveTab] = useState<string>('All');
+  const [showAllMarkets, setShowAllMarkets] = useState(false);
   const { addBet, isSelected } = useBetSlip();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -124,11 +125,15 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
   };
 
   const displayed = useMemo(() => {
-    const entries = activeTab === 'All'
+    let entries = activeTab === 'All'
       ? marketNames.map(n => [n, markets.get(n)!] as [string, Odd[]])
       : [[activeTab, markets.get(activeTab) ?? []] as [string, Odd[]]];
+      
+    if (activeTab === 'All' && !showAllMarkets) {
+      entries = entries.slice(0, 4);
+    }
     return entries;
-  }, [activeTab, marketNames, markets]);
+  }, [activeTab, marketNames, markets, showAllMarkets]);
 
   const isFinished = isMatchClosedForBetting(fixture);
   const isLive = !isFinished && ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes((fixture.status || '').toUpperCase());
@@ -147,7 +152,7 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
           <div ref={scrollRef} className="flex overflow-x-auto hide-scrollbar gap-2 px-8">
-            <TabBtn label="All" active={activeTab === 'All'} onClick={() => setActiveTab('All')} />
+            <TabBtn label="All" active={activeTab === 'All'} onClick={() => { setActiveTab('All'); setShowAllMarkets(false); }} />
             {marketNames.map(name => (
               <TabBtn key={name} label={name} active={activeTab === name} onClick={() => setActiveTab(name)} />
             ))}
@@ -244,6 +249,19 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
             </div>
           );
         })}
+
+        {/* View More Markets Button */}
+        {activeTab === 'All' && !showAllMarkets && marketNames.length > 4 && (
+          <div className="flex justify-center mt-6 mb-4">
+            <button
+              onClick={() => setShowAllMarkets(true)}
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-[13px] text-white font-bold py-3.5 px-8 rounded-[12px] shadow-lg shadow-[#2563EB]/20 border border-[#1D4ED8] transition-all transform active:scale-95 flex items-center gap-2"
+            >
+              <span>View {marketNames.length - 4} Additional Markets</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
+        )}
 
         {/* Loading skeleton */}
         {markets.size === 0 && oddsLoading && (

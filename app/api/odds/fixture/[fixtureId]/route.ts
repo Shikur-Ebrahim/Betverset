@@ -62,6 +62,48 @@ export async function GET(req: Request, props: { params: Promise<{ fixtureId: st
 
         pushMock('Home/Away', 'home/away', 'Home', mockOdd(1.30, 2.80));
         pushMock('Home/Away', 'home/away', 'Away', mockOdd(1.40, 3.00));
+
+        // 8. Correct Score (Popular ones)
+        pushMock('Correct Score', 'correct_score', '1:0', mockOdd(6.0, 9.0));
+        pushMock('Correct Score', 'correct_score', '2:0', mockOdd(7.0, 11.0));
+        pushMock('Correct Score', 'correct_score', '2:1', mockOdd(8.0, 10.0));
+        pushMock('Correct Score', 'correct_score', '0:0', mockOdd(8.0, 12.0));
+        pushMock('Correct Score', 'correct_score', '1:1', mockOdd(6.0, 8.0));
+        pushMock('Correct Score', 'correct_score', '0:1', mockOdd(7.0, 12.0));
+        pushMock('Correct Score', 'correct_score', '0:2', mockOdd(10.0, 15.0));
+
+        // 9. Odd/Even Goals
+        pushMock('Odd/Even Goals', 'odd_even_goals', 'Odd', mockOdd(1.85, 1.95));
+        pushMock('Odd/Even Goals', 'odd_even_goals', 'Even', mockOdd(1.85, 1.95));
+
+        // 10. Highest Scoring Half
+        pushMock('Highest Scoring Half', 'highest_scoring_half', '1st Half', mockOdd(3.0, 3.3));
+        pushMock('Highest Scoring Half', 'highest_scoring_half', '2nd Half', mockOdd(2.0, 2.2));
+        pushMock('Highest Scoring Half', 'highest_scoring_half', 'Equal', mockOdd(3.2, 3.5));
+
+        // 11. Team To Score First
+        pushMock('Team To Score First', 'team_to_score_first', 'Home', mockOdd(1.5, 2.3));
+        pushMock('Team To Score First', 'team_to_score_first', 'Away', mockOdd(1.9, 2.8));
+        pushMock('Team To Score First', 'team_to_score_first', 'No Goal', mockOdd(8.0, 12.0));
+
+        // 12. Draw No Bet
+        pushMock('Draw No Bet', 'draw_no_bet', 'Home', mockOdd(1.2, 1.8));
+        pushMock('Draw No Bet', 'draw_no_bet', 'Away', mockOdd(1.9, 3.5));
+
+        // 13. Exact Goals
+        pushMock('Exact Goals', 'exact_goals', '0', mockOdd(8.0, 12.0));
+        pushMock('Exact Goals', 'exact_goals', '1', mockOdd(4.0, 6.0));
+        pushMock('Exact Goals', 'exact_goals', '2', mockOdd(3.0, 4.5));
+        pushMock('Exact Goals', 'exact_goals', '3', mockOdd(4.0, 5.0));
+        pushMock('Exact Goals', 'exact_goals', '4+', mockOdd(5.0, 7.0));
+
+        // 14. Home Team Total Goals
+        pushMock('Home Team Total Goals', 'home_team_total_goals', 'Over 1.5', mockOdd(1.8, 2.5));
+        pushMock('Home Team Total Goals', 'home_team_total_goals', 'Under 1.5', mockOdd(1.5, 1.9));
+
+        // 15. Away Team Total Goals
+        pushMock('Away Team Total Goals', 'away_team_total_goals', 'Over 1.5', mockOdd(2.5, 3.5));
+        pushMock('Away Team Total Goals', 'away_team_total_goals', 'Under 1.5', mockOdd(1.2, 1.5));
       }
     }
 

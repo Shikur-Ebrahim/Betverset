@@ -302,16 +302,19 @@ export async function settleFinishedBets() {
 
     try {
       await db.runTransaction(async (tx: any) => {
+        let userDoc = null;
+        let userRef = null;
+
+        if (newStatus === 'won' && slip.user_id) {
+          userRef = db.collection('users').doc(String(slip.user_id));
+          userDoc = await tx.get(userRef);
+        }
+
         tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
         
-        if (newStatus === 'won' && slip.user_id) {
-          const userRef = db.collection('users').doc(String(slip.user_id));
-          const userDoc = await tx.get(userRef);
-          
-          if (userDoc.exists) {
-            const currentBalance = Number(userDoc.data()?.balance) || 0;
-            tx.update(userRef, { balance: currentBalance + Number(slip.possible_win || 0) });
-          }
+        if (userDoc?.exists && userRef) {
+          const currentBalance = Number(userDoc.data()?.balance) || 0;
+          tx.update(userRef, { balance: currentBalance + Number(slip.possible_win || 0) });
         }
       });
       settled++;

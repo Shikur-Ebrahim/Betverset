@@ -46,14 +46,16 @@ export async function POST(req: Request) {
     // Helper to generate a random realistic odd
     const mockOdd = (min: number, max: number) => Number((Math.random() * (max - min) + min).toFixed(2));
 
-    // If we have real odds, process them. Otherwise, process all fixtures directly.
-    if (!isMockOdds) {
-      // Build a lookup map of fixture ID → team info from the /fixtures response
-      const fixtureInfoMap = new Map<number, any>();
-      for (const f of fixturesPage) {
-        if (f?.fixture?.id) fixtureInfoMap.set(f.fixture.id, f);
-      }
+    // Build a lookup map of fixture ID → team info from the /fixtures response
+    const fixtureInfoMap = new Map<number, any>();
+    for (const f of fixturesPage) {
+      if (f?.fixture?.id) fixtureInfoMap.set(f.fixture.id, f);
+    }
 
+    const processedFixtureIds = new Set<number>();
+
+    // 1. Process real odds if available
+    if (!isMockOdds) {
       for (const item of oddsPage) {
         const fixture = item?.fixture;
         const league = item?.league;
@@ -112,51 +114,58 @@ export async function POST(req: Request) {
           has_odds: true,
           updated_at: new Date().toISOString(),
         }, { merge: true });
+        
+        processedFixtureIds.add(fixture.id);
         fixturesStored++;
       }
-    } else {
-      // Fallback: Generate mock odds for up to 50 fixtures so the site has matches
-      for (const item of fixturesPage.slice(0, 50)) {
-        const f = item?.fixture;
-        const teams = item?.teams;
-        const l = item?.league;
-        if (!f?.id) continue;
+    }
 
-        const homeOdd = mockOdd(1.20, 4.50);
-        const awayOdd = mockOdd(1.50, 6.00);
-        const drawOdd = mockOdd(2.80, 4.00);
+    // 2. Pad with mock odds up to 50 fixtures to ensure the app always has matches to display
+    for (const item of fixturesPage) {
+      if (fixturesStored >= 50) break;
+      
+      const f = item?.fixture;
+      const teams = item?.teams;
+      const l = item?.league;
+      
+      if (!f?.id || processedFixtureIds.has(f.id)) continue;
 
-        const ref = db.collection('fixtures').doc(String(f.id));
-        batch.set(ref, {
-          api_fixture_id: f.id,
-          match_date: f.date || null,
-          status: f.status?.short || 'NS',
-          elapsed: f.status?.elapsed || null,
-          referee: f.referee || null,
-          home_team_id: String(teams?.home?.id || ''),
-          away_team_id: String(teams?.away?.id || ''),
-          home_team_name: teams?.home?.name || '',
-          away_team_name: teams?.away?.name || '',
-          home_team_logo: teams?.home?.logo || null,
-          away_team_logo: teams?.away?.logo || null,
-          home_goals: null,
-          away_goals: null,
-          league_id: String(l?.id || ''),
-          league_name: l?.name || '',
-          league_logo: l?.logo || null,
-          api_league_id: l?.id || 0,
-          country_name: l?.country || null,
-          venue_name: f.venue?.name || null,
-          venue_city: f.venue?.city || null,
-          home_odds: homeOdd,
-          draw_odds: drawOdd,
-          away_odds: awayOdd,
-          bookmakers_count: 1,
-          has_odds: true,
-          updated_at: new Date().toISOString(),
-        }, { merge: true });
-        fixturesStored++;
-      }
+      const homeOdd = mockOdd(1.20, 4.50);
+      const awayOdd = mockOdd(1.50, 6.00);
+      const drawOdd = mockOdd(2.80, 4.00);
+
+      const ref = db.collection('fixtures').doc(String(f.id));
+      batch.set(ref, {
+        api_fixture_id: f.id,
+        match_date: f.date || null,
+        status: f.status?.short || 'NS',
+        elapsed: f.status?.elapsed || null,
+        referee: f.referee || null,
+        home_team_id: String(teams?.home?.id || ''),
+        away_team_id: String(teams?.away?.id || ''),
+        home_team_name: teams?.home?.name || '',
+        away_team_name: teams?.away?.name || '',
+        home_team_logo: teams?.home?.logo || null,
+        away_team_logo: teams?.away?.logo || null,
+        home_goals: null,
+        away_goals: null,
+        league_id: String(l?.id || ''),
+        league_name: l?.name || '',
+        league_logo: l?.logo || null,
+        api_league_id: l?.id || 0,
+        country_name: l?.country || null,
+        venue_name: f.venue?.name || null,
+        venue_city: f.venue?.city || null,
+        home_odds: homeOdd,
+        draw_odds: drawOdd,
+        away_odds: awayOdd,
+        bookmakers_count: 1,
+        has_odds: true,
+        updated_at: new Date().toISOString(),
+      }, { merge: true });
+      
+      processedFixtureIds.add(f.id);
+      fixturesStored++;
     }
 
     if (fixturesStored > 0) {

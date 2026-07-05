@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
 
 export async function GET() {
   try {
+    const admin = await import('firebase-admin');
     return NextResponse.json({ 
       status: 'ok', 
-      dbProxyExists: !!db,
-      env: {
-        hasJson: !!process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
-        hasProjectId: !!process.env.FIREBASE_PROJECT_ID
-      }
+      firebaseAdminLoaded: !!admin
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message });
+    return NextResponse.json({ 
+      error: 'Failed to import firebase-admin',
+      message: err.message,
+      stack: err.stack,
+      code: err.code
+    });
   }
 }
 

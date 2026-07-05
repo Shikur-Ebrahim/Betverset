@@ -42,7 +42,7 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
       const fixtureIdsArr = Array.from(neededFixtureIds);
       
       if (fixtureIdsArr.length > 0) {
-        const chunks = [];
+        const chunks: string[][] = [];
         for (let i = 0; i < fixtureIdsArr.length; i += 10) {
           chunks.push(fixtureIdsArr.slice(i, i + 10));
         }

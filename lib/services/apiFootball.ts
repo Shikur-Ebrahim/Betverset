@@ -300,16 +300,24 @@ export async function settleFinishedBets() {
 
     const newStatus: string = anyLost ? 'lost' : 'won';
 
-    await db.runTransaction(async (tx: any) => {
-      tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
-      if (newStatus === 'won') {
-        const userRef = db.collection('users').doc(String(slip.user_id));
-        const userDoc = await tx.get(userRef);
-        const currentBalance = Number(userDoc.data()?.wallet_balance) || 0;
-        tx.update(userRef, { wallet_balance: currentBalance + Number(slip.possible_win) });
-      }
-    });
-    settled++;
+    try {
+      await db.runTransaction(async (tx: any) => {
+        tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
+        
+        if (newStatus === 'won' && slip.user_id) {
+          const userRef = db.collection('users').doc(String(slip.user_id));
+          const userDoc = await tx.get(userRef);
+          
+          if (userDoc.exists) {
+            const currentBalance = Number(userDoc.data()?.wallet_balance) || 0;
+            tx.update(userRef, { wallet_balance: currentBalance + Number(slip.possible_win || 0) });
+          }
+        }
+      });
+      settled++;
+    } catch (txErr) {
+      console.error(`[sync] Failed to settle ticket ${slipDoc.id}:`, txErr);
+    }
   }
 
   return { settled };

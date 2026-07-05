@@ -20,8 +20,8 @@ export async function POST(req: Request) {
     const today = new Date().toISOString().split('T')[0];
     console.log(`[sync] Starting sync for ${today}`);
 
-    // Fetch fixtures (team names/logos)
-    const fixturesPage = await apiFetch('/fixtures', { date: today });
+    // Fetch the next 50 upcoming fixtures so there are always matches available
+    const fixturesPage = await apiFetch('/fixtures', { next: 50 });
     
     // Attempt to fetch real odds (may fail on Free API-Football plan)
     let oddsPage: any[] = [];

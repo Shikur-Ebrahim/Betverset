@@ -554,7 +554,7 @@ export const api = {
       throw new Error((data.message as string) || `Bet failed (${res.status})`);
     }
     return data as Record<string, unknown> & {
-      wallet_balance?: number;
+      balance?: number;
       currency?: string;
       ticket_code?: string | null;
     };

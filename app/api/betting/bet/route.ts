@@ -118,7 +118,7 @@ export async function POST(req: Request) {
 
       return {
         ...slipData,
-        wallet_balance: balance - stakeNum,
+        balance: balance - stakeNum,
         currency: userDoc.data()?.currency || 'ETB'
       };
     });

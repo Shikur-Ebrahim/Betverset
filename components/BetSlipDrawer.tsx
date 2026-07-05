@@ -211,13 +211,15 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
         })),
       });
 
-      if (typeof data.wallet_balance === 'number' && Number.isFinite(data.wallet_balance)) {
-        const next = { ...user, balance: data.wallet_balance };
+      if (typeof data.balance === 'number' && Number.isFinite(data.balance)) {
+        const next = { ...user, balance: data.balance };
         localStorage.setItem('user', JSON.stringify(next));
-        setWalletBalance(data.wallet_balance);
-        window.dispatchEvent(
-          new CustomEvent(BETVERS_WALLET_UPDATED_EVENT, { detail: { balance: data.wallet_balance } })
-        );
+        setWalletBalance(data.balance);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent(BETVERS_WALLET_UPDATED_EVENT, { detail: { balance: data.balance } })
+          );
+        }
       }
 
       window.dispatchEvent(new CustomEvent(BETVERS_BET_PLACED_EVENT));

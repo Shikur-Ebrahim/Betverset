@@ -309,8 +309,8 @@ export async function settleFinishedBets() {
           const userDoc = await tx.get(userRef);
           
           if (userDoc.exists) {
-            const currentBalance = Number(userDoc.data()?.wallet_balance) || 0;
-            tx.update(userRef, { wallet_balance: currentBalance + Number(slip.possible_win || 0) });
+            const currentBalance = Number(userDoc.data()?.balance) || 0;
+            tx.update(userRef, { balance: currentBalance + Number(slip.possible_win || 0) });
           }
         }
       });

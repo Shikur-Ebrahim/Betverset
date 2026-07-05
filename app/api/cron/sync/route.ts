@@ -25,8 +25,12 @@ export async function POST(req: Request) {
 
     console.log(`[sync] Starting multi-day sync for ${d1} and ${d2}`);
 
-    // Fetch the next 100 upcoming fixtures
-    const fixturesPage = await apiFetch('/fixtures', { next: 100 });
+    // Fetch ALL fixtures for today and tomorrow to ensure we have team names and logos for every odds item
+    const [fixturesDay1, fixturesDay2] = await Promise.all([
+      apiFetch('/fixtures', { date: d1 }),
+      apiFetch('/fixtures', { date: d2 })
+    ]);
+    const fixturesPage = [...fixturesDay1, ...fixturesDay2];
     
     // Fetch multiple pages of real odds across today and tomorrow using PRO limits
     let allOdds: any[] = [];

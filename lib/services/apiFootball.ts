@@ -355,7 +355,7 @@ export async function purgeOldFinishedFixtures() {
         oddsBatch = db.batch();
       }
     }
-    if (oddsCount % 400 !== 0) {
+    if (oddsCount > 0 && oddsCount % 400 !== 0) {
       await oddsBatch.commit();
     }
     deletedOdds += oddsCount;

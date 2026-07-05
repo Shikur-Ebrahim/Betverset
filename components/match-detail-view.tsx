@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -238,21 +238,21 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
 
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-center gap-2.5 w-[35%]">
-              <div className="w-[60px] h-[60px] bg-[#FFFFFF]/5 rounded-full flex items-center justify-center border border-[rgba(0,0,0,0.12)]/10 p-2.5 shadow-inner">
+              <div className="w-[60px] h-[60px] bg-[#FFFFFF]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
                 {fixture.home_team_logo ? (
                   <img src={fixture.home_team_logo} alt="" className="w-full h-full object-contain" />
                 ) : (
-                  <span className="font-bold text-[#111827]/70">{getInitials(fixture.home_team_name)}</span>
+                  <span className="font-bold text-white/90">{getInitials(fixture.home_team_name)}</span>
                 )}
               </div>
-              <span className="text-[13px] font-bold text-center leading-tight text-[#111827]">{fixture.home_team_name}</span>
+              <span className="text-[13px] font-bold text-center leading-tight text-white">{fixture.home_team_name}</span>
             </div>
 
-            <div className="flex flex-col items-center justify-center w-[30%]">
+            <div className="flex flex-col items-center justify-center w-[30%] gap-1 relative z-10">
               <div className="flex items-center gap-2">
                 <span
                   className={`text-[32px] font-black ${
-                    liveUi ? 'text-[#16A34A]' : 'text-[#111827]'
+                    liveUi ? 'text-[#16A34A]' : 'text-white'
                   }`}
                 >
                   {fixture.home_score ?? '-'}
@@ -260,7 +260,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
                 <span className="text-2xl text-[#2563EB] font-black opacity-80">:</span>
                 <span
                   className={`text-[32px] font-black ${
-                    liveUi ? 'text-[#16A34A]' : 'text-[#111827]'
+                    liveUi ? 'text-[#16A34A]' : 'text-white'
                   }`}
                 >
                   {fixture.away_score ?? '-'}
@@ -275,14 +275,14 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
             </div>
 
             <div className="flex flex-col items-center gap-2.5 w-[35%]">
-              <div className="w-[60px] h-[60px] bg-[#FFFFFF]/5 rounded-full flex items-center justify-center border border-[rgba(0,0,0,0.12)]/10 p-2.5 shadow-inner">
+              <div className="w-[60px] h-[60px] bg-[#FFFFFF]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
                 {fixture.away_team_logo ? (
                   <img src={fixture.away_team_logo} alt="" className="w-full h-full object-contain" />
                 ) : (
-                  <span className="font-bold text-[#111827]/70">{getInitials(fixture.away_team_name)}</span>
+                  <span className="font-bold text-white/90">{getInitials(fixture.away_team_name)}</span>
                 )}
               </div>
-              <span className="text-[13px] font-bold text-center leading-tight text-[#111827]">{fixture.away_team_name}</span>
+              <span className="text-[13px] font-bold text-center leading-tight text-white">{fixture.away_team_name}</span>
             </div>
           </div>
         </div>

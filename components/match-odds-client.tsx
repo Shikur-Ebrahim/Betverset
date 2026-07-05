@@ -5,254 +5,237 @@ import { Odd, Fixture } from '../lib/api';
 import { isMatchClosedForBetting } from '../lib/match-status';
 import { useBetSlip } from '../lib/betslip';
 
-/** Markets expanded on first load; all others stay collapsed until the user opens them. */
-function isDefaultExpandedMarket(marketName: string): boolean {
-  const m = marketName.toLowerCase().trim();
-  if (m === 'match winner' || m.includes('full time result')) return true;
-  if (m === 'home/away') return true;
-  if (m.includes('second half winner')) return true;
-  if (m === 'asian handicap' || m.startsWith('asian handicap ')) return true;
-  if (m === 'goals over/under') return true;
-  if (
-    m.includes('goals over/under') &&
-    !m.includes('first half') &&
-    !m.includes('second half')
-  ) {
-    return true;
-  }
-  return false;
-}
-
-function buildDefaultCollapsedMarkets(marketNames: string[]): Set<string> {
-  const collapsed = new Set<string>();
-  for (const name of marketNames) {
-    if (!isDefaultExpandedMarket(name)) collapsed.add(name);
-  }
-  return collapsed;
-}
-
-const DEFAULT_EXPANDED_ORDER = [
+// Markets that should be expanded by default
+const DEFAULT_EXPANDED = new Set([
   'match winner',
-  'home/away',
-  'second half winner',
-  'asian handicap',
+  'double chance',
   'goals over/under',
-];
+  'both teams to score',
+  'home/away',
+]);
 
-function defaultExpandedSortRank(marketName: string): number {
-  const m = marketName.toLowerCase();
-  for (let i = 0; i < DEFAULT_EXPANDED_ORDER.length; i++) {
-    const key = DEFAULT_EXPANDED_ORDER[i];
-    if (key === 'goals over/under') {
-      if (m === 'goals over/under' || (m.includes('goals over/under') && !m.includes('first half') && !m.includes('second half'))) {
-        return i;
-      }
-    } else if (m.includes(key)) {
-      return i;
-    }
+function isExpanded(name: string) {
+  const m = name.toLowerCase().trim();
+  return DEFAULT_EXPANDED.has(m) || m.includes('match winner') || (m.includes('goals over/under') && !m.includes('half'));
+}
+
+// Priority order for market display
+const MARKET_PRIORITY: Record<string, number> = {
+  'match winner': 1,
+  'double chance': 2,
+  'goals over/under': 3,
+  'both teams to score': 4,
+  'home/away': 5,
+  'asian handicap': 6,
+  'first half winner': 7,
+  'second half winner': 8,
+};
+
+function marketPriority(name: string): number {
+  const m = name.toLowerCase().trim();
+  for (const [key, rank] of Object.entries(MARKET_PRIORITY)) {
+    if (m.includes(key)) return rank;
   }
-  return DEFAULT_EXPANDED_ORDER.length;
+  return 99;
 }
 
-function sortMarketsForDisplay(entries: [string, Odd[]][]): [string, Odd[]][] {
-  return [...entries].sort(([a], [b]) => {
-    const rankA = defaultExpandedSortRank(a);
-    const rankB = defaultExpandedSortRank(b);
-    if (rankA !== rankB) return rankA - rankB;
-    return a.localeCompare(b);
-  });
-}
-
-const ODDS_SKELETON_MARKETS = [
-  'Match Winner',
-  'Home/Away',
-  'Second Half Winner',
-  'Asian Handicap',
-  'Goals Over/Under',
-];
-
-type MatchOddsClientProps = {
-  odds: Odd[];
-  fixture: Fixture;
-  oddsLoading?: boolean;
-};
-
-const sortOrder: Record<string, number> = {
-  'home': 1,
-  '1': 1,
-  'draw': 2,
-  'x': 2,
-  'away': 3,
-  '2': 3
-};
-
-function getSelectionName(selection: string, fixture: Fixture) {
+// Canonical display name for a selection
+function getSelectionName(selection: string, fixture: Fixture): string {
   const sel = selection.toLowerCase();
-  if (sel === 'home' || sel === '1') return fixture.home_team_name;
-  if (sel === 'away' || sel === '2') return fixture.away_team_name;
-  if (sel === 'x') return 'Draw';
+  if (sel === 'home' || sel === '1') return fixture.home_team_name || 'Home';
+  if (sel === 'away' || sel === '2') return fixture.away_team_name || 'Away';
+  if (sel === 'x' || sel === 'draw') return 'Draw';
   return selection;
 }
 
-function sortOdds(odds: Odd[]) {
+// Deduplicate odds: for each market, keep only the BEST (highest) odd per selection
+function deduplicateOdds(odds: Odd[]): Odd[] {
+  const best = new Map<string, Odd>();
+  for (const odd of odds) {
+    const key = `${odd.market_name}__${odd.selection}`;
+    const existing = best.get(key);
+    if (!existing || (odd.odd_value ?? 0) > (existing.odd_value ?? 0)) {
+      best.set(key, odd);
+    }
+  }
+  return Array.from(best.values());
+}
+
+// Sort selections within a market intelligently
+const SEL_ORDER: Record<string, number> = {
+  home: 1, '1': 1,
+  draw: 2, x: 2,
+  away: 3, '2': 3,
+};
+function sortSelections(odds: Odd[]): Odd[] {
   return [...odds].sort((a, b) => {
-    const orderA = sortOrder[a.selection.toLowerCase()] || 99;
-    const orderB = sortOrder[b.selection.toLowerCase()] || 99;
-    if (orderA !== orderB) return orderA - orderB;
+    const oa = SEL_ORDER[a.selection.toLowerCase()] ?? 50;
+    const ob = SEL_ORDER[b.selection.toLowerCase()] ?? 50;
+    if (oa !== ob) return oa - ob;
     return a.selection.localeCompare(b.selection);
   });
 }
 
-export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: MatchOddsClientProps) {
+const SKELETON_MARKETS = ['Match Winner', 'Double Chance', 'Goals Over/Under', 'Both Teams To Score'];
+
+type Props = { odds: Odd[]; fixture: Fixture; oddsLoading?: boolean };
+
+export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: Props) {
   const [activeTab, setActiveTab] = useState<string>('All');
   const { addBet, isSelected } = useBetSlip();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scrollCarousel = (dir: 'left' | 'right') => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: dir === 'right' ? 200 : -200, behavior: 'smooth' });
+  // Deduplicate and group by market
+  const deduped = useMemo(() => deduplicateOdds(odds), [odds]);
+
+  const markets = useMemo(() => {
+    const map = new Map<string, Odd[]>();
+    for (const odd of deduped) {
+      const name = odd.market_name || 'Other';
+      if (!map.has(name)) map.set(name, []);
+      map.get(name)!.push(odd);
     }
-  };
+    return map;
+  }, [deduped]);
 
-  const markets = new Map<string, Odd[]>();
-  for (const odd of odds) {
-    if (!markets.has(odd.market_name)) markets.set(odd.market_name, []);
-    markets.get(odd.market_name)!.push(odd);
-  }
+  const marketNames = useMemo(() => {
+    return Array.from(markets.keys()).sort((a, b) => {
+      const pa = marketPriority(a);
+      const pb = marketPriority(b);
+      return pa !== pb ? pa - pb : a.localeCompare(b);
+    });
+  }, [markets]);
 
-  const marketNames = useMemo(() => Array.from(markets.keys()), [odds]);
-  const displayedMarkets = useMemo(() => {
-    const entries =
-      activeTab === 'All'
-        ? Array.from(markets.entries())
-        : Array.from(markets.entries()).filter(([name]) => name === activeTab);
-    return activeTab === 'All' ? sortMarketsForDisplay(entries) : entries;
-  }, [activeTab, odds]);
-
-  const [collapsedMarkets, setCollapsedMarkets] = useState<Set<string>>(() => new Set());
-  const collapsedInitRef = useRef(false);
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const initRef = useRef(false);
 
   useEffect(() => {
-    if (collapsedInitRef.current || marketNames.length === 0) return;
-    collapsedInitRef.current = true;
-    setCollapsedMarkets(buildDefaultCollapsedMarkets(marketNames));
+    if (initRef.current || marketNames.length === 0) return;
+    initRef.current = true;
+    const c = new Set<string>();
+    for (const name of marketNames) {
+      if (!isExpanded(name)) c.add(name);
+    }
+    setCollapsed(c);
   }, [marketNames]);
 
-  useEffect(() => {
-    if (!collapsedInitRef.current || marketNames.length === 0) return;
-    setCollapsedMarkets((prev) => {
-      let changed = false;
-      const next = new Set(prev);
-      for (const name of marketNames) {
-        if (!prev.has(name) && !isDefaultExpandedMarket(name)) {
-          next.add(name);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [marketNames]);
-
-  const toggleMarket = (marketName: string) => {
-    setCollapsedMarkets(prev => {
-      const next = new Set(prev);
-      next.has(marketName) ? next.delete(marketName) : next.add(marketName);
-      return next;
-    });
+  const scrollBy = (dir: 'left' | 'right') => {
+    scrollRef.current?.scrollBy({ left: dir === 'right' ? 160 : -160, behavior: 'smooth' });
   };
+
+  const displayed = useMemo(() => {
+    const entries = activeTab === 'All'
+      ? marketNames.map(n => [n, markets.get(n)!] as [string, Odd[]])
+      : [[activeTab, markets.get(activeTab) ?? []] as [string, Odd[]]];
+    return entries;
+  }, [activeTab, marketNames, markets]);
 
   const isFinished = isMatchClosedForBetting(fixture);
-  const isLiveInPlay =
-    !isFinished &&
-    ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes((fixture.status || '').toUpperCase());
+  const isLive = !isFinished && ['1H', '2H', 'HT', 'ET', 'P', 'LIVE'].includes((fixture.status || '').toUpperCase());
 
   return (
     <>
-      <div className="sticky top-14 z-30 bg-[#0D1117] pt-4 pb-3">
-        {isLiveInPlay ? (
-          <p className="mb-2 px-1 text-[10px] font-medium uppercase tracking-wide text-[#16A34A]/90">
-            Live odds update ~30s — backend syncs to database, page reads latest prices
+      {/* Sticky tab bar */}
+      <div className="sticky top-14 z-30 bg-[#0D1117] shadow-lg">
+        {isLive && (
+          <p className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#16A34A] border-b border-[#16A34A]/20">
+            ● Live odds update ~30s
           </p>
-        ) : null}
-        <div className="relative">
-          <button
-            onClick={() => scrollCarousel('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white hover:bg-black transition-all shadow-lg"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        )}
+        <div className="relative px-2 py-2">
+          <button onClick={() => scrollBy('left')} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1C2128] border border-[#30363D] flex items-center justify-center text-white shadow-md">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6" /></svg>
           </button>
-          <button
-            onClick={() => scrollCarousel('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white hover:bg-black transition-all shadow-lg"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          
           <div ref={scrollRef} className="flex overflow-x-auto hide-scrollbar gap-2 px-8">
-            <button onClick={() => setActiveTab('All')} className={`px-4 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-colors ${activeTab === 'All' ? 'bg-[#FF8C00] text-[#0D1117] shadow-md' : 'bg-[#161B22] text-[#8B949E] border border-[#30363D] hover:text-white'}`}>
-              All
-            </button>
-            {marketNames.map(marketName => (
-              <button key={marketName} onClick={() => setActiveTab(marketName)} className={`px-4 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-colors ${activeTab === marketName ? 'bg-[#FF8C00] text-[#0D1117] shadow-md' : 'bg-[#161B22] text-[#8B949E] border border-[#30363D] hover:text-white'}`}>
-                {marketName}
-              </button>
+            <TabBtn label="All" active={activeTab === 'All'} onClick={() => setActiveTab('All')} />
+            {marketNames.map(name => (
+              <TabBtn key={name} label={name} active={activeTab === name} onClick={() => setActiveTab(name)} />
             ))}
           </div>
+          <button onClick={() => scrollBy('right')} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-[#1C2128] border border-[#30363D] flex items-center justify-center text-white shadow-md">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+          </button>
         </div>
       </div>
 
-      <div className="px-3 pb-6 space-y-3 mt-2">
-        {displayedMarkets.map(([marketName, marketOdds]) => {
-          const isCollapsed = collapsedMarkets.has(marketName);
+      {/* Odds body */}
+      <div className="px-3 pb-8 space-y-3 mt-2">
+        {displayed.map(([marketName, marketOdds]) => {
+          const isCollapsed = collapsed.has(marketName);
+          const sorted = sortSelections(marketOdds);
+          const cols = sorted.length === 2 ? 2 : sorted.length === 3 ? 3 : sorted.length <= 4 ? 2 : 3;
+
           return (
-            <div key={marketName} className="rounded-xl overflow-hidden border border-[#E2E8F0] bg-white shadow-sm">
-              <div onClick={() => toggleMarket(marketName)} className="bg-[#FF8C00] px-3.5 py-2.5 flex items-center justify-between text-white cursor-pointer select-none">
-                <span className="text-[13px] font-bold tracking-wide">{marketName}</span>
-                <svg className={`w-4 h-4 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd"/></svg>
-              </div>
+            <div key={marketName} className="rounded-2xl overflow-hidden border border-[#E2E8F0]/60 bg-white shadow-sm">
+              {/* Market header */}
+              <button
+                onClick={() => setCollapsed(prev => {
+                  const n = new Set(prev);
+                  n.has(marketName) ? n.delete(marketName) : n.add(marketName);
+                  return n;
+                })}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-[#1E293B] to-[#334155] text-white"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                  <span className="text-[13px] font-bold tracking-wide">{marketName}</span>
+                </div>
+                <svg
+                  className={`w-4 h-4 text-white/60 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
+                  viewBox="0 0 20 20" fill="currentColor"
+                >
+                  <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+
               {!isCollapsed && (
-                <div className="flex flex-col p-[2px] bg-white gap-[2px]">
-                  {sortOdds(marketOdds).map((odd) => {
+                <div className={`p-2.5 grid gap-2`} style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                  {sorted.map((odd) => {
                     const betId = `${fixture.id}-${marketName}-${odd.selection}`;
                     const selected = isSelected(betId);
+                    const label = getSelectionName(odd.selection, fixture);
                     return (
                       <button
-                        key={odd.id}
+                        key={`${odd.market_name}-${odd.selection}`}
                         disabled={isFinished}
                         onClick={() => {
                           if (isFinished) return;
-                            addBet({
-                              id: betId,
-                              fixtureId: fixture.id,
-                              homeTeam: fixture.home_team_name,
-                              awayTeam: fixture.away_team_name,
-                              league: fixture.league_name,
-                              market: marketName,
-                              selection: getSelectionName(odd.selection, fixture),
-                              odds: Number(odd.odd_value),
-                              homeLogo: fixture.home_team_logo,
-                              awayLogo: fixture.away_team_logo
-                            });
+                          addBet({
+                            id: betId,
+                            fixtureId: fixture.id,
+                            homeTeam: fixture.home_team_name,
+                            awayTeam: fixture.away_team_name,
+                            league: fixture.league_name,
+                            market: marketName,
+                            selection: label,
+                            odds: Number(odd.odd_value),
+                            homeLogo: fixture.home_team_logo,
+                            awayLogo: fixture.away_team_logo,
+                          });
                         }}
-                        className={`flex items-center justify-between px-3.5 py-[10px] transition-all rounded-[5px] ${
+                        className={`relative flex flex-col items-center justify-center gap-0.5 px-2 py-3 rounded-xl border transition-all duration-150 ${
                           isFinished
-                            ? 'bg-[#F1F5F9] cursor-not-allowed opacity-70'
+                            ? 'bg-[#F8FAFC] border-[#E2E8F0] cursor-not-allowed opacity-60'
                             : selected
-                              ? 'bg-[#FF8C00]'
-                              : 'bg-[#E8EDF5] hover:bg-[#DDE4EE]'
+                              ? 'bg-[#FF8C00] border-[#FF8C00] shadow-lg shadow-[#FF8C00]/30'
+                              : 'bg-[#F1F5F9] border-[#E2E8F0] hover:bg-[#E8EFF9] hover:border-[#94A3B8] hover:shadow-sm active:scale-95'
                         }`}
                       >
-                        <span className={`text-[13px] font-medium ${isFinished ? 'text-[#94A3B8]' : selected ? 'text-white font-bold' : 'text-[#1A202C]'}`}>
-                          {getSelectionName(odd.selection, fixture)}
+                        {selected && (
+                          <div className="absolute top-1.5 right-1.5">
+                            <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                          </div>
+                        )}
+                        <span className={`text-[11px] font-medium text-center leading-tight truncate max-w-full px-1 ${
+                          selected ? 'text-white/90' : 'text-[#64748B]'
+                        }`}>
+                          {label}
                         </span>
-                        <div className="flex items-center gap-1.5">
-                          {selected && (
-                            <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                          )}
-                          <span className={`text-[14px] font-black ${isFinished ? 'text-[#94A3B8]' : selected ? 'text-white' : 'text-[#1A202C]'}`}>
-                            {isFinished ? 'CLOSED' : odd.odd_value}
-                          </span>
-                        </div>
+                        <span className={`text-[17px] font-black ${
+                          isFinished ? 'text-[#94A3B8]' : selected ? 'text-white' : 'text-[#0F172A]'
+                        }`}>
+                          {isFinished ? '—' : Number(odd.odd_value).toFixed(2)}
+                        </span>
                       </button>
                     );
                   })}
@@ -262,16 +245,18 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
           );
         })}
 
+        {/* Loading skeleton */}
         {markets.size === 0 && oddsLoading && (
           <div className="space-y-3">
-            {ODDS_SKELETON_MARKETS.map((label) => (
-              <div key={label} className="rounded-xl overflow-hidden border border-[#E2E8F0] bg-white shadow-sm">
-                <div className="bg-[#FF8C00]/90 px-3.5 py-2.5 text-white">
-                  <span className="text-[13px] font-bold tracking-wide">{label}</span>
+            {SKELETON_MARKETS.map(label => (
+              <div key={label} className="rounded-2xl overflow-hidden border border-[#E2E8F0]/60 bg-white shadow-sm">
+                <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-[#1E293B] to-[#334155]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
+                  <span className="text-[13px] font-bold text-white">{label}</span>
                 </div>
-                <div className="flex flex-col p-[2px] bg-white gap-[2px]">
-                  {[0, 1, 2].map((i) => (
-                    <div key={i} className="h-[42px] mx-[2px] rounded-[5px] bg-[#E8EDF5] animate-pulse" />
+                <div className="p-2.5 grid grid-cols-3 gap-2">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="h-[62px] rounded-xl bg-[#F1F5F9] animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -279,18 +264,34 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
           </div>
         )}
 
+        {/* Empty state */}
         {markets.size === 0 && !oddsLoading && (
-          <div className="text-center py-10 text-[#8B949E] flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#161B22] flex items-center justify-center border border-[#30363D]">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div className="text-center py-14 flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-[#F1F5F9] border border-[#E2E8F0] flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             </div>
             <div>
-              <p className="text-[14px] font-bold text-white mb-1">No Markets Open</p>
-              <p className="text-xs">Betting odds are not yet available for this match.</p>
+              <p className="text-[14px] font-bold text-[#0F172A]">No Markets Available</p>
+              <p className="text-[12px] text-[#94A3B8] mt-0.5">Betting odds are not yet available for this match.</p>
             </div>
           </div>
         )}
       </div>
     </>
+  );
+}
+
+function TabBtn({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-1.5 rounded-full text-[11.5px] font-bold whitespace-nowrap transition-all duration-150 ${
+        active
+          ? 'bg-[#FF8C00] text-white shadow-md shadow-[#FF8C00]/40'
+          : 'bg-[#1C2128] text-[#8B949E] border border-[#30363D] hover:text-white hover:border-[#555]'
+      }`}
+    >
+      {label}
+    </button>
   );
 }

@@ -48,18 +48,16 @@ export async function POST(req: Request) {
     ]);
     const fixturesPage = [...fixturesDay1, ...fixturesDay2];
 
-    // 2. Fetch all odds pages for today + tomorrow (up to 10 API calls)
+    // 2. Fetch odds for today + tomorrow — page 1 only (2 API calls, fast & avoids timeout)
     let allOdds: any[] = [];
     let isMockOdds = false;
     try {
-      for (const date of [d1, d2]) {
-        for (let page = 1; page <= 5; page++) {
-          const oddsPage = await apiFetch('/odds', { date, page });
-          if (!oddsPage || oddsPage.length === 0) break;
-          allOdds.push(...oddsPage);
-          if (oddsPage.length < 10) break;
-        }
-      }
+      const [oddsToday, oddsTomorrow] = await Promise.all([
+        apiFetch('/odds', { date: d1, page: 1 }),
+        apiFetch('/odds', { date: d2, page: 1 }),
+      ]);
+      allOdds = [...(oddsToday || []), ...(oddsTomorrow || [])];
+      
     } catch (err: any) {
       console.log(`[sync] Odds fetch failed (${err.message}). Using mock odds.`);
       isMockOdds = true;
@@ -149,31 +147,46 @@ export async function POST(req: Request) {
           merge: true,
         });
 
-        // All individual odds rows (all markets from all bookmakers)
+        // Collect best odds per market+selection (deduplicate across bookmakers)
+        // Key: `fixtureId_marketId_selection` → best odd value
+        const bestOddsMap = new Map<string, { marketName: string; marketKey: string; selection: string; odd: number }>();
         for (const bm of bookmakers) {
           if (!bm?.id) continue;
           for (const bet of bm?.bets ?? []) {
             for (const value of bet?.values ?? []) {
-              const oddId = `${fixture.id}_${bm.id}_${bet.id}_${value.value}`
-                .replace(/\//g, '-')
-                .replace(/\s+/g, '_');
-              oddsDocs.push({
-                ref: db.collection('odds').doc(oddId),
-                data: {
-                  fixture_id: String(fixture.id),
-                  bookmaker_id: String(bm.id),
-                  bookmaker_name: bm.name || '',
-                  market_id: String(bet.id),
-                  market_name: bet.name || '',
-                  market_key: bet.name?.toLowerCase().replace(/\s+/g, '_') || '',
+              const odd = parseFloat(value.odd) || 0;
+              if (!odd) continue;
+              const key = `${fixture.id}_${bet.id}_${value.value}`.replace(/\s+/g, '_');
+              const existing = bestOddsMap.get(key);
+              // Keep the highest available odd (best price for user)
+              if (!existing || odd > existing.odd) {
+                bestOddsMap.set(key, {
+                  marketName: bet.name || '',
+                  marketKey: bet.name?.toLowerCase().replace(/\s+/g, '_') || '',
                   selection: value.value || '',
-                  odd_value: parseFloat(value.odd) || null,
-                  last_update: new Date().toISOString(),
-                },
-                merge: true,
-              });
+                  odd,
+                });
+              }
             }
           }
+        }
+        // Write one doc per unique market+selection
+        for (const [key, { marketName, marketKey, selection, odd }] of bestOddsMap) {
+          oddsDocs.push({
+            ref: db.collection('odds').doc(key),
+            data: {
+              fixture_id: String(fixture.id),
+              bookmaker_id: 'best',
+              bookmaker_name: 'Best Available',
+              market_id: key.split('_')[2] || '',
+              market_name: marketName,
+              market_key: marketKey,
+              selection,
+              odd_value: odd,
+              last_update: new Date().toISOString(),
+            },
+            merge: true,
+          });
         }
 
         processedFixtureIds.add(fixture.id);

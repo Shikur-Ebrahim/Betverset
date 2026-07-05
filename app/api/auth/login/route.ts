@@ -23,30 +23,42 @@ export async function POST(req: Request) {
 
     const data = await res.json();
     if (!res.ok) {
-      if (data.error?.message === 'EMAIL_NOT_FOUND') {
-        throw new Error('This phone number is not registered, please signup now');
+      const msg = data.error?.message || '';
+      if (msg === 'EMAIL_NOT_FOUND') {
+        return NextResponse.json({ error: 'This phone number is not registered, please sign up' }, { status: 401 });
       }
-      if (data.error?.message === 'INVALID_PASSWORD' || data.error?.message === 'INVALID_LOGIN_CREDENTIALS') {
-        throw new Error('Incorrect pin please enter correct password');
+      if (msg === 'INVALID_PASSWORD' || msg === 'INVALID_LOGIN_CREDENTIALS' || msg.includes('INVALID_LOGIN')) {
+        return NextResponse.json({ error: 'Incorrect PIN, please try again' }, { status: 401 });
       }
-      throw new Error(data.error?.message || 'Login failed');
+      if (msg === 'TOO_MANY_ATTEMPTS_TRY_LATER') {
+        return NextResponse.json({ error: 'Too many failed attempts. Please try again later.' }, { status: 429 });
+      }
+      return NextResponse.json({ error: msg || 'Login failed' }, { status: 401 });
     }
 
     const uid = data.localId;
-    const userDoc = await db.collection('users').doc(uid).get();
-    const userData = userDoc.data();
+
+    // Fetch user profile from Firestore — with graceful fallback if Firestore is slow
+    let userData: any = null;
+    try {
+      const userDoc = await db.collection('users').doc(uid).get();
+      userData = userDoc.data();
+    } catch (firestoreErr: any) {
+      console.error('Firestore read failed during login (non-critical):', firestoreErr?.message);
+      // Still allow login — we have uid and phone from Auth token
+    }
 
     return NextResponse.json({
       token: data.idToken,
-      user: { 
-        id: uid, 
-        phone: userData?.phone || phone, 
-        role: userData?.role || 'user' 
+      user: {
+        id: uid,
+        phone: userData?.phone || phone,
+        role: userData?.role || 'user',
       },
     });
   } catch (err: any) {
     console.error('Login error:', err);
-    return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    return NextResponse.json({ error: err.message || 'Login failed' }, { status: 500 });
   }
 }
 

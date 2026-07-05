@@ -327,22 +327,45 @@ export async function settleFinishedBets() {
 }
 
 export async function purgeOldFinishedFixtures() {
-  // Purge FT fixtures older than 48 hours
-  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  // Purge FT fixtures older than 24 hours
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const snapshot = await db.collection('fixtures')
     .where('status', '==', 'FT')
     .where('match_date', '<', cutoff)
-    .limit(200)
+    .limit(50)
     .get();
 
-  let deleted = 0;
-  const batch = db.batch();
+  let deletedFixtures = 0;
+  let deletedOdds = 0;
+
   for (const doc of snapshot.docs) {
-    batch.delete(doc.ref);
-    deleted++;
+    const fixtureId = doc.id;
+    
+    // Delete odds for this fixture first
+    const oddsSnap = await db.collection('odds').where('fixture_id', '==', fixtureId).get();
+    
+    let oddsBatch = db.batch();
+    let oddsCount = 0;
+    
+    for (const oddDoc of oddsSnap.docs) {
+      oddsBatch.delete(oddDoc.ref);
+      oddsCount++;
+      if (oddsCount % 400 === 0) {
+        await oddsBatch.commit();
+        oddsBatch = db.batch();
+      }
+    }
+    if (oddsCount % 400 !== 0) {
+      await oddsBatch.commit();
+    }
+    deletedOdds += oddsCount;
+
+    // Finally delete the fixture itself
+    await doc.ref.delete();
+    deletedFixtures++;
   }
-  if (deleted) await batch.commit();
-  return { deleted };
+  
+  return { deletedFixtures, deletedOdds };
 }
 
 export async function getApiQuotaStatus() {

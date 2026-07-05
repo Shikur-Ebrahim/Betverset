@@ -15,7 +15,7 @@ const mockOdd = (min: number, max: number) =>
   Number((Math.random() * (max - min) + min).toFixed(2));
 
 /** Commit a list of {ref, data, merge} docs in batches of 400 */
-async function commitDocs(docs: Array<{ ref: FirebaseFirestore.DocumentReference; data: any; merge?: boolean }>) {
+async function commitDocs(docs: Array<{ ref: any; data: any; merge?: boolean }>) {
   const BATCH_SIZE = 400;
   for (let i = 0; i < docs.length; i += BATCH_SIZE) {
     const slice = docs.slice(i, i + BATCH_SIZE);

@@ -4,7 +4,7 @@ import * as path from 'path';
 let _initialized = false;
 
 function stripQuotes(val: string): string {
-  return val.trim().replace(/^['"]+|['"]+$/g, '');
+  return val.trim().replace(/^['\"]+|['\"]+$/g, '');
 }
 
 function initAdmin(): void {
@@ -16,27 +16,7 @@ function initAdmin(): void {
     return;
   }
 
-  // 1. FIREBASE_SERVICE_ACCOUNT_KEY (full JSON string)
-  const jsonEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-  if (jsonEnv) {
-    try {
-      // Fix for Vercel: literal newlines in env vars can break JSON.parse
-      let cleanJson = stripQuotes(jsonEnv);
-      cleanJson = cleanJson.replace(/\n/g, '\\n'); // Escape literal newlines
-      // If it already had \\n, the above line makes it \\\\n, so let's revert that specific case
-      cleanJson = cleanJson.replace(/\\\\n/g, '\\n');
-
-      const sa = JSON.parse(cleanJson);
-      if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
-      initializeApp({ credential: cert(sa) });
-      _initialized = true;
-      return;
-    } catch (e) {
-      console.error('[firebase-admin] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', e);
-    }
-  }
-
-  // 2. Individual fields
+  // 1. Individual fields — most reliable on Vercel
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
@@ -44,7 +24,51 @@ function initAdmin(): void {
     const privateKey = stripQuotes(rawKey).replace(/\\n/g, '\n');
     initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
     _initialized = true;
+    console.log('[firebase-admin] Initialized from individual env vars');
     return;
+  }
+
+  // 2. FIREBASE_SERVICE_ACCOUNT_KEY (full JSON string) — fallback
+  const jsonEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (jsonEnv) {
+    try {
+      // Multiple parsing attempts for robustness
+      let sa: any = null;
+
+      // Attempt A: direct parse (works if Vercel stored it clean)
+      try {
+        sa = JSON.parse(jsonEnv);
+      } catch {}
+
+      // Attempt B: strip surrounding quotes then parse
+      if (!sa) {
+        try {
+          sa = JSON.parse(stripQuotes(jsonEnv));
+        } catch {}
+      }
+
+      // Attempt C: escape literal newlines then parse
+      if (!sa) {
+        try {
+          let clean = stripQuotes(jsonEnv);
+          clean = clean.replace(/\n/g, '\\n');
+          clean = clean.replace(/\\\\n/g, '\\n');
+          sa = JSON.parse(clean);
+        } catch {}
+      }
+
+      if (sa) {
+        if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+        initializeApp({ credential: cert(sa) });
+        _initialized = true;
+        console.log('[firebase-admin] Initialized from FIREBASE_SERVICE_ACCOUNT_KEY');
+        return;
+      } else {
+        console.error('[firebase-admin] All parsing attempts failed for FIREBASE_SERVICE_ACCOUNT_KEY');
+      }
+    } catch (e) {
+      console.error('[firebase-admin] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', e);
+    }
   }
 
   // 3. Local dev: read betverset.json
@@ -62,8 +86,7 @@ function initAdmin(): void {
   }
 
   throw new Error(
-    'Firebase Admin not configured. On Vercel set FIREBASE_SERVICE_ACCOUNT_KEY ' +
-    '(the full content of betverset.json as a single line, no surrounding quotes).'
+    'Firebase Admin not configured. On Vercel set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY as separate env vars.'
   );
 }
 

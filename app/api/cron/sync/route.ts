@@ -20,23 +20,52 @@ export async function POST(req: Request) {
     const today = new Date().toISOString().split('T')[0];
     console.log(`[sync] Starting sync for ${today}`);
 
-    // ONE API call: /odds?date=today
-    // Adding bet=1 restricts the payload to just Match Winner odds, reducing payload size by 99%
-    // and drastically speeding up the fetch to avoid Vercel's 10s timeout.
-    const oddsPage = await apiFetch('/odds', { date: today, page: 1, bet: 1 });
+    // Fetch fixtures (team names/logos) and odds (1x2 odds) in parallel — 2 API calls
+    const [fixturesPage, oddsPage] = await Promise.all([
+      apiFetch('/fixtures', { date: today }),
+      apiFetch('/odds', { date: today, page: 1, bet: 1 }),
+    ]);
 
     if (!oddsPage || oddsPage.length === 0) {
       console.log('[sync] No odds available for today.');
       return NextResponse.json({ ok: true, message: 'No odds today', fixturesStored: 0 });
     }
 
-    console.log(`[sync] Got ${oddsPage.length} items from odds API`);
+    console.log(`[sync] Got ${fixturesPage.length} fixtures, ${oddsPage.length} odds items`);
+
+    // Build a lookup map of fixture ID → team info from the /fixtures response
+    const fixtureInfoMap = new Map<number, { 
+      home_name: string; home_logo: string | null; home_id: number;
+      away_name: string; away_logo: string | null; away_id: number;
+      league_name: string; league_logo: string | null; country: string; league_id: number;
+      venue_name: string | null; venue_city: string | null; referee: string | null;
+    }>();
+
+    for (const f of fixturesPage) {
+      const id = f?.fixture?.id;
+      if (!id) continue;
+      fixtureInfoMap.set(id, {
+        home_name: f.teams?.home?.name || '',
+        home_logo: f.teams?.home?.logo || null,
+        home_id: f.teams?.home?.id || 0,
+        away_name: f.teams?.away?.name || '',
+        away_logo: f.teams?.away?.logo || null,
+        away_id: f.teams?.away?.id || 0,
+        league_name: f.league?.name || '',
+        league_logo: f.league?.logo || null,
+        country: f.league?.country || '',
+        league_id: f.league?.id || 0,
+        venue_name: f.fixture?.venue?.name || null,
+        venue_city: f.fixture?.venue?.city || null,
+        referee: f.fixture?.referee || null,
+      });
+    }
 
     const batch = db.batch();
     let fixturesStored = 0;
 
-    for (const item of oddsPage.slice(0, 20)) {
-      // The odds response embeds fixture info directly
+    for (const item of oddsPage) {
+      // The odds response embeds fixture info (id, date, status) but NOT team names/logos
       const fixture = item?.fixture;
       const league = item?.league;
       const bookmakers: any[] = item?.bookmakers ?? [];
@@ -61,28 +90,34 @@ export async function POST(req: Request) {
         }
       }
 
+      // Merge team info from the fixtures lookup
+      const info = fixtureInfoMap.get(fixture.id);
+
       const ref = db.collection('fixtures').doc(String(fixture.id));
       batch.set(ref, {
         api_fixture_id: fixture.id,
         match_date: fixture.date || null,
         status: fixture.status?.short || 'NS',
         elapsed: fixture.status?.elapsed || null,
-        referee: fixture.referee || null,
-        home_team_id: String(fixture.teams?.home?.id || ''),
-        away_team_id: String(fixture.teams?.away?.id || ''),
-        home_team_name: fixture.teams?.home?.name || '',
-        away_team_name: fixture.teams?.away?.name || '',
-        home_team_logo: fixture.teams?.home?.logo || null,
-        away_team_logo: fixture.teams?.away?.logo || null,
+        referee: info?.referee || fixture.referee || null,
+        // Team info from /fixtures endpoint
+        home_team_id: String(info?.home_id || ''),
+        away_team_id: String(info?.away_id || ''),
+        home_team_name: info?.home_name || '',
+        away_team_name: info?.away_name || '',
+        home_team_logo: info?.home_logo || null,
+        away_team_logo: info?.away_logo || null,
         home_goals: null,
         away_goals: null,
-        league_id: String(league?.id || ''),
-        league_name: league?.name || '',
-        league_logo: league?.logo || null,
-        api_league_id: league?.id || 0,
-        country_name: league?.country || null,
-        venue_name: fixture.venue?.name || null,
-        venue_city: fixture.venue?.city || null,
+        // League info — prefer from /fixtures (more complete)
+        league_id: String(info?.league_id || league?.id || ''),
+        league_name: info?.league_name || league?.name || '',
+        league_logo: info?.league_logo || league?.logo || null,
+        api_league_id: info?.league_id || league?.id || 0,
+        country_name: info?.country || league?.country || null,
+        venue_name: info?.venue_name || fixture.venue?.name || null,
+        venue_city: info?.venue_city || fixture.venue?.city || null,
+        // Odds
         home_odds: homeOdd,
         draw_odds: drawOdd,
         away_odds: awayOdd,

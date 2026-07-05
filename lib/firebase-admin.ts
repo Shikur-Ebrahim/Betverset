@@ -1,74 +1,65 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { getStorage } from 'firebase-admin/storage';
 
 let _initialized = false;
+let _app: App | null = null;
 
 function stripQuotes(val: string): string {
   return val.trim().replace(/^['\"]+|['\"]+$/g, '');
 }
 
 function initAdmin(): void {
-  const mod = 'firebase-admin/app';
-  const { initializeApp, getApps, cert } = eval('require("' + mod + '")');
-  
   if (_initialized || getApps().length > 0) {
     _initialized = true;
     return;
   }
 
-  // 1. Individual fields — most reliable on Vercel
+  // 1. Individual env vars — most reliable on Vercel (set separately in dashboard)
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   const rawKey = process.env.FIREBASE_PRIVATE_KEY;
   if (projectId && clientEmail && rawKey) {
     const privateKey = stripQuotes(rawKey).replace(/\\n/g, '\n');
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+    _app = initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
     _initialized = true;
     console.log('[firebase-admin] Initialized from individual env vars');
     return;
   }
 
-  // 2. FIREBASE_SERVICE_ACCOUNT_KEY (full JSON string) — fallback
+  // 2. Full JSON env var — FIREBASE_SERVICE_ACCOUNT_KEY
   const jsonEnv = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (jsonEnv) {
-    try {
-      // Multiple parsing attempts for robustness
-      let sa: any = null;
+    let sa: any = null;
 
-      // Attempt A: direct parse (works if Vercel stored it clean)
-      try {
-        sa = JSON.parse(jsonEnv);
-      } catch {}
+    // Attempt A: direct JSON parse
+    try { sa = JSON.parse(jsonEnv); } catch {}
 
-      // Attempt B: strip surrounding quotes then parse
-      if (!sa) {
-        try {
-          sa = JSON.parse(stripQuotes(jsonEnv));
-        } catch {}
-      }
-
-      // Attempt C: escape literal newlines then parse
-      if (!sa) {
-        try {
-          let clean = stripQuotes(jsonEnv);
-          clean = clean.replace(/\n/g, '\\n');
-          clean = clean.replace(/\\\\n/g, '\\n');
-          sa = JSON.parse(clean);
-        } catch {}
-      }
-
-      if (sa) {
-        if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
-        initializeApp({ credential: cert(sa) });
-        _initialized = true;
-        console.log('[firebase-admin] Initialized from FIREBASE_SERVICE_ACCOUNT_KEY');
-        return;
-      } else {
-        console.error('[firebase-admin] All parsing attempts failed for FIREBASE_SERVICE_ACCOUNT_KEY');
-      }
-    } catch (e) {
-      console.error('[firebase-admin] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', e);
+    // Attempt B: strip surrounding quotes
+    if (!sa) {
+      try { sa = JSON.parse(stripQuotes(jsonEnv)); } catch {}
     }
+
+    // Attempt C: escape literal newlines
+    if (!sa) {
+      try {
+        let clean = stripQuotes(jsonEnv);
+        clean = clean.replace(/\n/g, '\\n').replace(/\\\\n/g, '\\n');
+        sa = JSON.parse(clean);
+      } catch {}
+    }
+
+    if (sa) {
+      if (sa.private_key) sa.private_key = sa.private_key.replace(/\\n/g, '\n');
+      _app = initializeApp({ credential: cert(sa) });
+      _initialized = true;
+      console.log('[firebase-admin] Initialized from FIREBASE_SERVICE_ACCOUNT_KEY');
+      return;
+    }
+    console.error('[firebase-admin] All JSON parse attempts failed for FIREBASE_SERVICE_ACCOUNT_KEY');
   }
 
   // 3. Local dev: read betverset.json
@@ -76,7 +67,7 @@ function initAdmin(): void {
     const jsonPath = path.resolve(process.cwd(), 'betverset.json');
     if (fs.existsSync(jsonPath)) {
       const sa = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-      initializeApp({ credential: cert(sa) });
+      _app = initializeApp({ credential: cert(sa) });
       _initialized = true;
       console.log('[firebase-admin] Initialized from betverset.json (local dev)');
       return;
@@ -86,57 +77,55 @@ function initAdmin(): void {
   }
 
   throw new Error(
-    'Firebase Admin not configured. On Vercel set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY as separate env vars.'
+    'Firebase Admin not configured. Set FIREBASE_SERVICE_ACCOUNT_KEY on Vercel ' +
+    '(full JSON as a single line), or set FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY.'
   );
 }
 
-let _db: any = null;
-let _auth: any = null;
+// Lazy-initialized singletons
+let _db: ReturnType<typeof getFirestore> | null = null;
+let _auth: ReturnType<typeof getAuth> | null = null;
+let _storage: ReturnType<typeof getStorage> | null = null;
 
 export function getAdminDb() {
   initAdmin();
-  if (!_db) {
-    const mod = 'firebase-admin/firestore';
-    const { getFirestore } = eval('require("' + mod + '")');
-    _db = getFirestore();
-  }
+  if (!_db) _db = getFirestore();
   return _db;
 }
 
 export function getAdminAuth() {
   initAdmin();
-  if (!_auth) {
-    const mod = 'firebase-admin/auth';
-    const { getAuth } = eval('require("' + mod + '")');
-    _auth = getAuth();
-  }
+  if (!_auth) _auth = getAuth();
   return _auth;
 }
 
-// Backward-compatible exports — these are proxies that initialize on first use
-export const db: any = new Proxy({}, {
+export function getAdminStorage() {
+  initAdmin();
+  if (!_storage) _storage = getStorage();
+  return _storage;
+}
+
+// Backward-compatible proxy exports
+export const db: ReturnType<typeof getFirestore> = new Proxy({} as any, {
   get(_t, prop: string) {
     const instance = getAdminDb();
-    const val = instance[prop];
+    const val = (instance as any)[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });
 
-export const auth: any = new Proxy({}, {
+export const auth: ReturnType<typeof getAuth> = new Proxy({} as any, {
   get(_t, prop: string) {
     const instance = getAdminAuth();
-    const val = instance[prop];
+    const val = (instance as any)[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });
 
-export const storage: any = new Proxy({}, {
+export const storage: ReturnType<typeof getStorage> = new Proxy({} as any, {
   get(_t, prop: string) {
-    initAdmin();
-    const mod = 'firebase-admin/storage';
-    const { getStorage } = eval('require("' + mod + '")');
-    const instance = getStorage();
-    const val = instance[prop];
+    const instance = getAdminStorage();
+    const val = (instance as any)[prop];
     return typeof val === 'function' ? val.bind(instance) : val;
   },
 });

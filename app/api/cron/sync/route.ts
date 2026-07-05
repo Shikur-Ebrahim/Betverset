@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     try {
       for (const date of [d1, d2]) {
         for (let page = 1; page <= 5; page++) {
-          const oddsPage = await apiFetch('/odds', { date, page, bet: 1 });
+          const oddsPage = await apiFetch('/odds', { date, page });
           if (!oddsPage || oddsPage.length === 0) break;
           allOdds.push(...oddsPage);
           if (oddsPage.length < 10) break; // Reached end of pagination

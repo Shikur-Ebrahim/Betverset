@@ -29,15 +29,38 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
     const history = await Promise.all(docs.map(async (data: any) => {
       const selectionsRaw = data.selections || [];
 
+      // Gather all unique fixture IDs needed
+      const neededFixtureIds = new Set<string>();
+      selectionsRaw.forEach((bsel: any) => {
+        if (!bsel.manual_kickoff_at && bsel.fixture_id) {
+          neededFixtureIds.add(String(bsel.fixture_id));
+        }
+      });
+
+      // Fetch all needed fixtures in one query (or chunks of 10)
+      const fixturesMap = new Map<string, string>();
+      const fixtureIdsArr = Array.from(neededFixtureIds);
+      
+      if (fixtureIdsArr.length > 0) {
+        const chunks = [];
+        for (let i = 0; i < fixtureIdsArr.length; i += 10) {
+          chunks.push(fixtureIdsArr.slice(i, i + 10));
+        }
+        
+        await Promise.all(chunks.map(async (chunk) => {
+          const snap = await db.collection('fixtures').where('__name__', 'in', chunk).get();
+          snap.docs.forEach((doc: any) => {
+            fixturesMap.set(doc.id, doc.data().match_date);
+          });
+        }));
+      }
+
       // We need to map selections to format expected by frontend
-      const selections = await Promise.all(selectionsRaw.map(async (bsel: any) => {
+      const selections = selectionsRaw.map((bsel: any) => {
         let kickoff_at = bsel.manual_kickoff_at;
         
         if (!kickoff_at && bsel.fixture_id) {
-          const fixDoc = await db.collection('fixtures').doc(String(bsel.fixture_id)).get();
-          if (fixDoc.exists) {
-            kickoff_at = fixDoc.data()?.match_date;
-          }
+           kickoff_at = fixturesMap.get(String(bsel.fixture_id));
         }
 
         return {
@@ -53,7 +76,7 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
           market_name: bsel.market_name,
           kickoff_at: kickoff_at || null
         };
-      }));
+      });
 
       return {
         ...data,

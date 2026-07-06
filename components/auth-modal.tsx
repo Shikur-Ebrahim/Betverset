@@ -125,7 +125,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
 
             {/* Title */}
             <div className="mb-6">
-              <h1 className="text-2xl font-black text-white tracking-tight">
+              <h1 className="text-2xl font-black text-[#111827] tracking-tight">
                 {view === 'login' ? 'Welcome Back' : 'Create Account'}
               </h1>
               <p className="text-[#6B7280] text-sm mt-1">
@@ -154,7 +154,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                   className="flex rounded-xl overflow-hidden transition-all duration-200 bg-[#F9FAFB] border border-[#D9E5FF]"
                 >
                   <div className="px-4 py-3 flex items-center justify-center border-r border-[#D9E5FF] bg-[#E6EEFF] select-none">
-                    <span className="text-white font-bold text-sm">+251</span>
+                    <span className="text-[#2563EB] font-bold text-sm">+251</span>
                   </div>
                   <input
                     type="tel"
@@ -162,7 +162,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 9))}
                     placeholder="9XX XXX XXX"
-                    className="flex-1 bg-transparent px-4 py-3 text-white text-sm font-semibold placeholder-[#9CA3AF] outline-none focus:ring-0"
+                    className="flex-1 bg-transparent px-4 py-3 text-[#111827] text-sm font-semibold placeholder-[#9CA3AF] outline-none focus:ring-0"
                     style={{ caretColor: '#2563EB' }}
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full rounded-xl pl-4 pr-11 py-3 text-white bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200 border border-[#D9E5FF]"
+                    className="w-full rounded-xl pl-4 pr-11 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200 border border-[#D9E5FF]"
                     style={{ caretColor: '#2563EB' }}
                     onFocus={(e) => { e.target.style.borderColor = '#2563EB'; e.target.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)'; }}
                     onBlur={(e) => { e.target.style.borderColor = '#D9E5FF'; e.target.style.boxShadow = 'none'; }}
@@ -212,7 +212,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full rounded-xl pl-4 pr-11 py-3 text-white bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200"
+                      className="w-full rounded-xl pl-4 pr-11 py-3 text-[#111827] bg-[#F9FAFB] text-sm font-semibold placeholder-[#9CA3AF] outline-none transition-all duration-200"
                       style={{
                         border: `1px solid ${confirmPassword && password !== confirmPassword ? '#EF4444' : '#D9E5FF'}`,
                         caretColor: '#2563EB',
@@ -282,7 +282,7 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-white bg-[var(--site-surface)] shadow-md transition-colors z-20 border border-[#D9E5FF]"
+          className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-[#111827] bg-white hover:bg-[#F3F4F6] shadow-md transition-colors z-20 border border-[#D9E5FF]"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

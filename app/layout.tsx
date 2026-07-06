@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Inter } from 'next/font/google';
 import {
   SITE_DESCRIPTION,
   SITE_LOGO_PATH,
@@ -9,14 +9,22 @@ import {
 } from '@/lib/site-metadata';
 import './globals.css';
 
+const inter = Inter({
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -74,22 +82,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <meta name="description" content={SITE_DESCRIPTION} />
-        <meta property="og:title" content={SITE_NAME} />
-        <meta property="og:description" content={SITE_DESCRIPTION} />
-        <meta property="og:image" content={SITE_OG_IMAGE_URL} />
-        <meta property="og:image:secure_url" content={SITE_OG_IMAGE_URL} />
-        <meta property="og:url" content={SITE_URL} />
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content={SITE_NAME} />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content={SITE_NAME} />
-        <meta name="twitter:description" content={SITE_DESCRIPTION} />
-        <meta name="twitter:image" content={SITE_OG_IMAGE_URL} />
-      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

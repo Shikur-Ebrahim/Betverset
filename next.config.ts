@@ -6,6 +6,20 @@ const nextConfig: NextConfig = {
     'jose',
     'jwks-rsa'
   ],
+  images: {
+    // Allow next/image to optimise external team logos and country flags
+    remotePatterns: [
+      { protocol: 'https', hostname: 'media.api-sports.io' },
+      { protocol: 'https', hostname: 'media-4.api-sports.io' },
+      { protocol: 'https', hostname: 'media-3.api-sports.io' },
+      { protocol: 'https', hostname: 'media-2.api-sports.io' },
+      { protocol: 'https', hostname: 'media-1.api-sports.io' },
+      { protocol: 'https', hostname: 'flagcdn.com' },
+      { protocol: 'https', hostname: '*.api-sports.io' },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 3600, // Cache optimised images for 1 hour
+  },
   async headers() {
     return [
       {
@@ -41,6 +55,16 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, s-maxage=30, stale-while-revalidate=90',
+          },
+        ],
+      },
+      {
+        // Cache per-match odds at the CDN edge so repeat visits are instant
+        source: '/api/odds/fixture/:fixtureId',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=120',
           },
         ],
       },

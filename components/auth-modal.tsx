@@ -25,7 +25,6 @@ export default function AuthModal({ isOpen, onClose, initialView, onSuccess }: A
     if (!isOpen) return;
     setView(initialView);
     setError(null);
-    void fetch(`${getPublicApiBaseUrl()}/health`, { cache: 'no-store' }).catch(() => undefined);
   }, [isOpen, initialView]);
 
   if (!isOpen) return null;

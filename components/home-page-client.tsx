@@ -1411,7 +1411,7 @@ export default function HomePageClient({
                         Balance
                       </span>
                       <span
-                        className="max-w-full text-right font-black tabular-nums tracking-tight text-white"
+                        className="max-w-full text-right font-black tabular-nums tracking-tight text-[#111827]"
                         style={{ fontSize: `${amountPx}px`, lineHeight: 1.15 }}
                       >
                         {amountStr}{' '}
@@ -1658,7 +1658,7 @@ export default function HomePageClient({
         {featuredForCarousel.length > 0 && !showLiveOnly && selectedLeagueId === null && selectedCountry === 'All countries' && selectedDay === 'all' && (
           <section>
             <div className="flex items-center mb-3 px-1">
-              <h2 className="text-[15px] font-bold flex items-center gap-2 text-white">
+              <h2 className="text-[15px] font-bold flex items-center gap-2 text-[#111827]">
                 <span className="w-[3px] h-[14px] bg-[#2563EB] rounded-sm"></span>
                 Popular Events
               </h2>
@@ -1678,7 +1678,7 @@ export default function HomePageClient({
               </button>
               <div ref={carouselRef} className="flex overflow-x-auto hide-scrollbar gap-3 pb-2 -mx-3 px-3">
               {featuredForCarousel.map(({ fixture, odds }) => (
-                <MatchDetailLink key={fixture.id} fixture={fixture} odds={odds} className="site-card rounded-xl p-3.5 min-w-[280px] shrink-0 flex flex-col gap-3">
+                <MatchDetailLink key={fixture.id} fixture={fixture} odds={odds} className="bg-[#1E293B] border border-[#334155] rounded-xl p-3.5 min-w-[280px] shrink-0 flex flex-col gap-3 shadow-md">
                   <div className="flex justify-between items-center">
                     <span
                       className="text-[10px] text-[#2563EB] font-bold bg-[rgba(37,99,235,0.10)] px-2 py-1 rounded"

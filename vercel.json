@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/cron/bootstrap",
-      "schedule": "0 0 * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/cron/sync",
-      "schedule": "0 * * * *"
+      "schedule": "* * * * *"
     },
     {
       "path": "/api/cron/settle",
-      "schedule": "*/15 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/purge",

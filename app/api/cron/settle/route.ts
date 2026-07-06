@@ -1,37 +1,40 @@
+/**
+ * /api/cron/settle
+ *
+ * Settles bets by checking finished match results in the Supabase DB.
+ * Uses ZERO API requests — reads from DB only.
+ * Also handles manual ticket auto-win resolution.
+ *
+ * Budget: 0 API requests per run.
+ * Schedule: every 5 minutes in vercel.json
+ */
 import { NextResponse } from 'next/server';
 import { settleFinishedBets } from '@/lib/services/apiFootball';
 
-
-const CRON_SECRET = process.env.CRON_SECRET || '';
-
 function isAuthorized(req: Request): boolean {
+  const secret = process.env.CRON_SECRET || '';
   const auth = req.headers.get('authorization');
-  if (CRON_SECRET && auth === `Bearer ${CRON_SECRET}`) return true;
-  if (!CRON_SECRET) return true;
+  if (secret && auth === `Bearer ${secret}`) return true;
+  if (!secret) return true;
   return false;
 }
 
-// POST /api/cron/settle — settle won/lost bet slips
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   if (!isAuthorized(req)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    console.log('[cron/settle] Starting bet settlement...');
     const result = await settleFinishedBets();
-    console.log('[cron/settle] Done:', result);
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({
+      message: `Settled ${result.settled} bet slips`,
+      ...result,
+    });
   } catch (err: any) {
-    console.error('[cron/settle] Failed:', err);
-    return NextResponse.json({ error: err.message || 'Settlement failed' }, { status: 500 });
+    console.error('[cron/settle] Error:', err);
+    return NextResponse.json({ message: 'Settlement failed', error: err.message }, { status: 500 });
   }
 }
 
-export async function GET(req: Request) {
-  return POST(req);
-}
-
 export const dynamic = 'force-dynamic';
-
-export const maxDuration = 300;
+export const maxDuration = 60;

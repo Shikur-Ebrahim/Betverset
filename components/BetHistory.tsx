@@ -182,7 +182,15 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
     return () => window.removeEventListener(BETVERS_BET_PLACED_EVENT, onBetPlaced);
   }, [user?.id, fetchHistory]);
 
-  const filteredBets = activeTab === 'all' ? bets : bets.filter((b) => b.status === activeTab);
+  const normalizeStatus = (s: string) => {
+    const status = (s || '').toLowerCase();
+    if (status === 'win' || status === 'won') return 'won';
+    if (status === 'lose' || status === 'lost') return 'lost';
+    if (status === 'pending') return 'pending';
+    return status;
+  };
+
+  const filteredBets = activeTab === 'all' ? bets : bets.filter((b) => normalizeStatus(b.status) === activeTab);
 
   if (user?.id == null) return null;
 

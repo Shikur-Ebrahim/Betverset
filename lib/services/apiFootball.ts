@@ -240,14 +240,22 @@ export async function fetchAndStoreOddsForFixture(fixtureId: number) {
 export async function settleFinishedBets() {
   // Get recently finished fixtures
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-  const snapshot = await db.collection('fixtures')
-    .where('status', '==', 'FT')
-    .where('updated_at', '>=', twoHoursAgo)
-    .get();
+  let finishedFixtureIds = new Set<string>();
 
-  if (snapshot.empty) return { settled: 0 };
+  try {
+    const snapshot = await db.collection('fixtures')
+      .where('status', '==', 'FT')
+      .where('updated_at', '>=', twoHoursAgo)
+      .get();
+      
+    if (!snapshot.empty) {
+      finishedFixtureIds = new Set(snapshot.docs.map(d => d.id));
+    }
+  } catch (err) {
+    console.error('Failed to query fixtures for settlement (missing index?):', err);
+    // Proceed to check manual tickets even if real fixtures fail
+  }
 
-  const finishedFixtureIds = new Set(snapshot.docs.map(d => d.id));
   let settled = 0;
 
   // Find pending bet slips with selections on these fixtures

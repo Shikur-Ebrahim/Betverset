@@ -16,5 +16,25 @@
       "path": "/api/cron/purge",
       "schedule": "0 2 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "app/api/cron/bootstrap/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/cron/sync/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/cron/settle/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/cron/purge/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/betting/bet/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/betting/cashout/route.ts": {
+      "maxDuration": 30
+    }
+  }
 }

@@ -103,7 +103,8 @@ function formatDayHeader(value: string | Date) {
   }).format(d);
 }
 
-function getInitials(name: string) {
+function getInitials(name?: string | null) {
+  if (!name) return '';
   return name
     .split(' ')
     .filter(Boolean)
@@ -595,9 +596,9 @@ export default function HomePageClient({
     if (q) {
       pool = pool.filter(
         (f) =>
-          f.home_team_name.toLowerCase().includes(q) ||
-          f.away_team_name.toLowerCase().includes(q) ||
-          f.league_name.toLowerCase().includes(q) ||
+          (f.home_team_name || '').toLowerCase().includes(q) ||
+          (f.away_team_name || '').toLowerCase().includes(q) ||
+          (f.league_name || '').toLowerCase().includes(q) ||
           (f.country_name || '').toLowerCase().includes(q)
       );
     }

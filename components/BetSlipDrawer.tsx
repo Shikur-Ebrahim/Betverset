@@ -335,7 +335,7 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
       <button
         id="betslip-toggle-btn"
         onClick={() => { setError(null); setIsOpen((o) => !o); }}
-        className="relative flex flex-col items-center gap-1 text-[#6B7280] hover:text-white transition-colors"
+        className="relative flex flex-col items-center gap-1 text-[#94A3B8] hover:text-white transition-colors"
       >
         <div className="relative">
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -392,11 +392,11 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   {items.length > 0 && (
-                    <button type="button" onClick={handleClearAll} className="text-[10px] text-[#6B7280] hover:text-[#EF4444] font-bold transition-colors">
+                    <button type="button" onClick={handleClearAll} className="text-[10px] text-[#94A3B8] hover:text-[#EF4444] font-bold transition-colors">
                       Clear
                     </button>
                   )}
-                  <button type="button" onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-white transition-colors">
+                  <button type="button" onClick={() => setIsOpen(false)} className="text-[#94A3B8] hover:text-white transition-colors">
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -424,21 +424,21 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                     {placedTicketDisplay && (
                       <p className="mt-1.5 font-mono text-xs font-black tracking-wide text-[#2563EB]">{placedTicketDisplay}</p>
                     )}
-                    <p className="text-xs font-medium text-[#6B7280] mt-1">Good luck!</p>
+                    <p className="text-xs font-medium text-[#94A3B8] mt-1">Good luck!</p>
                     {walletBalance !== null && (
-                      <p className="mt-2 text-[11px] font-black text-[#4B5563]">
+                      <p className="mt-2 text-[11px] font-black text-[#CBD5E1]">
                         New balance: <span className="text-white">{walletBalance.toFixed(2)} {walletCurrency}</span>
                       </p>
                     )}
                   </div>
                 </div>
               ) : items.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 py-14 text-[#6B7280]">
+                <div className="flex flex-col items-center justify-center gap-3 py-14 text-[#94A3B8]">
                   <svg className="h-14 w-14 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
                     <rect x="9" y="3" width="6" height="4" rx="1" ry="1" />
                   </svg>
-                  <p className="text-sm font-bold text-[#6B7280]">Your betslip is empty</p>
+                  <p className="text-sm font-bold text-[#94A3B8]">Your betslip is empty</p>
                   <p className="text-xs text-[#3F3F46]">Pick matches to add selections</p>
                 </div>
               ) : (
@@ -512,7 +512,7 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                   </div>
                 )}
                 {!hasSession && items.length > 0 && (
-                  <p className="text-center text-[11px] font-medium leading-snug text-[#6B7280]">
+                  <p className="text-center text-[11px] font-medium leading-snug text-[#94A3B8]">
                     Please log in to place your bet.
                   </p>
                 )}
@@ -523,7 +523,7 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                   </div>
                 )}
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-[#6B7280]">Total odds</span>
+                  <span className="text-[11px] font-bold text-[#94A3B8]">Total odds</span>
                   <span className="text-[22px] font-black tabular-nums text-[#059669]">{totalOdds.toFixed(2)}</span>
                 </div>
                 <div className="relative">

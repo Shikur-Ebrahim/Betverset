@@ -33,7 +33,7 @@ function renderStatusBadge(fixture: Fixture) {
   const s = fixture.status?.toUpperCase() || 'NS';
   if (isMatchClosedForBetting(fixture)) {
     return (
-      <span className="mt-2.5 bg-[var(--site-surface)]/10 border border-[rgba(0,0,0,0.12)]/20 text-[#6B7280] text-[9px] px-2.5 py-1 rounded-sm font-black uppercase tracking-widest backdrop-blur-sm whitespace-nowrap">
+      <span className="mt-2.5 bg-[#1E293B]/10 border border-[#334155]/20 text-[#94A3B8] text-[9px] px-2.5 py-1 rounded-sm font-black uppercase tracking-widest backdrop-blur-sm whitespace-nowrap">
         Finished
       </span>
     );
@@ -178,7 +178,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
     !isMatchClosedForBetting(fixture);
 
   return (
-    <div className="site-shell bg-[var(--site-surface-soft)] min-h-screen text-white pb-[70px]">
+    <div className="site-shell bg-[#1E293B] min-h-screen text-white pb-[70px]">
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
@@ -190,8 +190,8 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
         }}
       />
       {user ? <BetHistory isOpen={isBetHistoryOpen} onClose={() => setIsBetHistoryOpen(false)} user={user} /> : null}
-      <header className="flex items-center h-14 px-4 bg-[var(--site-surface)] border-b border-[rgba(0,0,0,0.08)] sticky top-0 z-40">
-        <Link href="/" className="text-[#6B7280] p-2 -ml-2">
+      <header className="flex items-center h-14 px-4 bg-[#1E293B] border-b border-[#334155] sticky top-0 z-40">
+        <Link href="/" className="text-[#94A3B8] p-2 -ml-2">
           <svg
             width="24"
             height="24"
@@ -211,11 +211,11 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
         <div className="w-8" />
       </header>
 
-      <div className="px-4 py-3 text-[11px] text-[#6B7280] flex items-center gap-1.5 font-bold uppercase tracking-widest">
+      <div className="px-4 py-3 text-[11px] text-[#94A3B8] flex items-center gap-1.5 font-bold uppercase tracking-widest">
         <span>Football</span>
-        <span className="text-[#30363D]">›</span>
+        <span className="text-[#CBD5E1]">›</span>
         <span>{fixture.country_name || 'World'}</span>
-        <span className="text-[#30363D]">›</span>
+        <span className="text-[#CBD5E1]">›</span>
         <span className="text-[#2563EB] truncate">{fixture.league_name}</span>
       </div>
 
@@ -238,7 +238,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
 
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-center gap-2.5 w-[35%]">
-              <div className="w-[60px] h-[60px] bg-[var(--site-surface)]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
+              <div className="w-[60px] h-[60px] bg-[#1E293B]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
                 {fixture.home_team_logo ? (
                   <img src={fixture.home_team_logo} alt="" className="w-full h-full object-contain" />
                 ) : (
@@ -275,7 +275,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
             </div>
 
             <div className="flex flex-col items-center gap-2.5 w-[35%]">
-              <div className="w-[60px] h-[60px] bg-[var(--site-surface)]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
+              <div className="w-[60px] h-[60px] bg-[#1E293B]/10 rounded-full flex items-center justify-center border border-[#FFFFFF]/20 p-2.5 shadow-inner">
                 {fixture.away_team_logo ? (
                   <img src={fixture.away_team_logo} alt="" className="w-full h-full object-contain" />
                 ) : (
@@ -290,7 +290,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
 
       <MatchOddsClient odds={odds} fixture={fixture} oddsLoading={oddsLoading} />
 
-      <nav className="fixed bottom-0 left-0 right-0 h-[64px] bg-[var(--site-surface)] border-t border-[rgba(0,0,0,0.08)] flex justify-around items-center z-50">
+      <nav className="fixed bottom-0 left-0 right-0 h-[64px] bg-[#1E293B] border-t border-[#334155] flex justify-around items-center z-50">
         <Link href="/" className="flex flex-col items-center gap-1 text-[#2563EB]">
           <svg
             className="w-6 h-6"
@@ -307,7 +307,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
           </svg>
           <span className="text-[10px] font-semibold">Sports</span>
         </Link>
-        <Link href="/" prefetch={false} className="flex flex-col items-center gap-1 text-[#6B7280] hover:text-white transition-colors">
+        <Link href="/" prefetch={false} className="flex flex-col items-center gap-1 text-[#94A3B8] hover:text-white transition-colors">
           <svg
             className="w-6 h-6"
             viewBox="0 0 24 24"
@@ -321,7 +321,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
           </svg>
           <span className="text-[10px] font-semibold">Live</span>
         </Link>
-        <Link href="/" prefetch={false} className="flex flex-col items-center gap-1 text-[#6B7280] hover:text-white transition-colors">
+        <Link href="/" prefetch={false} className="flex flex-col items-center gap-1 text-[#94A3B8] hover:text-white transition-colors">
           <svg
             className="w-6 h-6"
             viewBox="0 0 24 24"
@@ -336,7 +336,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
           </svg>
           <span className="text-[10px] font-semibold">Deposit</span>
         </Link>
-        <Link href="/check-ticket" prefetch={false} className="flex flex-col items-center gap-1 text-[#6B7280] hover:text-white transition-colors">
+        <Link href="/check-ticket" prefetch={false} className="flex flex-col items-center gap-1 text-[#94A3B8] hover:text-white transition-colors">
           <svg
             className="w-6 h-6"
             viewBox="0 0 24 24"

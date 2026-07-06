@@ -149,7 +149,7 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
           const cols = sorted.length === 2 ? 2 : sorted.length === 3 ? 3 : sorted.length <= 4 ? 2 : 3;
 
           return (
-            <div key={marketName} className="rounded-2xl overflow-hidden border border-[var(--site-border)]/60 bg-[var(--site-surface)] shadow-sm">
+            <div key={marketName} className="rounded-2xl overflow-hidden border border-[var(--site-border)]/60 bg-[#1E293B] shadow-sm">
               {/* Market header */}
               <button
                 onClick={() => setCollapsed(prev => {
@@ -198,10 +198,10 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
                         }}
                         className={`relative flex flex-col items-center justify-center gap-0.5 px-2 py-3 rounded-xl border transition-all duration-150 ${
                           isFinished
-                            ? 'bg-[var(--site-bg)] border-[var(--site-border)] cursor-not-allowed opacity-60'
+                            ? 'bg-[#0F172A] border-[var(--site-border)] cursor-not-allowed opacity-60'
                             : selected
                               ? 'bg-[#FF8C00] border-[#FF8C00] shadow-lg shadow-[#FF8C00]/30'
-                              : 'bg-[var(--site-surface-soft)] border-[var(--site-border)] hover:bg-[#E8EFF9] hover:border-[#94A3B8] hover:shadow-sm active:scale-95'
+                              : 'bg-[#1E293B] border-[var(--site-border)] hover:bg-[#E8EFF9] hover:border-[#94A3B8] hover:shadow-sm active:scale-95'
                         }`}
                       >
                         {selected && (
@@ -232,14 +232,14 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
         {markets.size === 0 && oddsLoading && (
           <div className="space-y-3">
             {SKELETON_MARKETS.map(label => (
-              <div key={label} className="rounded-2xl overflow-hidden border border-[var(--site-border)]/60 bg-[var(--site-surface)] shadow-sm">
+              <div key={label} className="rounded-2xl overflow-hidden border border-[var(--site-border)]/60 bg-[#1E293B] shadow-sm">
                 <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-[#1E293B] to-[#334155]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B]" />
                   <span className="text-[13px] font-bold text-white">{label}</span>
                 </div>
                 <div className="p-2.5 grid grid-cols-3 gap-2">
                   {[0, 1, 2].map(i => (
-                    <div key={i} className="h-[62px] rounded-xl bg-[var(--site-surface-soft)] animate-pulse" />
+                    <div key={i} className="h-[62px] rounded-xl bg-[#1E293B] animate-pulse" />
                   ))}
                 </div>
               </div>
@@ -250,7 +250,7 @@ export default function MatchOddsClient({ odds, fixture, oddsLoading = false }: 
         {/* Empty state */}
         {markets.size === 0 && !oddsLoading && (
           <div className="text-center py-14 flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-[var(--site-surface-soft)] border border-[var(--site-border)] flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-[#1E293B] border border-[var(--site-border)] flex items-center justify-center">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
             </div>
             <div>
@@ -271,7 +271,7 @@ function TabBtn({ label, active, onClick }: { label: string; active: boolean; on
       className={`px-4 py-1.5 rounded-full text-[11.5px] font-bold whitespace-nowrap transition-all duration-150 ${
         active
           ? 'bg-[#FF8C00] text-white shadow-md shadow-[#FF8C00]/40'
-          : 'bg-[#1C2128] text-[#8B949E] border border-[#30363D] hover:text-white hover:border-[#555]'
+          : 'bg-[#1C2128] text-[#94A3B8] border border-[#30363D] hover:text-white hover:border-[#555]'
       }`}
     >
       {label}

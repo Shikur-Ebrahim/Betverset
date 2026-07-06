@@ -1364,7 +1364,7 @@ export default function HomePageClient({
   }, [selectedDay]);
 
   return (
-    <div className="site-shell overflow-x-hidden bg-[var(--site-surface-soft)] min-h-screen text-white pb-[70px]">
+    <div className="site-shell overflow-x-hidden bg-[#1E293B] min-h-screen text-white pb-[70px]">
       <AuthModal
         isOpen={isAuthOpen}
         onClose={handleAuthModalClose}
@@ -1394,7 +1394,7 @@ export default function HomePageClient({
         <WithdrawalModal isOpen={isWithdrawalOpen} onClose={() => setIsWithdrawalOpen(false)} user={user} />
       ) : null}
       {user ? <BetHistory isOpen={isBetHistoryOpen} onClose={() => setIsBetHistoryOpen(false)} user={user} /> : null}
-      <header className="site-header sticky top-0 z-[60] bg-[var(--site-surface)] border-b border-[rgba(0,0,0,0.08)]">
+      <header className="site-header sticky top-0 z-[60] bg-[#1E293B] border-b border-[#334155]">
         <div className="mx-auto flex h-14 min-w-0 items-center justify-between gap-2 px-2 sm:gap-3 sm:px-4">
           <div className="site-brand min-w-0 shrink-0 truncate text-lg italic tracking-tight text-white sm:text-xl">
             BETVERS
@@ -1407,7 +1407,7 @@ export default function HomePageClient({
                   const { amountPx, currencyPx } = headerBalanceFontSizes(amountStr);
                   return (
                     <div className="flex min-w-0 max-w-[min(11.5rem,calc(100vw-9.5rem))] flex-col items-end leading-none sm:max-w-[min(14rem,calc(100vw-12rem))]">
-                      <span className="mb-0.5 text-[9px] font-bold uppercase tracking-wider text-[#6B7280] sm:text-[10px]">
+                      <span className="mb-0.5 text-[9px] font-bold uppercase tracking-wider text-[#94A3B8] sm:text-[10px]">
                         Balance
                       </span>
                       <span
@@ -1423,18 +1423,18 @@ export default function HomePageClient({
                   );
                 })()}
                 <div className="relative shrink-0">
-                  <button onClick={() => setDropdownOpen(!dropdownOpen)} className="w-9 h-9 rounded-full bg-[#F5F9FF] border border-[rgba(0,0,0,0.08)] flex items-center justify-center text-white hover:bg-[#E6EEFF] transition-colors relative z-10 focus:outline-none focus:ring-2 focus:ring-[#2563EB]">
+                  <button onClick={() => setDropdownOpen(!dropdownOpen)} className="w-9 h-9 rounded-full bg-[#0F172A] border border-[#334155] flex items-center justify-center text-white hover:bg-[#111827] transition-colors relative z-10 focus:outline-none focus:ring-2 focus:ring-[#2563EB]">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    <span className="absolute -right-1 bottom-1 text-[#6B7280]">
+                    <span className="absolute -right-1 bottom-1 text-[#94A3B8]">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                     </span>
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute top-full right-0 mt-3 w-52 bg-[var(--site-surface)] border border-[rgba(0,0,0,0.08)] rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute top-full right-0 mt-3 w-52 bg-[#1E293B] border border-[#334155] rounded-xl shadow-2xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
                       {user.role === 'admin' && (
                         <button 
                           onClick={() => { setShowAdminDashboard(true); setDropdownOpen(false); }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-[#2563EB] hover:bg-[rgba(37,99,235,0.08)] font-bold transition-colors border-b border-[rgba(0,0,0,0.08)] flex items-center gap-2"
+                          className="w-full text-left px-4 py-2.5 text-sm text-[#2563EB] hover:bg-[#273549] font-bold transition-colors border-b border-[#334155] flex items-center gap-2"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                           Admin Dashboard
@@ -1443,40 +1443,40 @@ export default function HomePageClient({
                       <button 
                         onPointerEnter={primeDeposit}
                         onClick={() => { openDepositOrAskLogin(); setDropdownOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#E6EEFF] font-semibold transition-colors flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#111827] font-semibold transition-colors flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                        <svg className="w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                         Deposit
                       </button>
                       <button 
                         onClick={() => { setIsWithdrawalOpen(true); setDropdownOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#E6EEFF] font-semibold transition-colors flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#111827] font-semibold transition-colors flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                        <svg className="w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
                         Withdrawal
                       </button>
                       <button 
                         onClick={() => { setIsBetHistoryOpen(true); setDropdownOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#E6EEFF] font-semibold transition-colors flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#111827] font-semibold transition-colors flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        <svg className="w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
                         Bet History
                       </button>
                       <button 
                         onClick={() => { setIsHistoryOpen(true); setDropdownOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#E6EEFF] font-semibold transition-colors flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#111827] font-semibold transition-colors flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <svg className="w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         Transaction History
                       </button>
                       <button 
                         onClick={() => { setIsSettingsOpen(true); setDropdownOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#E6EEFF] font-semibold transition-colors flex items-center gap-2"
+                        className="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-[#111827] font-semibold transition-colors flex items-center gap-2"
                       >
-                        <svg className="w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <svg className="w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         Account settings
                       </button>
-                      <button onClick={handleLogout} className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[rgba(239,68,68,0.10)] font-semibold transition-colors border-t border-[rgba(0,0,0,0.08)] mt-1 pt-3 flex items-center gap-2"><svg className="w-4 h-4 text-[#DC2626]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Log out</button>
+                      <button onClick={handleLogout} className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[rgba(239,68,68,0.10)] font-semibold transition-colors border-t border-[#334155] mt-1 pt-3 flex items-center gap-2"><svg className="w-4 h-4 text-[#DC2626]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Log out</button>
                     </div>
                   )}
                 </div>
@@ -1491,7 +1491,7 @@ export default function HomePageClient({
               </div>
             ) : (
               <>
-                <button onClick={() => { setAuthView('login'); setIsAuthOpen(true); }} className="text-sm font-semibold text-[#4B5563] hover:text-white px-3 py-1.5 rounded-lg transition-colors border border-[rgba(0,0,0,0.08)] hover:border-[rgba(255,255,255,0.16)]">Log In</button>
+                <button onClick={() => { setAuthView('login'); setIsAuthOpen(true); }} className="text-sm font-semibold text-[#CBD5E1] hover:text-white px-3 py-1.5 rounded-lg transition-colors border border-[#334155] hover:border-[rgba(255,255,255,0.16)]">Log In</button>
                 <button onClick={() => { setAuthView('signup'); setIsAuthOpen(true); }} className="bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg px-4 py-1.5 text-sm font-bold text-white transition-all active:scale-95" style={{boxShadow:'0 0 16px rgba(37,99,235,0.3)'}}>Sign Up</button>
               </>
             )}
@@ -1549,12 +1549,12 @@ export default function HomePageClient({
                {selectedDayLabel} ▾
              </button>
              {openSheet === 'day' && (
-               <div className="absolute top-full left-0 mt-1 w-[160px] bg-[var(--site-surface)] border border-[rgba(0,0,0,0.08)] rounded-xl shadow-2xl z-[100] py-1 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+               <div className="absolute top-full left-0 mt-1 w-[160px] bg-[#1E293B] border border-[#334155] rounded-xl shadow-2xl z-[100] py-1 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   {dayOptions.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => selectDay(option.id)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#F5F9FF] transition-colors ${option.id === selectedDay ? 'text-[#2563EB]' : 'text-white'}`}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#0F172A] transition-colors ${option.id === selectedDay ? 'text-[#2563EB]' : 'text-white'}`}
                     >
                       <span className="text-[12px] font-semibold">{option.label}</span>
                       <span className="text-[10px] opacity-50">{option.count}</span>
@@ -1575,15 +1575,15 @@ export default function HomePageClient({
                {selectedCountry} ▾
              </button>
              {openSheet === 'country' && (
-               <div className="absolute top-full left-0 mt-1 w-[180px] bg-[var(--site-surface)] border border-[rgba(0,0,0,0.08)] rounded-xl shadow-2xl z-[100] py-1 max-h-[300px] overflow-y-auto hide-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
+               <div className="absolute top-full left-0 mt-1 w-[180px] bg-[#1E293B] border border-[#334155] rounded-xl shadow-2xl z-[100] py-1 max-h-[300px] overflow-y-auto hide-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
                   {countryOptions.map((country) => (
                     <button
                       key={country.name}
                       onClick={() => selectCountry(country.name)}
-                      className={`flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#F5F9FF] transition-colors ${country.name === selectedCountry ? 'text-[#2563EB]' : 'text-white'}`}
+                      className={`flex w-full items-center justify-between px-3 py-2 text-left hover:bg-[#0F172A] transition-colors ${country.name === selectedCountry ? 'text-[#2563EB]' : 'text-white'}`}
                     >
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <div className="w-[18px] h-[18px] rounded-full overflow-hidden border border-[rgba(0,0,0,0.08)] shrink-0 bg-[var(--site-surface-soft)] flex items-center justify-center">
+                        <div className="w-[18px] h-[18px] rounded-full overflow-hidden border border-[#334155] shrink-0 bg-[#1E293B] flex items-center justify-center">
                           {country.flagUrl ? (
                             <img src={country.flagUrl} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -1628,7 +1628,7 @@ export default function HomePageClient({
            {/* Search Button */}
            <div className="flex items-center gap-2 ml-auto">
              {showMainSearch ? (
-               <div className="flex items-center gap-1.5 bg-[var(--site-surface)] border border-[#2563EB] rounded-full px-3 py-1.5 animate-in fade-in slide-in-from-right-2 duration-200">
+               <div className="flex items-center gap-1.5 bg-[#1E293B] border border-[#2563EB] rounded-full px-3 py-1.5 animate-in fade-in slide-in-from-right-2 duration-200">
                  <svg className="w-3.5 h-3.5 text-[#2563EB] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                  <input
                    type="text"
@@ -1639,14 +1639,14 @@ export default function HomePageClient({
                    className="bg-transparent text-white text-xs placeholder-[#8B949E] outline-none w-[130px]"
                  />
                  {mainSearch && (
-                   <button onClick={() => setMainSearch('')} className="text-[#6B7280] hover:text-white shrink-0">✕</button>
+                   <button onClick={() => setMainSearch('')} className="text-[#94A3B8] hover:text-white shrink-0">✕</button>
                  )}
-                 <button onClick={() => { setShowMainSearch(false); setMainSearch(''); }} className="text-[#6B7280] hover:text-white shrink-0 ml-1">✕</button>
+                 <button onClick={() => { setShowMainSearch(false); setMainSearch(''); }} className="text-[#94A3B8] hover:text-white shrink-0 ml-1">✕</button>
                </div>
              ) : (
                <button
                  onClick={() => setShowMainSearch(true)}
-                 className="w-8 h-8 rounded-full bg-[#F5F9FF] border border-[rgba(0,0,0,0.08)] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-[#E6EEFF] transition-colors"
+                 className="w-8 h-8 rounded-full bg-[#0F172A] border border-[#334155] flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-[#111827] transition-colors"
                >
                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                </button>
@@ -1666,13 +1666,13 @@ export default function HomePageClient({
             <div className="relative">
               <button
                 onClick={() => scrollCarousel('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 border border-[rgba(0,0,0,0.12)]/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-all active:scale-90 shadow-lg"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 border border-[#334155]/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-all active:scale-90 shadow-lg"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
               <button
                 onClick={() => scrollCarousel('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 border border-[rgba(0,0,0,0.12)]/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-all active:scale-90 shadow-lg"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/70 border border-[#334155]/10 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/90 transition-all active:scale-90 shadow-lg"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -1686,21 +1686,21 @@ export default function HomePageClient({
                     >
                       {formatMatchDate(fixture.match_date)}
                     </span>
-                    <span className="text-[10px] text-[#6B7280] uppercase font-bold tracking-tight">
+                    <span className="text-[10px] text-[#94A3B8] uppercase font-bold tracking-tight">
                       {fixture.country_name ? `${fixture.country_name}: ` : ''}{fixture.league_name}
                     </span>
                   </div>
                   <div className="flex items-center justify-between my-1">
                     <div className="flex flex-col items-center gap-2 w-[40%] text-center">
-                       <div className="w-11 h-11 rounded-full bg-[var(--site-surface-soft)] flex items-center justify-center overflow-hidden p-1.5 border border-[rgba(0,0,0,0.08)]">
-                         {fixture.home_team_logo ? <img src={fixture.home_team_logo} alt="" className="w-full h-full object-contain" /> : <span className="text-xs font-bold text-[#6B7280]">{getInitials(fixture.home_team_name)}</span>}
+                       <div className="w-11 h-11 rounded-full bg-[#1E293B] flex items-center justify-center overflow-hidden p-1.5 border border-[#334155]">
+                         {fixture.home_team_logo ? <img src={fixture.home_team_logo} alt="" className="w-full h-full object-contain" /> : <span className="text-xs font-bold text-[#94A3B8]">{getInitials(fixture.home_team_name)}</span>}
                        </div>
                        <span className="text-[11px] font-semibold truncate w-full text-white">{fixture.home_team_name}</span>
                     </div>
-                    <div className="text-[11px] font-black text-[#30363D] italic bg-[var(--site-surface-soft)] rounded-full w-6 h-6 flex items-center justify-center">VS</div>
+                    <div className="text-[11px] font-black text-[#CBD5E1] italic bg-[#1E293B] rounded-full w-6 h-6 flex items-center justify-center">VS</div>
                     <div className="flex flex-col items-center gap-2 w-[40%] text-center">
-                       <div className="w-11 h-11 rounded-full bg-[var(--site-surface-soft)] flex items-center justify-center overflow-hidden p-1.5 border border-[rgba(0,0,0,0.08)]">
-                         {fixture.away_team_logo ? <img src={fixture.away_team_logo} alt="" className="w-full h-full object-contain" /> : <span className="text-xs font-bold text-[#6B7280]">{getInitials(fixture.away_team_name)}</span>}
+                       <div className="w-11 h-11 rounded-full bg-[#1E293B] flex items-center justify-center overflow-hidden p-1.5 border border-[#334155]">
+                         {fixture.away_team_logo ? <img src={fixture.away_team_logo} alt="" className="w-full h-full object-contain" /> : <span className="text-xs font-bold text-[#94A3B8]">{getInitials(fixture.away_team_name)}</span>}
                        </div>
                        <span className="text-[11px] font-semibold truncate w-full text-white">{fixture.away_team_name}</span>
                     </div>
@@ -1730,7 +1730,7 @@ export default function HomePageClient({
                                    odds: Number(odd.odd_value),
                                  });
                                }}
-                               className={`champx-odds-btn flex-col items-center justify-center ${isFinished ? 'opacity-50 cursor-not-allowed' : selected ? 'bg-[#2563EB] shadow-inner text-white' : 'hover:bg-[#E6EEFF] transition-colors'}`}>
+                               className={`champx-odds-btn flex-col items-center justify-center ${isFinished ? 'opacity-50 cursor-not-allowed' : selected ? 'bg-[#2563EB] shadow-inner text-white' : 'hover:bg-[#111827] transition-colors'}`}>
                                <span className={`label ${selected ? 'text-white/80' : ''}`}>{odd.selection}</span>
                                <span className={`value ${selected ? 'text-white' : 'text-[#2563EB]'}`}>{isFinished ? 'CLOSED' : odd.odd_value}</span>
                              </button>
@@ -1738,7 +1738,7 @@ export default function HomePageClient({
                          });
                        }
                        return (
-                         <div className="champx-odds-btn flex-row hover:bg-[#E6EEFF] transition-colors">
+                         <div className="champx-odds-btn flex-row hover:bg-[#111827] transition-colors">
                             <span className="value text-[#2563EB]">View Markets +</span>
                          </div>
                        );
@@ -1763,7 +1763,7 @@ export default function HomePageClient({
              </span>
              <button
                onClick={() => setShowLiveOnly(false)}
-               className="ml-auto text-[10px] text-[#6B7280] hover:text-white border border-[rgba(0,0,0,0.08)] rounded-full px-2 py-0.5 transition-colors"
+               className="ml-auto text-[10px] text-[#94A3B8] hover:text-white border border-[#334155] rounded-full px-2 py-0.5 transition-colors"
              >
                Show All
              </button>
@@ -1776,19 +1776,19 @@ export default function HomePageClient({
               const leagueIcon = firstFixture.league_logo || firstFixture.flag_url;
               
               return (
-                <div key={leagueName} className="rounded-xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] shadow-sm">
+                <div key={leagueName} className="rounded-xl overflow-hidden border border-[#334155] bg-[#1E293B] shadow-sm">
                   <div 
                     onClick={() => toggleLeague(leagueName)}
                     className="bg-[#2563EB] px-3.5 py-2.5 flex items-center justify-between text-white font-bold text-[13px] cursor-pointer select-none"
                   >
                     <div className="flex items-center gap-2">
                       {leagueIcon ? (
-                        <div className="w-[20px] h-[20px] rounded-full overflow-hidden border border-[rgba(0,0,0,0.12)]/40 shadow-sm">
+                        <div className="w-[20px] h-[20px] rounded-full overflow-hidden border border-[#334155]/40 shadow-sm">
                           <img src={leagueIcon} alt="" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-[18px] h-[18px] rounded-full border-[1.5px] border-[rgba(0,0,0,0.12)] flex items-center justify-center bg-transparent">
-                          <div className="w-[8px] h-[8px] bg-[var(--site-surface)] rounded-full"></div>
+                        <div className="w-[18px] h-[18px] rounded-full border-[1.5px] border-[#334155] flex items-center justify-center bg-transparent">
+                          <div className="w-[8px] h-[8px] bg-[#1E293B] rounded-full"></div>
                         </div>
                       )}
                       <span className="truncate uppercase tracking-tight">{leagueName}</span>
@@ -1796,7 +1796,7 @@ export default function HomePageClient({
                     <svg className={`w-4 h-4 text-white opacity-90 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd"/></svg>
                   </div>
                   {!isCollapsed && (
-                    <div className="bg-[#E8EDF5] p-[2px] flex flex-col gap-[2px]">
+                    <div className="bg-[#1E293B] p-[2px] flex flex-col gap-[2px]">
                       {matches.map((fixture) => {
                         const isLive = liveFixtureIds.has(fixture.id);
                                            const renderStatus = () => {
@@ -1807,7 +1807,7 @@ export default function HomePageClient({
                                 <span className="text-[11px] font-black text-white">
                                   {isMounted ? new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date(fixture.match_date)) : ''}
                                 </span>
-                                <span className="text-[9px] text-[#4B5563] font-bold mt-0.5">
+                                <span className="text-[9px] text-[#CBD5E1] font-bold mt-0.5">
                                   {isMounted ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit' }).format(new Date(fixture.match_date)) : ''}
                                 </span>
                               </>
@@ -1816,7 +1816,7 @@ export default function HomePageClient({
                           
                           if (isMatchClosedForBetting(fixture)) {
                             return (
-                              <span className="text-[9px] font-bold text-[#4B5563] bg-[#E2E8F0] px-1 py-0.5 rounded tracking-wide text-center w-full">
+                              <span className="text-[9px] font-bold text-[#CBD5E1] bg-[#334155] px-1 py-0.5 rounded tracking-wide text-center w-full">
                                 Finished
                               </span>
                             );
@@ -1846,7 +1846,7 @@ export default function HomePageClient({
                           }
 
                           return (
-                            <span className="text-[8px] font-bold text-[#6B7280] bg-[#E6EEFF] px-1 py-0.5 rounded uppercase tracking-wider text-center w-full">
+                            <span className="text-[8px] font-bold text-[#94A3B8] bg-[#111827] px-1 py-0.5 rounded uppercase tracking-wider text-center w-full">
                               {status}
                             </span>
                           );
@@ -1859,19 +1859,19 @@ export default function HomePageClient({
                         const shouldShowScore = isLive || isLiveStatus || isFinished;
 
                         return (
-                          <MatchDetailLink key={fixture.id} fixture={fixture} odds={oddsMap[fixture.id] ?? []} className="block p-3 bg-[#E8EDF5] hover:bg-[#DDE4EE] transition-colors rounded-[5px]">
+                          <MatchDetailLink key={fixture.id} fixture={fixture} odds={oddsMap[fixture.id] ?? []} className="block p-3 bg-[#1E293B] hover:bg-[#273549] transition-colors rounded-[5px]">
                             <div className="flex gap-3 mb-2.5">
-                               <div className="flex flex-col items-center justify-center w-[52px] min-w-[52px] h-[48px] bg-[var(--site-surface)] rounded-lg shadow-sm border border-[rgba(0,0,0,0.08)]">
+                               <div className="flex flex-col items-center justify-center w-[52px] min-w-[52px] h-[48px] bg-[#1E293B] rounded-lg shadow-sm border border-[#334155]">
                                  {renderStatus()}
                                </div>
                                <div className="flex flex-col gap-1.5 w-full justify-center">
                                   <div className="flex items-center gap-2.5">
-                                    {fixture.home_team_logo ? <img src={fixture.home_team_logo} className="w-4.5 h-4.5 object-contain" alt="" /> : <div className="w-4.5 h-4.5 bg-[var(--site-surface)] rounded-sm flex items-center justify-center text-[8px] text-white font-bold border border-[rgba(0,0,0,0.08)]">{getInitials(fixture.home_team_name)}</div>}
+                                    {fixture.home_team_logo ? <img src={fixture.home_team_logo} className="w-4.5 h-4.5 object-contain" alt="" /> : <div className="w-4.5 h-4.5 bg-[#1E293B] rounded-sm flex items-center justify-center text-[8px] text-white font-bold border border-[#334155]">{getInitials(fixture.home_team_name)}</div>}
                                     <span className="text-[14px] font-bold text-white truncate tracking-tight">{fixture.home_team_name}</span>
                                     {shouldShowScore && <span className={`ml-auto font-black text-[14px] ${isLiveStatus ? 'text-[#16A34A]' : 'text-white'}`}>{fixture.home_score}</span>}
                                   </div>
                                   <div className="flex items-center gap-2.5">
-                                    {fixture.away_team_logo ? <img src={fixture.away_team_logo} className="w-4.5 h-4.5 object-contain" alt="" /> : <div className="w-4.5 h-4.5 bg-[var(--site-surface)] rounded-sm flex items-center justify-center text-[8px] text-white font-bold border border-[rgba(0,0,0,0.08)]">{getInitials(fixture.away_team_name)}</div>}
+                                    {fixture.away_team_logo ? <img src={fixture.away_team_logo} className="w-4.5 h-4.5 object-contain" alt="" /> : <div className="w-4.5 h-4.5 bg-[#1E293B] rounded-sm flex items-center justify-center text-[8px] text-white font-bold border border-[#334155]">{getInitials(fixture.away_team_name)}</div>}
                                     <span className="text-[14px] font-bold text-white truncate tracking-tight">{fixture.away_team_name}</span>
                                     {shouldShowScore && <span className={`ml-auto font-black text-[14px] ${isLiveStatus ? 'text-[#16A34A]' : 'text-white'}`}>{fixture.away_score}</span>}
                                   </div>
@@ -1887,7 +1887,7 @@ export default function HomePageClient({
                                      {[0, 1, 2].map((i) => (
                                        <div
                                          key={i}
-                                         className="flex-1 rounded-md py-2 bg-[#D3DBE8] animate-pulse"
+                                         className="flex-1 rounded-md py-2 bg-[#334155] animate-pulse"
                                        />
                                      ))}
                                    </div>
@@ -1921,10 +1921,10 @@ export default function HomePageClient({
                                            }}
                                            className={`flex-1 rounded-md py-2 flex items-center justify-center transition-all ${
                                              isFinished
-                                               ? 'bg-[#E2E8F0]'
+                                               ? 'bg-[#334155]'
                                                : selected
                                                  ? 'bg-[#2563EB] shadow-inner text-white'
-                                                 : 'bg-[#D3DBE8] hover:bg-[#C9D2E0] shadow-inner text-white'
+                                                 : 'bg-[#334155] hover:bg-[#C9D2E0] shadow-inner text-white'
                                            }`}
                                          >
                                            {selected && (
@@ -1939,7 +1939,7 @@ export default function HomePageClient({
                                              </svg>
                                            )}
                                            <span
-                                             className={`text-[13px] font-black ${isFinished ? 'text-[#6B7280]' : selected ? 'text-white' : ''}`}
+                                             className={`text-[13px] font-black ${isFinished ? 'text-[#94A3B8]' : selected ? 'text-white' : ''}`}
                                            >
                                              {isFinished ? 'CLOSED' : Number(odd.odd_value).toFixed(2)}
                                            </span>
@@ -1954,7 +1954,7 @@ export default function HomePageClient({
                                }
                                return (
                                  <div className="flex gap-1.5 mt-2">
-                                   <div className="flex-1 rounded-md py-2 text-center text-[11px] font-bold text-[#6B7280] bg-[#E2E8F0]">
+                                   <div className="flex-1 rounded-md py-2 text-center text-[11px] font-bold text-[#94A3B8] bg-[#334155]">
                                      CLOSED
                                    </div>
                                  </div>
@@ -1968,12 +1968,12 @@ export default function HomePageClient({
                 </div>
               );
             }) : listFetchSettled && displayedUpcoming.length === 0 ? (
-             <div className="site-card rounded-xl p-8 text-center flex flex-col items-center justify-center border border-[rgba(0,0,0,0.08)]">
-               <div className="w-12 h-12 rounded-full bg-[#F5F9FF] flex items-center justify-center mb-3">
+             <div className="site-card rounded-xl p-8 text-center flex flex-col items-center justify-center border border-[#334155]">
+               <div className="w-12 h-12 rounded-full bg-[#0F172A] flex items-center justify-center mb-3">
                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8B949E" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                </div>
                <p className="text-sm font-semibold text-white">No matches with odds right now</p>
-               <p className="text-xs text-[#6B7280] mt-1">Try another day or filter, or check back after the server sync finishes.</p>
+               <p className="text-xs text-[#94A3B8] mt-1">Try another day or filter, or check back after the server sync finishes.</p>
              </div>
            ) : null}
             {hasMoreMatches && groupedMatches.length > 0 && (
@@ -2050,15 +2050,15 @@ export default function HomePageClient({
       {/* Sports Sidebar */}
       <div className={`fixed inset-0 z-[100] transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="absolute inset-0 bg-black/60" onClick={() => setIsSidebarOpen(false)}></div>
-        <div className="absolute top-0 left-0 bottom-0 w-[280px] bg-[var(--site-surface-soft)] border-r border-[rgba(0,0,0,0.08)] flex flex-col shadow-2xl">
-          <div className="h-14 border-b border-[rgba(0,0,0,0.08)] flex items-center justify-between px-4 bg-[var(--site-surface)]">
+        <div className="absolute top-0 left-0 bottom-0 w-[280px] bg-[#1E293B] border-r border-[#334155] flex flex-col shadow-2xl">
+          <div className="h-14 border-b border-[#334155] flex items-center justify-between px-4 bg-[#1E293B]">
             <span className="font-bold text-[#2563EB]">{sidebarFilterMode === 'live' ? 'LIVE MENU' : 'SPORTS MENU'}</span>
-            <button onClick={() => setIsSidebarOpen(false)} className="text-[#6B7280] hover:text-white">
+            <button onClick={() => setIsSidebarOpen(false)} className="text-[#94A3B8] hover:text-white">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
           </div>
           
-          <div className="border-b border-[rgba(0,0,0,0.08)] p-3 space-y-3 bg-[var(--site-surface-soft)]">
+          <div className="border-b border-[#334155] p-3 space-y-3 bg-[#1E293B]">
             {/* Search Bar */}
             <div className="relative">
               <input 
@@ -2066,9 +2066,9 @@ export default function HomePageClient({
                 placeholder="Search" 
                 value={sidebarSearch}
                 onChange={(e) => setSidebarSearch(e.target.value)}
-                className="w-full bg-[var(--site-surface)] border border-[rgba(0,0,0,0.08)] rounded-lg py-2.5 pl-10 pr-3 text-sm text-white placeholder-[#8B949E] focus:outline-none focus:border-[#2563EB] transition-colors shadow-inner"
+                className="w-full bg-[#1E293B] border border-[#334155] rounded-lg py-2.5 pl-10 pr-3 text-sm text-white placeholder-[#8B949E] focus:outline-none focus:border-[#2563EB] transition-colors shadow-inner"
               />
-              <svg className="absolute left-3.5 top-3 w-4 h-4 text-[#6B7280]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg className="absolute left-3.5 top-3 w-4 h-4 text-[#94A3B8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </div>
           </div>
           
@@ -2092,13 +2092,13 @@ export default function HomePageClient({
                         {sidebarFilterMode === 'live' ? 'Live Leagues' : 'Top Leagues'}
                       </h3>
                     </div>
-                    <svg className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${isTopLeaguesExpanded ? '' : '-rotate-90'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    <svg className={`w-4 h-4 text-[#94A3B8] transition-transform duration-200 ${isTopLeaguesExpanded ? '' : '-rotate-90'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
                   </button>
 
                   {isTopLeaguesExpanded && (
-                    <div className="space-y-0.5 ml-2.5 border-l border-[rgba(0,0,0,0.08)]">
+                    <div className="space-y-0.5 ml-2.5 border-l border-[#334155]">
                       {filteredTopLeagues.length === 0 ? (
-                        <p className="px-3 py-2 text-xs text-[#6B7280]">
+                        <p className="px-3 py-2 text-xs text-[#94A3B8]">
                           {sidebarFilterMode === 'live'
                             ? 'No live leagues right now.'
                             : 'No leagues yet — try a country below.'}
@@ -2113,13 +2113,13 @@ export default function HomePageClient({
                             setSelectedCountry('All countries');
                             setIsSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative ${selectedLeagueId === league.api_league_id ? 'bg-[#2563EB]/10' : 'hover:bg-[#F5F9FF]'}`}
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative ${selectedLeagueId === league.api_league_id ? 'bg-[#2563EB]/10' : 'hover:bg-[#0F172A]'}`}
                         >
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-px bg-[#E6EEFF]"></div>
-                          <div className="w-6 h-6 rounded-full overflow-hidden bg-[var(--site-surface)]/10 flex items-center justify-center p-0.5 border border-[rgba(0,0,0,0.08)] ml-2">
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-px bg-[#111827]"></div>
+                          <div className="w-6 h-6 rounded-full overflow-hidden bg-[#1E293B]/10 flex items-center justify-center p-0.5 border border-[#334155] ml-2">
                             {league.logo ? <img src={league.logo} alt="" className="w-full h-full object-contain" /> : <div className="w-2 h-2 bg-[#2563EB] rounded-full"></div>}
                           </div>
-                          <span className={`text-[13px] font-medium transition-colors truncate ${selectedLeagueId === league.api_league_id ? 'text-[#2563EB]' : 'text-[#4B5563] group-hover:text-white'}`}>{league.name}</span>
+                          <span className={`text-[13px] font-medium transition-colors truncate ${selectedLeagueId === league.api_league_id ? 'text-[#2563EB]' : 'text-[#CBD5E1] group-hover:text-white'}`}>{league.name}</span>
                         </button>
                       ))}
                     </div>
@@ -2140,18 +2140,18 @@ export default function HomePageClient({
                     className="w-full flex items-center justify-between px-1 mb-2 group"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded bg-[#F5F9FF] flex items-center justify-center border border-[rgba(0,0,0,0.08)]">
+                      <div className="w-5 h-5 rounded bg-[#0F172A] flex items-center justify-center border border-[#334155]">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="#8B949E"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
                       </div>
                       <h3 className="text-[13px] font-bold text-white uppercase tracking-tight">Countries</h3>
                     </div>
-                    <svg className={`w-4 h-4 text-[#6B7280] transition-transform duration-200 ${isCountriesExpanded ? '' : '-rotate-90'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    <svg className={`w-4 h-4 text-[#94A3B8] transition-transform duration-200 ${isCountriesExpanded ? '' : '-rotate-90'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
                   </button>
 
                   {isCountriesExpanded && (
-                    <div className="space-y-0.5 ml-2.5 border-l border-[rgba(0,0,0,0.08)]">
+                    <div className="space-y-0.5 ml-2.5 border-l border-[#334155]">
                       {filteredCountries.length === 0 ? (
-                        <p className="px-3 py-2 text-xs text-[#6B7280]">
+                        <p className="px-3 py-2 text-xs text-[#94A3B8]">
                           {sidebarFilterMode === 'live'
                             ? 'No live matches by country right now.'
                             : 'No countries loaded yet.'}
@@ -2164,10 +2164,10 @@ export default function HomePageClient({
                             selectCountry(country.name);
                             setIsSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative ${selectedCountry === country.name && selectedLeagueId === null ? 'bg-[#2563EB]/10' : 'hover:bg-[#F5F9FF]'}`}
+                          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group relative ${selectedCountry === country.name && selectedLeagueId === null ? 'bg-[#2563EB]/10' : 'hover:bg-[#0F172A]'}`}
                         >
-                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-px bg-[#E6EEFF]"></div>
-                          <div className="w-6 h-6 rounded-full overflow-hidden bg-[var(--site-surface)] flex items-center justify-center p-0.5 border border-[rgba(0,0,0,0.08)] ml-2 shrink-0">
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-px bg-[#111827]"></div>
+                          <div className="w-6 h-6 rounded-full overflow-hidden bg-[#1E293B] flex items-center justify-center p-0.5 border border-[#334155] ml-2 shrink-0">
                             {country.flagUrl ? (
                               <img src={country.flagUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
@@ -2175,8 +2175,8 @@ export default function HomePageClient({
                             )}
                           </div>
                           <div className="flex-1 flex items-center justify-between min-w-0">
-                            <span className={`text-[13px] font-semibold truncate ${selectedCountry === country.name ? 'text-[#2563EB]' : 'text-[#4B5563] group-hover:text-white'}`}>{country.name}</span>
-                            <span className={`text-[10px] ml-2 shrink-0 font-bold ${sidebarFilterMode === 'live' ? 'text-[#16A34A]' : 'text-[#6B7280]'}`}>
+                            <span className={`text-[13px] font-semibold truncate ${selectedCountry === country.name ? 'text-[#2563EB]' : 'text-[#CBD5E1] group-hover:text-white'}`}>{country.name}</span>
+                            <span className={`text-[10px] ml-2 shrink-0 font-bold ${sidebarFilterMode === 'live' ? 'text-[#16A34A]' : 'text-[#94A3B8]'}`}>
                               {'count' in country ? country.count : 0}
                             </span>
                           </div>

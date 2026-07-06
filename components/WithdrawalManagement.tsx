@@ -174,8 +174,8 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
   const messageIsError = message.startsWith('Error');
 
   return (
-    <div className="fixed inset-0 z-[160] bg-white text-[#1A202C] flex flex-col h-screen overflow-hidden">
-      <header className="bg-white px-6 py-5 flex items-center justify-between shrink-0 border-b border-[#F1F5F9]">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
+      <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button
             onClick={onClose}
@@ -185,18 +185,18 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="text-xl font-black text-[#1A202C] tracking-tight">Withdrawal Methods</div>
+          <div className="text-xl font-black text-white tracking-tight">Withdrawal Methods</div>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto p-6">
         <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-6">
-          <div className="flex p-1 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
+          <div className="flex p-1 bg-[var(--site-bg)] rounded-2xl border border-[var(--site-border)]">
             <button
               type="button"
               onClick={() => setType('bank')}
               className={`flex-1 py-3 rounded-xl font-black text-xs transition-all ${
-                type === 'bank' ? 'bg-white text-[#1A202C] shadow-sm' : 'text-[#64748B]'
+                type === 'bank' ? 'bg-[var(--site-surface)] text-white shadow-sm' : 'text-[#64748B]'
               }`}
             >
               Banks
@@ -205,7 +205,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
               type="button"
               onClick={() => setType('wallet')}
               className={`flex-1 py-3 rounded-xl font-black text-xs transition-all ${
-                type === 'wallet' ? 'bg-white text-[#1A202C] shadow-sm' : 'text-[#64748B]'
+                type === 'wallet' ? 'bg-[var(--site-surface)] text-white shadow-sm' : 'text-[#64748B]'
               }`}
             >
               Wallets
@@ -222,7 +222,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                 setSelectedName(e.target.value);
                 setMessage('');
               }}
-              className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
+              className="w-full bg-[var(--site-bg)] border border-[var(--site-border)] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
             >
               {(type === 'bank' ? ETHIOPIAN_BANKS : WALLETS).map((name) => (
                 <option key={name} value={name}>
@@ -244,13 +244,13 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 required
               />
-              <div className="w-full bg-[#F8FAFC] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:border-[#FF8C00]/30 transition-all">
+              <div className="w-full bg-[var(--site-bg)] border-2 border-dashed border-[var(--site-border)] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:border-[#FF8C00]/30 transition-all">
                 {previewUrl ? (
-                  <div className="relative w-24 h-24 bg-white rounded-xl shadow-md p-2 border border-[#E2E8F0]">
+                  <div className="relative w-24 h-24 bg-[var(--site-surface)] rounded-xl shadow-md p-2 border border-[var(--site-border)]">
                     <img src={previewUrl} className="w-full h-full object-contain" alt="Preview" />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#64748B]">
+                  <div className="w-12 h-12 bg-[var(--site-surface)] rounded-xl shadow-sm flex items-center justify-center text-[#64748B]">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="17 8 12 3 7 8" />
@@ -258,7 +258,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                     </svg>
                   </div>
                 )}
-                <div className="text-xs font-black text-[#1A202C]">
+                <div className="text-xs font-black text-white">
                   {logo ? logo.name : 'Click to upload logo'}
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
           <h2 className="text-[10px] font-black uppercase tracking-widest text-[#64748B]">Active methods</h2>
           {loading ? (
             <div className="py-10 flex justify-center">
-              <div className="w-8 h-8 border-4 border-[#E2E8F0] border-t-[#FF8C00] rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-[var(--site-border)] border-t-[#FF8C00] rounded-full animate-spin" />
             </div>
           ) : methods.length === 0 ? (
             <div className="text-center py-12 text-[#64748B]">
@@ -300,14 +300,14 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
             methods.map((method) => (
               <div
                 key={method.id}
-                className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-between"
+                className="bg-[var(--site-bg)] border border-[var(--site-border)] rounded-2xl p-4 flex items-center justify-between"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-xl border border-[#E2E8F0] p-1.5 shadow-sm">
+                  <div className="w-12 h-12 bg-[var(--site-surface)] rounded-xl border border-[var(--site-border)] p-1.5 shadow-sm">
                     <img src={method.logo_url} alt={method.name} className="w-full h-full object-contain" />
                   </div>
                   <div>
-                    <div className="text-sm font-black text-[#1A202C] uppercase tracking-tight">
+                    <div className="text-sm font-black text-white uppercase tracking-tight">
                       {method.name}
                     </div>
                     <div className="text-[10px] text-[#64748B] font-bold capitalize">{method.type}</div>
@@ -315,7 +315,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                 </div>
                 <button
                   onClick={() => handleDelete(method.id)}
-                  className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl hover:bg-red-50 hover:border-red-200 text-[#475569] hover:text-red-600 transition-all shadow-sm"
+                  className="p-2.5 bg-[var(--site-surface)] border border-[var(--site-border)] rounded-xl hover:bg-red-50 hover:border-red-200 text-[#475569] hover:text-red-600 transition-all shadow-sm"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="3 6 5 6 21 6" />

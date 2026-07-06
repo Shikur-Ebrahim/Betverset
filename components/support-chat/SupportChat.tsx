@@ -135,9 +135,9 @@ export default function SupportChat() {
             id={panelId}
             role="dialog"
             aria-label="Live support chat"
-            className="mb-3 flex h-[min(72dvh,520px)] w-full flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-2xl shadow-black/10 sm:h-[min(68vh,560px)] sm:w-[min(100vw-2rem,380px)]"
+            className="mb-3 flex h-[min(72dvh,520px)] w-full flex-col overflow-hidden rounded-2xl border border-emerald-200 bg-[var(--site-surface)] shadow-2xl shadow-black/10 sm:h-[min(68vh,560px)] sm:w-[min(100vw-2rem,380px)]"
           >
-            <header className="flex shrink-0 items-center gap-3 border-b border-emerald-100 bg-white px-4 py-3.5">
+            <header className="flex shrink-0 items-center gap-3 border-b border-emerald-100 bg-[var(--site-surface)] px-4 py-3.5">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white shadow-md">
                 <SupportIcon className="h-5 w-5" />
               </div>
@@ -162,7 +162,7 @@ export default function SupportChat() {
 
             <div
               ref={listRef}
-              className="hide-scrollbar min-h-0 flex-1 flex-col gap-3 overflow-y-auto bg-slate-50 px-3 py-4"
+              className="hide-scrollbar min-h-0 flex-1 flex-col gap-3 overflow-y-auto bg-[var(--site-bg)] px-3 py-4"
             >
               {messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
@@ -178,7 +178,7 @@ export default function SupportChat() {
 
             <form
               onSubmit={onSubmit}
-              className="flex shrink-0 items-end gap-2 border-t border-emerald-100 bg-white p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+              className="flex shrink-0 items-end gap-2 border-t border-emerald-100 bg-[var(--site-surface)] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             >
               <textarea
                 ref={inputRef}
@@ -189,7 +189,7 @@ export default function SupportChat() {
                 disabled={isLoading}
                 placeholder="Type your message…"
                 maxLength={2000}
-                className="hide-scrollbar max-h-24 min-h-[44px] flex-1 resize-none rounded-xl border-2 border-green-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-green-600 focus:ring-2 focus:ring-green-500/25 disabled:opacity-60"
+                className="hide-scrollbar max-h-24 min-h-[44px] flex-1 resize-none rounded-xl border-2 border-green-300 bg-[var(--site-surface)] px-3 py-2.5 text-sm text-gray-200 placeholder:text-slate-400 outline-none transition-colors focus:border-green-600 focus:ring-2 focus:ring-green-500/25 disabled:opacity-60"
                 aria-label="Message"
               />
               <button

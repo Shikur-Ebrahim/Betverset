@@ -14,10 +14,10 @@ export default function WithdrawalDailyLimitBanner({
   return (
     <div
       className={`rounded-2xl border-2 p-4 shadow-sm ${
-        atLimit ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-[#FFFFFF]'
+        atLimit ? 'border-amber-200 bg-amber-50' : 'border-[var(--site-border)] bg-[var(--site-surface)]'
       }`}
     >
-      <p className={`text-sm font-black ${atLimit ? 'text-amber-950' : 'text-slate-900'}`}>
+      <p className={`text-sm font-black ${atLimit ? 'text-amber-950' : 'text-white'}`}>
         Daily limit: {maxDaily.toLocaleString()} ETB
       </p>
       <p className={`mt-1 text-xs font-semibold leading-relaxed ${atLimit ? 'text-amber-900/90' : 'text-slate-600'}`}>

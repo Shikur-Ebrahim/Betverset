@@ -156,13 +156,13 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[160] bg-white text-[#1A202C] flex flex-col h-screen overflow-hidden">
-      <header className="bg-white px-6 py-5 flex items-center justify-between shrink-0 border-b border-[#F1F5F9]">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
+      <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button onClick={onClose} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div className="text-xl font-black text-[#1A202C] tracking-tight">Deposit Methods</div>
+          <div className="text-xl font-black text-white tracking-tight">Deposit Methods</div>
         </div>
         
         <button 
@@ -192,7 +192,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
               <input 
                 type="text" 
                 placeholder="e.g. Telebirr, CBE"
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
+                className="w-full bg-[var(--site-bg)] border border-[var(--site-border)] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -204,7 +204,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
               <input 
                 type="number" 
                 placeholder="0.00"
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
+                className="w-full bg-[var(--site-bg)] border border-[var(--site-border)] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
                 value={minAmount}
                 onChange={(e) => setMinAmount(e.target.value)}
                 required
@@ -216,7 +216,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
               <input 
                 type="text" 
                 placeholder="e.g. Shikur"
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
+                className="w-full bg-[var(--site-bg)] border border-[var(--site-border)] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
                 required
@@ -228,7 +228,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
               <input 
                 type="text" 
                 placeholder="e.g. 0911... or 1000..."
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
+                className="w-full bg-[var(--site-bg)] border border-[var(--site-border)] rounded-xl px-4 py-3.5 text-sm font-bold focus:border-[#FF8C00] outline-none transition-all"
                 value={accountDetails}
                 onChange={(e) => setAccountDetails(e.target.value)}
                 required
@@ -245,17 +245,17 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   required={!editId}
                 />
-                <div className="w-full bg-[#F8FAFC] border-2 border-dashed border-[#E2E8F0] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:border-[#FF8C00]/30 transition-all">
+                <div className="w-full bg-[var(--site-bg)] border-2 border-dashed border-[var(--site-border)] rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:border-[#FF8C00]/30 transition-all">
                   {previewUrl ? (
-                    <div className="relative w-24 h-24 bg-white rounded-xl shadow-md p-2 border border-[#E2E8F0]">
+                    <div className="relative w-24 h-24 bg-[var(--site-surface)] rounded-xl shadow-md p-2 border border-[var(--site-border)]">
                       <img src={previewUrl} className="w-full h-full object-contain" alt="Preview" />
                     </div>
                   ) : (
-                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-[#64748B]">
+                    <div className="w-12 h-12 bg-[var(--site-surface)] rounded-xl shadow-sm flex items-center justify-center text-[#64748B]">
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     </div>
                   )}
-                  <div className="text-xs font-black text-[#1A202C]">{logo ? logo.name : (editId ? 'Change logo (optional)' : 'Click to upload logo')}</div>
+                  <div className="text-xs font-black text-white">{logo ? logo.name : (editId ? 'Change logo (optional)' : 'Click to upload logo')}</div>
                 </div>
               </div>
             </div>
@@ -282,26 +282,26 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
               </div>
             ) : (
               methods.map((m) => (
-                <div key={m.id} className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 flex items-center justify-between group">
+                <div key={m.id} className="bg-[var(--site-bg)] border border-[var(--site-border)] rounded-2xl p-4 flex items-center justify-between group">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-xl border border-[#E2E8F0] p-1.5 shadow-sm">
+                    <div className="w-12 h-12 bg-[var(--site-surface)] rounded-xl border border-[var(--site-border)] p-1.5 shadow-sm">
                       <img src={m.logo_url} alt={m.name} className="w-full h-full object-contain" />
                     </div>
                     <div>
-                      <div className="text-sm font-black text-[#1A202C] uppercase tracking-tight">{m.name}</div>
+                      <div className="text-sm font-black text-white uppercase tracking-tight">{m.name}</div>
                       <div className="text-[10px] text-[#64748B] font-bold">NAME: {m.account_name} • {m.account_details}</div>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleEdit(m)}
-                      className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl hover:bg-blue-50 hover:border-blue-200 text-[#475569] hover:text-blue-600 transition-all shadow-sm"
+                      className="p-2.5 bg-[var(--site-surface)] border border-[var(--site-border)] rounded-xl hover:bg-blue-50 hover:border-blue-200 text-[#475569] hover:text-blue-600 transition-all shadow-sm"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
                     <button 
                       onClick={() => handleDelete(m.id)}
-                      className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl hover:bg-red-50 hover:border-red-200 text-[#475569] hover:text-red-600 transition-all shadow-sm"
+                      className="p-2.5 bg-[var(--site-surface)] border border-[var(--site-border)] rounded-xl hover:bg-red-50 hover:border-red-200 text-[#475569] hover:text-red-600 transition-all shadow-sm"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                     </button>

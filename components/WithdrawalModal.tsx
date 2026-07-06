@@ -309,12 +309,12 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col bg-[#EEF4FF] text-[#111827] ${isOpen ? '' : 'pointer-events-none invisible'}`}
+      className={`fixed inset-0 z-[200] flex flex-col bg-[var(--site-surface-soft)] text-white ${isOpen ? '' : 'pointer-events-none invisible'}`}
       aria-hidden={!isOpen}
     >
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-[#FFFFFF] px-4 py-4 sm:px-5">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div>
-          <h1 className="text-lg font-black tracking-tight text-[#111827] sm:text-xl">Withdrawal</h1>
+          <h1 className="text-lg font-black tracking-tight text-white sm:text-xl">Withdrawal</h1>
           <p className="mt-0.5 text-[11px] font-bold text-slate-500">Funds are held until support completes payout</p>
         </div>
         <button
@@ -351,9 +351,9 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
             {step === 'selection' && !hasPending && (
               <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="rounded-2xl border border-slate-200 bg-[#FFFFFF] p-4 shadow-sm">
+                <div className="rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Available</p>
-                  <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
+                  <p className="mt-1 text-2xl font-black tabular-nums text-white">
                     {Number(user?.balance || 0).toFixed(2)} <span className="text-sm text-orange-600">ETB</span>
                   </p>
                 </div>
@@ -364,7 +364,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     <input
                       type="number"
                       placeholder="0.00"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-6 py-4 text-lg font-black text-gray-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-6 py-4 text-lg font-black text-white shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                     />
@@ -407,7 +407,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                           key={m.id}
                           type="button"
                           onClick={() => handleMethodSelect(m)}
-                          className="relative flex h-[64px] items-center justify-center rounded-2xl border border-slate-100 bg-[#FFFFFF] shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+                          className="relative flex h-[64px] items-center justify-center rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] shadow-sm transition-all hover:bg-[var(--site-bg)] active:scale-95"
                         >
                           <img src={m.logo_url} alt="" className="h-full w-full object-contain p-2" />
                         </button>
@@ -431,12 +431,12 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
             {step === 'details' && selectedMethod && !hasPending && (
               <form onSubmit={handleSubmit} className="space-y-6 animate-in slide-in-from-right duration-300">
-                <div className="flex items-center gap-4 rounded-2xl bg-[#FFFFFF] p-4 shadow-sm ring-1 ring-slate-100">
-                  <div className="h-12 w-12 rounded-xl bg-[#EEF4FF] p-2 shadow-inner">
+                <div className="flex items-center gap-4 rounded-2xl bg-[var(--site-surface)] p-4 shadow-sm ring-1 ring-slate-100">
+                  <div className="h-12 w-12 rounded-xl bg-[var(--site-surface-soft)] p-2 shadow-inner">
                     <img src={selectedMethod.logo_url} alt="" className="h-full w-full object-contain" />
                   </div>
                   <div>
-                    <div className="text-sm font-black text-gray-900">{selectedMethod.name}</div>
+                    <div className="text-sm font-black text-white">{selectedMethod.name}</div>
                     <div className="text-[11px] font-black text-orange-500">{amount} ETB</div>
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-name"
                       type="text"
                       placeholder="Account holder name"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
                     />
@@ -464,7 +464,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-details"
                       type="text"
                       placeholder={selectedMethod.type === 'bank' ? 'Enter bank account' : 'Enter phone number'}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-bold text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountDetails}
                       onChange={(e) => setAccountDetails(e.target.value)}
                     />
@@ -492,7 +492,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       autoComplete="off"
                       spellCheck={false}
                       maxLength={10}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[#FFFFFF] px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-gray-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={promoCode}
                       onChange={(e) => {
                         setPromoCode(e.target.value.toUpperCase());
@@ -539,7 +539,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   </svg>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xl font-black tracking-tight text-gray-900">Submitted</div>
+                  <div className="text-xl font-black tracking-tight text-white">Submitted</div>
                   <p className="text-[11px] font-bold leading-relaxed text-gray-500">
                     Your wallet balance has been updated. Support will complete your payout or contact you if needed.
                   </p>
@@ -557,11 +557,11 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
               </div>
             )}
 
-            <section className="mt-8 border-t border-slate-200 pt-6">
+            <section className="mt-8 border-t border-[var(--site-border)] pt-6">
               <h2 className="text-xs font-black uppercase tracking-widest text-slate-400">Your withdrawals</h2>
               {historyLoading && history.length === 0 ? (
                 <div className="flex h-24 items-center justify-center">
-                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-orange-500" />
                 </div>
               ) : history.length === 0 ? (
                 <p className="mt-3 text-center text-xs font-semibold text-slate-400">No history yet</p>
@@ -570,15 +570,15 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   {history.map((h) => (
                     <li
                       key={h.id}
-                      className="flex items-center justify-between rounded-xl border border-slate-100 bg-[#FFFFFF] px-3 py-3 text-xs shadow-sm"
+                      className="flex items-center justify-between rounded-xl border border-[var(--site-border)] bg-[var(--site-surface)] px-3 py-3 text-xs shadow-sm"
                     >
                       <div className="min-w-0">
-                        <p className="font-black text-slate-900">{h.method_name || 'Withdrawal'}</p>
+                        <p className="font-black text-white">{h.method_name || 'Withdrawal'}</p>
                         <p className="text-[10px] font-semibold capitalize text-slate-500">
                           <span className={h.status === 'approved' ? 'font-bold text-green-500' : ''}>{h.status}</span> · {new Date(h.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                         </p>
                       </div>
-                      <span className="shrink-0 font-black tabular-nums text-slate-900">{h.amount} ETB</span>
+                      <span className="shrink-0 font-black tabular-nums text-white">{h.amount} ETB</span>
                     </li>
                   ))}
                 </ul>

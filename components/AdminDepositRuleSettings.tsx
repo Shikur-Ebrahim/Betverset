@@ -87,10 +87,10 @@ export default function AdminDepositRuleSettings({ onClose }: AdminDepositRuleSe
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">Deposit Rule</h1>
+          <h1 className="text-lg font-bold leading-tight tracking-tight text-white sm:text-xl">Deposit Rule</h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">
             Minimum total approved deposits before users can withdraw
           </p>
@@ -115,7 +115,7 @@ export default function AdminDepositRuleSettings({ onClose }: AdminDepositRuleSe
 
         {loading ? (
           <div className="mt-8 flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-orange-500" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -129,7 +129,7 @@ export default function AdminDepositRuleSettings({ onClose }: AdminDepositRuleSe
                 min={1}
                 step={1}
                 required
-                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
                 placeholder="e.g. 6665"
                 value={minTotalDeposit}
                 onChange={(e) => setMinTotalDeposit(e.target.value)}

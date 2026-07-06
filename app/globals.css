@@ -1,8 +1,655 @@
 @import "tailwindcss";
 
 /* ============================================
-   BETVERSE PREMIUM LIGHT DESIGN SYSTEM 2026
+   BETVERSE PREMIUM DARK DESIGN SYSTEM 2026
    ============================================ */
+
+:root {
+  /* Backgrounds */
+  --background: linear-gradient(180deg, #0F172A, #111827);
+  --foreground: #FFFFFF;
+  --site-bg: #0F172A;
+  --site-surface: #1E293B;
+  --site-surface-strong: #1E293B;
+  --site-surface-soft: #273549;
+  --site-elevated: #1E293B;
+
+  /* Borders */
+  --site-border: #334155;
+  --site-border-strong: #475569;
+
+  /* Text */
+  --site-muted: #94A3B8;
+  --site-text-soft: #CBD5E1;
+
+  /* Accent - Blue (Primary) */
+  --site-primary: #2563EB;
+  --site-primary-strong: #1D4ED8;
+  --site-primary-soft: rgba(37, 99, 235, 0.15);
+  --site-primary-glow: rgba(37, 99, 235, 0.4);
+
+  /* Secondary Accent - Green */
+  --site-secondary: #22C55E;
+  --site-secondary-soft: rgba(34, 197, 94, 0.15);
+
+  /* Status */
+  --site-success: #22C55E;
+  --site-warning: #F59E0B;
+  --site-danger: #EF4444;
+  --site-info: #2563EB;
+  --site-live: #EF4444;
+}
+
+@theme inline {
+  --color-background: var(--site-bg);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Inter', var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--site-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--site-border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--site-text-soft);
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.site-shell {
+  min-height: 100vh;
+  color: var(--foreground);
+  padding-bottom: 72px;
+  background: var(--site-bg);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.site-header {
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid var(--site-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.site-brand {
+  color: #FFFFFF;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  font-style: italic;
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+.site-nav-link {
+  color: var(--site-text-soft);
+  transition: color 0.2s ease;
+}
+
+.site-nav-link:hover {
+  color: #FFFFFF;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.site-outline-btn {
+  border: 1px solid var(--site-border-strong);
+  background: var(--site-surface);
+  color: var(--site-text-soft);
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 600;
+  transition: all 300ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-outline-btn:hover {
+  border-color: var(--site-primary);
+  color: var(--site-primary);
+  background: var(--site-primary-soft);
+  transform: scale(1.03);
+}
+
+.site-primary-btn {
+  background: var(--site-primary);
+  color: #FFFFFF;
+  height: 48px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px var(--site-primary-glow);
+  border: none;
+  transition: all 300ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-primary-btn:hover {
+  background: var(--site-primary-strong);
+  box-shadow: 0 6px 16px var(--site-primary-glow);
+  transform: scale(1.03);
+}
+
+.site-primary-btn:active {
+  transform: scale(0.97);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.site-card {
+  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.site-card-hover {
+  transition: all 300ms ease;
+}
+
+.site-card-hover:hover {
+  background: #273549;
+  border-color: var(--site-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+/* ============================================
+   PILLS & CHIPS
+   ============================================ */
+
+.site-pill {
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  background: var(--site-primary-soft);
+  color: var(--site-primary);
+}
+
+.site-live-pill {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.site-blue-pill {
+  background: var(--site-primary-soft);
+  color: var(--site-primary);
+}
+
+/* ============================================
+   TEXT UTILITIES
+   ============================================ */
+
+.site-muted {
+  color: var(--site-muted);
+}
+
+.site-soft-text {
+  color: var(--site-text-soft);
+}
+
+.site-section-title {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* ============================================
+   SECTION UTILITIES
+   ============================================ */
+
+.site-score-box {
+  background: var(--site-bg);
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+}
+
+.site-accent-line {
+  height: 3px;
+  width: 48px;
+  border-radius: 9999px;
+  background: var(--site-primary);
+}
+
+.site-chip {
+  border: 1px solid var(--site-border);
+  background: var(--site-surface);
+  color: var(--site-text-soft);
+  transition: all 300ms ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.site-chip:hover {
+  border-color: var(--site-primary);
+  color: var(--site-primary);
+}
+
+.site-chip.active {
+  border-color: var(--site-primary);
+  background: var(--site-primary-soft);
+  color: #FFFFFF;
+}
+
+.site-logo-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+}
+
+.site-section-shell {
+  background: var(--site-surface);
+  border: 1px solid var(--site-border);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.site-divider {
+  height: 1px;
+  width: 100%;
+  background: var(--site-border);
+}
+
+/* ============================================
+   SCROLLBAR HIDE
+   ============================================ */
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   BOTTOM NAVIGATION
+   ============================================ */
+
+.champx-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  background: rgba(15, 23, 42, 0.95);
+  border-top: 1px solid var(--site-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -15px 40px rgba(0,0,0,0.35);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.champx-bottom-nav .champx-nav-item {
+  min-width: 0;
+  flex: 1;
+  max-width: 76px;
+}
+
+.champx-bottom-nav .champx-nav-item span {
+  font-size: 10px;
+  line-height: 1.1;
+  text-align: center;
+  font-weight: 500;
+}
+
+.champx-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--site-muted);
+  font-size: 10px;
+  transition: all 300ms ease;
+  cursor: pointer;
+  padding: 6px 4px;
+  border-radius: 10px;
+}
+
+.champx-nav-item:hover {
+  color: var(--site-text-soft);
+  transform: translateY(-2px);
+}
+
+.champx-nav-item.active {
+  color: var(--site-primary);
+}
+
+.champx-nav-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================
+   ODDS BUTTONS
+   ============================================ */
+
+.champx-odds-btn {
+  background: var(--site-surface);
+  border: 1px solid var(--site-border);
+  border-radius: 14px;
+  padding: 10px 8px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 300ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.champx-odds-btn:hover {
+  border-color: var(--site-primary);
+  background: #273549;
+  transform: scale(1.03);
+}
+
+.champx-odds-btn.selected {
+  border-color: var(--site-primary);
+  background: var(--site-primary);
+  box-shadow: 0 0 15px var(--site-primary-glow);
+}
+
+.champx-odds-btn.positive {
+  border-color: var(--site-success);
+  background: var(--site-success);
+}
+
+.champx-odds-btn span.label {
+  font-size: 11px;
+  color: var(--site-text-soft);
+  font-weight: 500;
+}
+
+.champx-odds-btn span.value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.champx-odds-btn.selected span.label,
+.champx-odds-btn.selected span.value {
+  color: #FFFFFF;
+}
+
+/* ============================================
+   LEAGUE HEADER
+   ============================================ */
+
+.champx-league-header {
+  background: var(--site-surface);
+  border-left: 4px solid var(--site-primary);
+  border-bottom: 1px solid var(--site-border);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.01em;
+}
+
+/* ============================================
+   MATCH ROWS
+   ============================================ */
+
+.champx-match-row {
+  background: var(--site-surface);
+  border-bottom: 1px solid var(--site-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 300ms ease;
+}
+
+.champx-match-row:last-child {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-bottom: none;
+}
+
+.champx-match-row:hover {
+  background: #273549;
+}
+
+.champx-match-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.champx-match-time {
+  font-size: 12px;
+  color: var(--site-text-soft);
+  min-width: 45px;
+  font-weight: 600;
+}
+
+.champx-match-teams {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.champx-team {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #FFFFFF;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.champx-team-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.champx-odds-container {
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================
+   GLASSMORPHISM (Replaced with Soft Shadows)
+   ============================================ */
+
+.glass {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--site-border);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.glass-strong {
+  background: var(--site-surface);
+  border: 1px solid var(--site-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   SKELETON LOADERS
+   ============================================ */
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--site-bg) 25%,
+    var(--site-surface) 50%,
+    var(--site-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease forwards;
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+.premium-input {
+  background: var(--site-bg);
+  border: 1px solid var(--site-border-strong);
+  border-radius: 14px;
+  color: #FFFFFF;
+  transition: all 300ms ease;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.premium-input:focus {
+  border-color: var(--site-primary);
+  box-shadow: 0 0 0 3px var(--site-primary-soft), inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.premium-input::placeholder {
+  color: var(--site-muted);
+}
+
+/* ============================================
+   STATUS BADGES
+   ============================================ */
+
+.badge-won {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-lost {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-live {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+.modal-overlay {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 
 :root {
   /* Backgrounds */

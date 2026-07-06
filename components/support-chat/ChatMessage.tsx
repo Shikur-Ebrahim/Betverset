@@ -46,7 +46,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
         className={`max-w-[82%] whitespace-pre-wrap break-words px-3.5 py-2.5 text-[13px] leading-relaxed sm:max-w-[78%] sm:text-sm ${
           isUser
             ? 'rounded-2xl rounded-br-md bg-gradient-to-br from-green-500 to-green-700 font-medium text-white shadow-md shadow-green-600/25'
-            : 'rounded-2xl rounded-bl-md border border-green-200 bg-white text-slate-700 shadow-sm'
+            : 'rounded-2xl rounded-bl-md border border-green-200 bg-[var(--site-surface)] text-slate-700 shadow-sm'
         }`}
       >
         {message.content}

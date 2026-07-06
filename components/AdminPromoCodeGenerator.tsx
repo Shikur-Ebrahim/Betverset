@@ -84,10 +84,10 @@ export default function AdminPromoCodeGenerator({ onClose }: AdminPromoCodeGener
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">Promo</h1>
+          <h1 className="text-lg font-bold leading-tight tracking-tight text-white sm:text-xl">Promo</h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">
             Generate a unique withdrawal code for a signup phone
           </p>
@@ -105,8 +105,8 @@ export default function AdminPromoCodeGenerator({ onClose }: AdminPromoCodeGener
       </header>
 
       <main className="mx-auto min-h-0 w-full max-w-md flex-1 overflow-y-auto overscroll-contain px-4 py-5 pb-28 sm:px-5">
-        <section className="rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-700 shadow-sm">
-          Format: <span className="font-mono font-bold text-slate-900">T##AA##BB#</span> (T, 2 digits, 2 letters, 2
+        <section className="rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 text-sm leading-relaxed text-slate-700 shadow-sm">
+          Format: <span className="font-mono font-bold text-white">T##AA##BB#</span> (T, 2 digits, 2 letters, 2
           digits, 2 letters, 1 digit). One code per phone; codes are unique across all users.
         </section>
 
@@ -119,7 +119,7 @@ export default function AdminPromoCodeGenerator({ onClose }: AdminPromoCodeGener
               id="promo-phone"
               type="tel"
               autoComplete="tel"
-              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
               placeholder="e.g. +251912345678 or 0912345678"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}

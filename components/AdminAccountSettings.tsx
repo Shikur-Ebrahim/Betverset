@@ -66,10 +66,10 @@ export default function AdminAccountSettings({ user, onClose }: AdminAccountSett
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">Settings</h1>
+          <h1 className="text-lg font-bold leading-tight tracking-tight text-white sm:text-xl">Settings</h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">Change your admin password</p>
         </div>
         <button
@@ -85,9 +85,9 @@ export default function AdminAccountSettings({ user, onClose }: AdminAccountSett
       </header>
 
       <main className="mx-auto min-h-0 w-full max-w-md flex-1 overflow-y-auto overscroll-contain px-4 py-5 pb-28 sm:px-5">
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
+        <section className="rounded-2xl border border-[var(--site-border)]/80 bg-[var(--site-surface)] p-4 shadow-sm sm:p-5">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Signed in as</p>
-          <p className="mt-1 break-all text-base font-semibold text-slate-900">{user?.phone ?? '—'}</p>
+          <p className="mt-1 break-all text-base font-semibold text-white">{user?.phone ?? '—'}</p>
           {user?.role ? (
             <p className="mt-1 text-xs font-medium capitalize text-slate-500">Role: {user.role}</p>
           ) : null}
@@ -103,7 +103,7 @@ export default function AdminAccountSettings({ user, onClose }: AdminAccountSett
               type="password"
               autoComplete="current-password"
               required
-              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
               placeholder="Enter current password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
@@ -118,7 +118,7 @@ export default function AdminAccountSettings({ user, onClose }: AdminAccountSett
               type="password"
               autoComplete="new-password"
               required
-              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
               placeholder="At least 6 characters"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
@@ -133,7 +133,7 @@ export default function AdminAccountSettings({ user, onClose }: AdminAccountSett
               type="password"
               autoComplete="new-password"
               required
-              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
               placeholder="Repeat new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}

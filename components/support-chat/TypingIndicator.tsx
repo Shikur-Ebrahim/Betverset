@@ -26,7 +26,7 @@ export default function TypingIndicator() {
         <SupportBotIcon className="h-4 w-4" />
       </div>
       <div
-        className="rounded-2xl rounded-bl-md border border-green-200 bg-white px-4 py-3 shadow-sm"
+        className="rounded-2xl rounded-bl-md border border-green-200 bg-[var(--site-surface)] px-4 py-3 shadow-sm"
         role="status"
         aria-label="Assistant is typing"
       >

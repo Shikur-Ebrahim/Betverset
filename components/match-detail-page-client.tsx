@@ -20,7 +20,7 @@ type Props = {
 
 function Shell({ children }: { children: ReactNode }) {
   return (
-    <div className="site-shell bg-[#EEF4FF] min-h-screen text-[#111827] flex flex-col items-center justify-center gap-4 px-6">
+    <div className="site-shell bg-[var(--site-surface-soft)] min-h-screen text-white flex flex-col items-center justify-center gap-4 px-6">
       {children}
     </div>
   );

@@ -105,19 +105,19 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
   const pendingN = tickets.filter((t) => t.status === 'pending').length;
 
   return (
-    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-white px-6 py-5">
+    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-6 py-5">
         <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--site-bg)] text-gray-500 transition-all active:scale-90"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="text-xl font-black tracking-tighter text-[#1A202C]">Withdrawal requests</div>
+          <div className="text-xl font-black tracking-tighter text-white">Withdrawal requests</div>
         </div>
         <div className="rounded-full bg-orange-100 px-3 py-1.5 text-[10px] font-black tracking-widest text-orange-600">
           {pendingN} pending
@@ -127,7 +127,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
       <main className="flex-1 space-y-4 overflow-y-auto p-4 pb-24">
         {loading && tickets.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24">
-            <div className="h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+            <div className="h-9 w-9 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-orange-500" />
             <p className="text-sm font-medium text-slate-500">Loading requests…</p>
           </div>
         ) : sortedTickets.length === 0 ? (
@@ -143,8 +143,8 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
           sortedTickets.map((t) => (
             <div
               key={t.id}
-              className={`relative space-y-4 overflow-hidden rounded-[28px] border bg-white p-5 shadow-sm ${
-                t.status === 'approved' ? 'border-green-100' : 'border-gray-100'
+              className={`relative space-y-4 overflow-hidden rounded-[28px] border bg-[var(--site-surface)] p-5 shadow-sm ${
+                t.status === 'approved' ? 'border-green-100' : 'border-[var(--site-border)]'
               } animate-in slide-in-from-bottom-4 duration-300`}
             >
               {t.status === 'approved' && (
@@ -168,7 +168,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-black tracking-tight text-gray-900">{t.phone}</div>
+                    <div className="truncate text-sm font-black tracking-tight text-white">{t.phone}</div>
                     <div className="text-[10px] font-bold tracking-wider text-gray-400">
                       {t.method_name || 'Method'} ·{' '}
                       {new Date(t.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
@@ -176,7 +176,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <div className="text-lg font-black leading-none text-black">{t.amount}</div>
+                  <div className="text-lg font-black leading-none text-white">{t.amount}</div>
                   <div
                     className={`mt-1 text-[9px] font-black tracking-widest ${
                       t.status === 'approved' ? 'text-green-500' : 'text-orange-500'
@@ -187,14 +187,14 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-[#F8FAFC] p-4 text-xs font-bold text-gray-700">
+              <div className="rounded-2xl bg-[var(--site-bg)] p-4 text-xs font-bold text-gray-300">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pay to</p>
-                <p className="mt-1 font-black text-gray-900">{t.account_name}</p>
-                <p className="mt-1 break-all text-gray-600">{t.account_details}</p>
+                <p className="mt-1 font-black text-white">{t.account_name}</p>
+                <p className="mt-1 break-all text-gray-400">{t.account_details}</p>
                 {t.promo_code && (
-                  <div className="mt-3 border-t border-gray-200 pt-2">
+                  <div className="mt-3 border-t border-[var(--site-border)] pt-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">Agent Code</p>
-                    <p className="mt-0.5 font-mono text-sm font-black text-gray-900">{t.promo_code}</p>
+                    <p className="mt-0.5 font-mono text-sm font-black text-white">{t.promo_code}</p>
                   </div>
                 )}
               </div>
@@ -227,7 +227,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
       {confirming && (
         <div className="fixed inset-0 z-[200] flex animate-in items-center justify-center p-6 fade-in duration-200">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirming(null)} />
-          <div className="relative w-full max-w-[280px] space-y-6 rounded-[32px] bg-white p-8 text-center shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-[280px] space-y-6 rounded-[32px] bg-[var(--site-surface)] p-8 text-center shadow-2xl animate-in zoom-in-95 duration-300">
             <div
               className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${
                 confirming.type === 'approve' ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'
@@ -245,7 +245,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
             </div>
 
             <div className="space-y-2">
-              <div className="text-xl font-black tracking-tight text-gray-900">
+              <div className="text-xl font-black tracking-tight text-white">
                 Confirm {confirming.type === 'approve' ? 'payout' : 'rejection'}
               </div>
               <p className="text-xs font-medium leading-relaxed text-gray-500">
@@ -268,7 +268,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="w-full py-4 text-[10px] font-black text-gray-400 transition-colors hover:text-gray-600"
+                className="w-full py-4 text-[10px] font-black text-gray-400 transition-colors hover:text-gray-400"
               >
                 Cancel
               </button>

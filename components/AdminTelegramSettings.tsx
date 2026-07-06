@@ -87,10 +87,10 @@ export default function AdminTelegramSettings({ onClose }: AdminTelegramSettings
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-5">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div className="min-w-0">
-          <h1 className="text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">Support Team</h1>
+          <h1 className="text-lg font-bold leading-tight tracking-tight text-white sm:text-xl">Support Team</h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">Telegram contact for users</p>
         </div>
         <button
@@ -112,7 +112,7 @@ export default function AdminTelegramSettings({ onClose }: AdminTelegramSettings
 
         {loading ? (
           <div className="mt-8 flex justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-sky-500" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-sky-500" />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -125,7 +125,7 @@ export default function AdminTelegramSettings({ onClose }: AdminTelegramSettings
                 type="text"
                 required
                 autoComplete="off"
-                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-white px-4 text-base font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-sky-500 focus:ring-sky-200"
+                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-sky-500 focus:ring-sky-200"
                 placeholder="@BetversEt"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}

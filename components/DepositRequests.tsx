@@ -109,17 +109,17 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
   };
 
   return (
-    <div className="fixed inset-0 z-[160] bg-[#F8FAFC] text-[#1A202C] flex flex-col h-screen overflow-hidden">
-      <header className="bg-white px-6 py-5 flex items-center justify-between shrink-0 border-b border-[#F1F5F9]">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-bg)] text-white flex flex-col h-screen overflow-hidden">
+      <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--site-bg)] text-gray-500 transition-all active:scale-90"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div className="text-xl font-black text-[#1A202C] tracking-tighter">Deposit requests</div>
+          <div className="text-xl font-black text-white tracking-tighter">Deposit requests</div>
         </div>
         <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest">{tickets.filter(t => t.status === 'pending').length} New</div>
       </header>
@@ -134,7 +134,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
           </div>
         ) : (
           sortedTickets.map((t) => (
-            <div key={t.id} className={`bg-white rounded-[28px] p-5 shadow-sm border ${t.status === 'approved' ? 'border-green-100' : 'border-gray-100'} space-y-4 animate-in slide-in-from-bottom-4 duration-300 relative overflow-hidden`}>
+            <div key={t.id} className={`bg-[var(--site-surface)] rounded-[28px] p-5 shadow-sm border ${t.status === 'approved' ? 'border-green-100' : 'border-[var(--site-border)]'} space-y-4 animate-in slide-in-from-bottom-4 duration-300 relative overflow-hidden`}>
               {t.status === 'approved' && (
                 <div className="absolute top-0 right-0 bg-green-500 text-white px-4 py-1.5 rounded-bl-2xl text-[9px] font-black tracking-widest flex items-center gap-1.5">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12"/></svg>
@@ -148,17 +148,17 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                   </div>
                   <div>
-                    <div className="text-sm font-black text-gray-900 tracking-tight">{t.phone}</div>
+                    <div className="text-sm font-black text-white tracking-tight">{t.phone}</div>
                     <div className="text-[10px] text-gray-400 font-bold tracking-wider">{t.method_name} • {new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-black text-black leading-none">{t.amount}</div>
+                  <div className="text-lg font-black text-white leading-none">{t.amount}</div>
                   <div className={`text-[9px] font-black tracking-widest mt-1 ${t.status === 'approved' ? 'text-green-500' : 'text-orange-500'}`}>ETB</div>
                 </div>
               </div>
 
-              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-[#F1F5F9] group">
+              <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-[var(--site-surface-soft)] group">
                 <img 
                   src={t.screenshot_url} 
                   alt="Proof" 
@@ -203,7 +203,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
       {confirming && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirming(null)}></div>
-          <div className="relative bg-white w-full max-w-[280px] rounded-[32px] p-8 text-center space-y-6 shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative bg-[var(--site-surface)] w-full max-w-[280px] rounded-[32px] p-8 text-center space-y-6 shadow-2xl animate-in zoom-in-95 duration-300">
             <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${confirming.type === 'approve' ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
               {confirming.type === 'approve' ? (
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -213,7 +213,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
             </div>
             
             <div className="space-y-2">
-              <div className="text-xl font-black text-gray-900 tracking-tight">
+              <div className="text-xl font-black text-white tracking-tight">
                 {confirming.type === 'approve'
                   ? 'Confirm approval'
                   : confirming.type === 'deleteVerified'
@@ -242,7 +242,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
               </button>
               <button 
                 onClick={() => setConfirming(null)}
-                className="w-full py-4 text-gray-400 font-black text-[10px] hover:text-gray-600 transition-colors"
+                className="w-full py-4 text-gray-400 font-black text-[10px] hover:text-gray-400 transition-colors"
               >
                 Cancel
               </button>

@@ -202,9 +202,9 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
       <div
         role="dialog"
         aria-labelledby="bet-history-title"
-        className="relative flex h-[min(92dvh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-slate-50 shadow-[0_-8px_40px_rgba(0,0,0,0.12)] sm:h-[min(85vh,680px)] sm:rounded-3xl sm:shadow-2xl"
+        className="relative flex h-[min(92dvh,720px)] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-[var(--site-bg)] shadow-[0_-8px_40px_rgba(0,0,0,0.12)] sm:h-[min(85vh,680px)] sm:rounded-3xl sm:shadow-2xl"
       >
-        <header className="shrink-0 border-b border-slate-200/80 bg-[#FFFFFF] px-4 py-4 sm:px-5">
+        <header className="shrink-0 border-b border-[var(--site-border)]/80 bg-[var(--site-surface)] px-4 py-4 sm:px-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
@@ -214,7 +214,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 </svg>
               </div>
               <div>
-                <h2 id="bet-history-title" className="text-lg font-semibold tracking-tight text-slate-900">
+                <h2 id="bet-history-title" className="text-lg font-semibold tracking-tight text-white">
                   Bet history
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -235,7 +235,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
           </div>
         </header>
 
-        <div className="shrink-0 border-b border-slate-200/80 bg-[#FFFFFF] px-2 sm:px-3">
+        <div className="shrink-0 border-b border-[var(--site-border)]/80 bg-[var(--site-surface)] px-2 sm:px-3">
           <nav className="flex gap-1" aria-label="Filter tickets">
             {(['all', 'pending', 'won', 'lost'] as const).map((tab) => (
               <button
@@ -243,7 +243,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 type="button"
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex-1 py-3.5 text-sm font-medium transition-colors ${
-                  activeTab === tab ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'
+                  activeTab === tab ? 'text-white' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {tabLabel(tab)}
@@ -258,7 +258,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4">
           {loading && bets.length === 0 ? (
             <div className="flex h-48 items-center justify-center">
-              <div className="h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+              <div className="h-9 w-9 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-orange-500" />
             </div>
           ) : loadError ? (
             <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-4">
@@ -269,7 +269,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
               <button
                 type="button"
                 onClick={() => void fetchHistory()}
-                className="mt-1 rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-[#111827]"
+                className="mt-1 rounded-full bg-orange-500 px-4 py-2 text-xs font-bold text-white"
               >
                 Retry
               </button>
@@ -289,7 +289,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 return (
                 <li
                   key={bet.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200/90 bg-[#FFFFFF] shadow-sm ring-1 ring-black/[0.03]"
+                  className="overflow-hidden rounded-2xl border border-[var(--site-border)]/90 bg-[var(--site-surface)] shadow-sm ring-1 ring-black/[0.03]"
                 >
                   <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-black sm:aspect-[21/8] sm:min-h-[5.5rem]">
                     <img
@@ -300,7 +300,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                       decoding="async"
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5 sm:px-4">
+                  <div className="flex items-center justify-between gap-2 border-b border-[var(--site-border)] bg-[var(--site-bg)]/80 px-3 py-2.5 sm:px-4">
                     <div className="min-w-0 flex flex-1 items-center gap-2 text-sm text-slate-600">
                       <span className="shrink-0 text-slate-400">Ticket</span>
                       <div className="flex min-w-0 flex-1 items-center gap-1.5">
@@ -311,7 +311,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                           className="group flex min-w-0 max-w-full items-center gap-1 rounded-lg py-0.5 pl-0.5 pr-1 text-left transition hover:bg-slate-200/70 active:bg-slate-200"
                           aria-label={`Copy ticket code ${codePlain}`}
                         >
-                          <span className="truncate font-mono text-xs font-medium text-slate-800 sm:text-sm">
+                          <span className="truncate font-mono text-xs font-medium text-gray-200 sm:text-sm">
                             code:{codePlain}
                           </span>
                           <span className="shrink-0 text-slate-400 transition-colors group-hover:text-slate-600" aria-hidden>
@@ -375,13 +375,13 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                                   {sel.home_logo ? (
                                     <img src={sel.home_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
                                   ) : null}
-                                  <span className="truncate text-sm font-medium text-slate-800">{sel.home_team}</span>
+                                  <span className="truncate text-sm font-medium text-gray-200">{sel.home_team}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {sel.away_logo ? (
                                     <img src={sel.away_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
                                   ) : null}
-                                  <span className="truncate text-sm font-medium text-slate-800">{sel.away_team}</span>
+                                  <span className="truncate text-sm font-medium text-gray-200">{sel.away_team}</span>
                                 </div>
                               </div>
                             </div>

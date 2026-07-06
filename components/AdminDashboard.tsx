@@ -265,13 +265,13 @@ export default function AdminDashboard({ user, onLogout, onClose }: AdminDashboa
   }
 
   return (
-    <div className="fixed inset-0 z-[150] bg-white text-[#1A202C] flex flex-col h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[150] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
       {/* Top Header */}
-      <header className="bg-white px-6 py-5 flex justify-between items-center shrink-0 border-b border-[#F1F5F9]">
-        <div className="text-2xl italic font-black text-[#1A202C] tracking-tighter">BETVERS</div>
+      <header className="bg-[var(--site-surface)] px-6 py-5 flex justify-between items-center shrink-0 border-b border-[var(--site-border)]">
+        <div className="text-2xl italic font-black text-white tracking-tighter">BETVERS</div>
         <button
           onClick={onLogout}
-          className="text-xs bg-[#F1F5F9] text-[#475569] px-5 py-2.5 rounded-full font-bold transition-all active:scale-95"
+          className="text-xs bg-[var(--site-surface-soft)] text-[#475569] px-5 py-2.5 rounded-full font-bold transition-all active:scale-95"
         >
           Logout
         </button>
@@ -328,7 +328,7 @@ export default function AdminDashboard({ user, onLogout, onClose }: AdminDashboa
                 return;
               }
             }}
-            className="relative z-10 flex h-full min-h-[96px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl border border-[#F1F5F9] bg-[#F8FAFC] transition-all active:scale-95"
+            className="relative z-10 flex h-full min-h-[96px] w-full flex-col items-center justify-center gap-2.5 rounded-2xl border border-[var(--site-border)] bg-[var(--site-bg)] transition-all active:scale-95"
           >
             {action.id === 'deposit' && pendingCount > 0 && (
               <div className="pointer-events-none absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-lg shadow-red-200">
@@ -348,7 +348,7 @@ export default function AdminDashboard({ user, onLogout, onClose }: AdminDashboa
             <div className={`w-10 h-10 ${action.color} rounded-xl flex items-center justify-center text-white shadow-sm`}>
               {action.icon}
             </div>
-            <span className="text-[11px] font-black text-[#1A202C] uppercase tracking-tight">{action.label}</span>
+            <span className="text-[11px] font-black text-white uppercase tracking-tight">{action.label}</span>
           </button>
         ))}
       </main>

@@ -260,12 +260,12 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-[#E2E8F0] bg-white px-4 py-3">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-3">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border border-[#E2E8F0] px-4 py-2 text-xs font-bold text-[#475569]"
+          className="rounded-full border border-[var(--site-border)] px-4 py-2 text-xs font-bold text-[#475569]"
         >
           Back
         </button>
@@ -277,7 +277,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
       </header>
 
       <div className="flex-1 overflow-y-auto p-4 pb-24">
-        <section className="mb-6 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <section className="mb-6 rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <label className="text-xs font-bold text-[#64748B]">
               Club pool day
@@ -285,7 +285,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="ml-2 rounded-lg border border-[#E2E8F0] px-2 py-1 text-sm"
+                className="ml-2 rounded-lg border border-[var(--site-border)] px-2 py-1 text-sm"
               />
             </label>
             <button
@@ -312,13 +312,13 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
             </p>
           )}
           {!clubsLoading && !clubsError && savedMatches.length > 0 && (
-            <div className="mb-4 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3">
+            <div className="mb-4 rounded-xl border border-dashed border-[var(--site-border-strong)] bg-[var(--site-bg)] p-3">
               <div className="mb-2 text-[10px] font-black uppercase tracking-wider text-[#64748B]">
                 Matches Database (Most recent {savedMatches.length} shown)
               </div>
               <div className="max-h-48 overflow-y-auto text-[10px] leading-snug text-[#475569] space-y-1">
                 {savedMatches.map((m) => (
-                  <div key={m.id} className="border-b border-[#E2E8F0] pb-1 last:border-0 flex justify-between">
+                  <div key={m.id} className="border-b border-[var(--site-border)] pb-1 last:border-0 flex justify-between">
                     <span className="font-bold text-[#334155]">{m.home_team_name} vs {m.away_team_name}</span>
                     <span className="text-[#64748B]">{new Date(m.match_date).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>
                   </div>
@@ -327,13 +327,13 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
             </div>
           )}
           {!clubsLoading && !clubsError && smallLeagues.length > 0 && (
-            <div className="mb-4 rounded-xl border border-dashed border-[#CBD5E1] bg-[#F8FAFC] p-3">
+            <div className="mb-4 rounded-xl border border-dashed border-[var(--site-border-strong)] bg-[var(--site-bg)] p-3">
               <div className="mb-2 text-[10px] font-black uppercase tracking-wider text-[#64748B]">
                 Smaller leagues in database (up to {smallLeagues.length} shown)
               </div>
               <div className="max-h-36 overflow-y-auto text-[10px] leading-snug text-[#475569]">
                 {smallLeagues.map((lg) => (
-                  <div key={lg.id} className="border-b border-[#E2E8F0] py-1 last:border-0">
+                  <div key={lg.id} className="border-b border-[var(--site-border)] py-1 last:border-0">
                     <span className="font-bold text-[#334155]">{lg.league_name || 'League'}</span>
                     {countryLabel(lg) ? <span className="text-[#64748B]"> · {countryLabel(lg)}</span> : null}
                   </div>
@@ -351,7 +351,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                   <div
                     key={c.id}
                     title={clubOptionLabel(c)}
-                    className="flex flex-col items-center gap-1 rounded-xl border border-[#F1F5F9] bg-[#F8FAFC] p-2 text-center"
+                    className="flex flex-col items-center gap-1 rounded-xl border border-[var(--site-border)] bg-[var(--site-bg)] p-2 text-center"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {c.logo ? (
@@ -376,7 +376,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
         </section>
 
         {[0, 1, 2].map((i) => (
-          <section key={i} className="mb-4 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+          <section key={i} className="mb-4 rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
             <h3 className="mb-3 text-xs font-black uppercase tracking-wider text-[#64748B]">
               Match {i + 1}
               <span className="ml-2 font-bold normal-case text-emerald-700">
@@ -389,7 +389,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 <select
                   value={matches[i].home_team_id}
                   onChange={(e) => setMatch(i, { home_team_id: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] bg-[var(--site-surface)] px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
                   {clubs.map((c) => (
@@ -404,7 +404,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 <select
                   value={matches[i].away_team_id}
                   onChange={(e) => setMatch(i, { away_team_id: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] bg-[var(--site-surface)] px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
                   {clubs.map((c) => (
@@ -421,7 +421,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 <input
                   value={matches[i].market_name}
                   onChange={(e) => setMatch(i, { market_name: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] px-3 py-2 text-sm"
                   placeholder={i < 2 ? 'Correct score' : 'Draw'}
                 />
               </label>
@@ -430,7 +430,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 <input
                   value={matches[i].selection}
                   onChange={(e) => setMatch(i, { selection: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] px-3 py-2 text-sm"
                   placeholder={i < 2 ? 'e.g. 1-0, 2-1' : 'X or Draw'}
                 />
               </label>
@@ -441,7 +441,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 <input
                   value={matches[i].odd}
                   onChange={(e) => setMatch(i, { odd: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] px-3 py-2 text-sm"
                 />
               </label>
               <label className="block text-xs font-bold text-[#475569]">
@@ -450,7 +450,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                   type="datetime-local"
                   value={matches[i].kickoff}
                   onChange={(e) => setMatch(i, { kickoff: e.target.value })}
-                  className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm"
+                  className="mt-1 w-full rounded-xl border border-[var(--site-border)] px-3 py-2 text-sm"
                 />
               </label>
               <div>
@@ -460,7 +460,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                     type="datetime-local"
                     value={matches[i].end}
                     onChange={(e) => setMatch(i, { end: e.target.value })}
-                    className="mt-1 w-full rounded-xl border border-[#E2E8F0] px-3 py-2 text-sm"
+                    className="mt-1 w-full rounded-xl border border-[var(--site-border)] px-3 py-2 text-sm"
                   />
                 </label>
                 <button
@@ -529,7 +529,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
           {submitting ? 'Creating…' : 'Create ticket & code'}
         </button>
 
-        <section className="mt-8 rounded-2xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
+        <section className="mt-8 rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-xs font-black uppercase tracking-wider text-[#64748B]">Recent manual tickets</h3>
             <button type="button" onClick={() => void loadPresets()} className="text-[10px] font-bold text-[#64748B]">
@@ -540,7 +540,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
           {!listLoading && presets.length === 0 && <p className="text-sm text-[#64748B]">None yet.</p>}
           <ul className="space-y-3">
             {presets.map((p) => (
-              <li key={p.id} className="rounded-xl border border-[#F1F5F9] bg-[#F8FAFC] p-3 text-xs">
+              <li key={p.id} className="rounded-xl border border-[var(--site-border)] bg-[var(--site-bg)] p-3 text-xs">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="font-mono font-black tracking-wider">{p.ticket_code}</span>
@@ -559,7 +559,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                       Copy
                     </button>
                   </div>
-                  <span className="rounded-full bg-white px-2 py-0.5 font-bold uppercase text-[#475569]">{p.status}</span>
+                  <span className="rounded-full bg-[var(--site-surface)] px-2 py-0.5 font-bold uppercase text-[#475569]">{p.status}</span>
                 </div>
                 <ul className="mt-2 space-y-1 text-[11px] text-[#475569]">
                   {(p.selections || []).map((s, idx) => {
@@ -567,7 +567,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                     const ended = Boolean(s.manual_end_at && new Date(s.manual_end_at).getTime() <= Date.now());
                     const showWin = res === 'won' || (p.status === 'won' && ended);
                     return (
-                      <li key={idx} className="flex flex-wrap justify-between gap-1 border-t border-[#E2E8F0] pt-1">
+                      <li key={idx} className="flex flex-wrap justify-between gap-1 border-t border-[var(--site-border)] pt-1">
                         <span>
                           {s.home_team} vs {s.away_team} — {s.selection} @ {s.odd}
                         </span>

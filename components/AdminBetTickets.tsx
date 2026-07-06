@@ -133,20 +133,20 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
   }, [filteredSlips]);
 
   return (
-    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[#F8FAFC] text-[#1A202C]">
-      <header className="flex shrink-0 items-center justify-between border-b border-[#F1F5F9] bg-white px-6 py-5">
+    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-white">
+      <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-6 py-5">
         <div className="flex items-center gap-4">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--site-bg)] text-gray-500 transition-all active:scale-90"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
-            <div className="text-xl font-black tracking-tighter text-[#1A202C]">All tickets</div>
+            <div className="text-xl font-black tracking-tighter text-white">All tickets</div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
               {slips.length} slip{slips.length === 1 ? '' : 's'}
               {activeTab !== 'all' ? ` · ${sortedSlips.length} in ${tabLabel(activeTab)}` : ''}
@@ -162,7 +162,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
         </button>
       </header>
 
-      <div className="shrink-0 border-b border-[#F1F5F9] bg-white px-2 sm:px-3">
+      <div className="shrink-0 border-b border-[var(--site-border)] bg-[var(--site-surface)] px-2 sm:px-3">
         <nav className="mx-auto flex max-w-lg gap-1" aria-label="Filter tickets">
           {(['all', 'pending', 'won', 'lost'] as const).map((tab) => (
             <button
@@ -170,7 +170,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
               type="button"
               onClick={() => setActiveTab(tab)}
               className={`relative flex-1 py-3.5 text-sm font-semibold transition-colors ${
-                activeTab === tab ? 'text-[#1A202C]' : 'text-slate-400 hover:text-slate-600'
+                activeTab === tab ? 'text-white' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               {tabLabel(tab)}
@@ -185,7 +185,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
       <main className="min-h-0 flex-1 overflow-y-auto p-4 pb-10">
         {loading && slips.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-4 py-24">
-            <div className="h-9 w-9 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+            <div className="h-9 w-9 animate-spin rounded-full border-2 border-[var(--site-border)] border-t-orange-500" />
             <p className="text-sm font-medium text-slate-500">Loading tickets…</p>
           </div>
         ) : error ? (
@@ -212,12 +212,12 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
               return (
                 <li
                   key={slip.id}
-                  className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-black/[0.03]"
+                  className="overflow-hidden rounded-2xl border border-[var(--site-border)]/90 bg-[var(--site-surface)] shadow-sm ring-1 ring-black/[0.03]"
                 >
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5 sm:px-4">
+                  <div className="flex items-center justify-between gap-2 border-b border-[var(--site-border)] bg-[var(--site-bg)]/80 px-3 py-2.5 sm:px-4">
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Ticket</p>
-                      <p className="truncate font-mono text-sm font-semibold text-slate-900">{ticketLine}</p>
+                      <p className="truncate font-mono text-sm font-semibold text-white">{ticketLine}</p>
                       <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500">
                         User #{slip.user_id}
                         {slip.user_phone ? ` · ${slip.user_phone}` : ''}
@@ -252,13 +252,13 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
                               {sel.home_logo ? (
                                 <img src={sel.home_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
                               ) : null}
-                              <span className="truncate text-xs font-semibold text-slate-800">{sel.home_team}</span>
+                              <span className="truncate text-xs font-semibold text-gray-200">{sel.home_team}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               {sel.away_logo ? (
                                 <img src={sel.away_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
                               ) : null}
-                              <span className="truncate text-xs font-semibold text-slate-800">{sel.away_team}</span>
+                              <span className="truncate text-xs font-semibold text-gray-200">{sel.away_team}</span>
                             </div>
                           </div>
                           <p className="mt-2 text-[11px] text-slate-500">
@@ -289,7 +289,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
                       </p>
                     </div>
                   </div>
-                  <p className="border-t border-slate-100 px-3 py-2 text-[10px] text-slate-400 sm:px-4">
+                  <p className="border-t border-[var(--site-border)] px-3 py-2 text-[10px] text-slate-400 sm:px-4">
                     {new Date(slip.created_at).toLocaleString()}
                   </p>
                 </li>

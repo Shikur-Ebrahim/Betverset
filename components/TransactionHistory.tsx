@@ -89,13 +89,13 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
         aria-hidden
       />
 
-      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[#EEF4FF] shadow-2xl animate-in slide-in-from-bottom duration-300 sm:h-auto sm:rounded-[32px]">
-        <header className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-[#FFFFFF] px-6 py-6">
-          <div className="text-2xl font-black tracking-tighter text-[#111827]">My Uploads</div>
+      <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[var(--site-surface-soft)] shadow-2xl animate-in slide-in-from-bottom duration-300 sm:h-auto sm:rounded-[32px]">
+        <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-6 py-6">
+          <div className="text-2xl font-black tracking-tighter text-white">My Uploads</div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-400 transition-all active:scale-90"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--site-bg)] text-gray-400 transition-all active:scale-90"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -124,7 +124,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
               {transactions.map((t) => (
                 <div
                   key={t.id}
-                  className="group relative aspect-[3/4] animate-in overflow-hidden rounded-[24px] border border-gray-100 bg-[#FFFFFF] shadow-sm zoom-in-95 duration-300"
+                  className="group relative aspect-[3/4] animate-in overflow-hidden rounded-[24px] border border-[var(--site-border)] bg-[var(--site-surface)] shadow-sm zoom-in-95 duration-300"
                 >
                   <img
                     src={t.screenshot_url}
@@ -146,7 +146,7 @@ export default function TransactionHistory({ isOpen, onClose, user }: Transactio
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                    <div className="text-[9px] font-black uppercase tracking-widest text-[#111827]">
+                    <div className="text-[9px] font-black uppercase tracking-widest text-white">
                       {new Date(t.created_at).toLocaleDateString()}
                     </div>
                   </div>

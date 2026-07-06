@@ -335,7 +335,7 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
       <button
         id="betslip-toggle-btn"
         onClick={() => { setError(null); setIsOpen((o) => !o); }}
-        className="relative flex flex-col items-center gap-1 text-[#6B7280] hover:text-[#111827] transition-colors"
+        className="relative flex flex-col items-center gap-1 text-[#6B7280] hover:text-white transition-colors"
       >
         <div className="relative">
           <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -396,7 +396,7 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                       Clear
                     </button>
                   )}
-                  <button type="button" onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-[#111827] transition-colors">
+                  <button type="button" onClick={() => setIsOpen(false)} className="text-[#6B7280] hover:text-white transition-colors">
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -420,14 +420,14 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-black tracking-tight text-[#111827]">Bet Placed! 🎉</p>
+                    <p className="text-lg font-black tracking-tight text-white">Bet Placed! 🎉</p>
                     {placedTicketDisplay && (
                       <p className="mt-1.5 font-mono text-xs font-black tracking-wide text-[#2563EB]">{placedTicketDisplay}</p>
                     )}
                     <p className="text-xs font-medium text-[#6B7280] mt-1">Good luck!</p>
                     {walletBalance !== null && (
                       <p className="mt-2 text-[11px] font-black text-[#4B5563]">
-                        New balance: <span className="text-[#111827]">{walletBalance.toFixed(2)} {walletCurrency}</span>
+                        New balance: <span className="text-white">{walletBalance.toFixed(2)} {walletCurrency}</span>
                       </p>
                     )}
                   </div>

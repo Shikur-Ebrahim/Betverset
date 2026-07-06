@@ -74,13 +74,13 @@ function TicketLeg({ sel }: { sel: TicketCheckSelection }) {
               {sel.home_logo ? (
                 <img src={sel.home_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
               ) : null}
-              <span className="truncate text-sm font-medium text-slate-800">{sel.home_team}</span>
+              <span className="truncate text-sm font-medium text-gray-200">{sel.home_team}</span>
             </div>
             <div className="flex items-center gap-2">
               {sel.away_logo ? (
                 <img src={sel.away_logo} alt="" className="h-4 w-4 shrink-0 object-contain" />
               ) : null}
-              <span className="truncate text-sm font-medium text-slate-800">{sel.away_team}</span>
+              <span className="truncate text-sm font-medium text-gray-200">{sel.away_team}</span>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ function TicketCard({ bet }: { bet: TicketCheckResponse }) {
   const status = String(bet.status || 'pending').toLowerCase();
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-slate-200/90 bg-[#FFFFFF] shadow-sm ring-1 ring-black/[0.03]">
+    <article className="overflow-hidden rounded-2xl border border-[var(--site-border)]/90 bg-[var(--site-surface)] shadow-sm ring-1 ring-black/[0.03]">
       <div className="relative aspect-[5/2] w-full min-h-[4.5rem] shrink-0 overflow-hidden bg-black sm:aspect-[21/8] sm:min-h-[5.5rem]">
         <img
           src="/ticket/ticket.jpg"
@@ -126,10 +126,10 @@ function TicketCard({ bet }: { bet: TicketCheckResponse }) {
           decoding="async"
         />
       </div>
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5 sm:px-4">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--site-border)] bg-[var(--site-bg)]/80 px-3 py-2.5 sm:px-4">
         <div className="min-w-0 flex flex-1 items-center gap-2 text-sm text-slate-600">
           <span className="shrink-0 text-slate-400">Ticket</span>
-          <span className="truncate font-mono text-xs font-medium text-slate-800 sm:text-sm">
+          <span className="truncate font-mono text-xs font-medium text-gray-200 sm:text-sm">
             {codePlain ? `code:${codePlain}` : '—'}
           </span>
         </div>
@@ -152,7 +152,7 @@ function TicketCard({ bet }: { bet: TicketCheckResponse }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-[#111827] sm:px-4">
+      <div className="grid grid-cols-3 gap-2 border-t border-emerald-900/25 bg-emerald-700 px-3 py-4 text-white sm:px-4">
         <div>
           <p className="text-[10px] font-medium text-emerald-100/90 sm:text-xs">Stake</p>
           <p className="mt-0.5 text-sm font-semibold tabular-nums">{Number(bet.stake).toFixed(2)} ETB</p>
@@ -210,11 +210,11 @@ export default function CheckTicketClient() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[#EEF4FF] text-[#111827]">
-      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] px-4">
+    <div className="flex min-h-dvh flex-col bg-[var(--site-surface-soft)] text-white">
+      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] px-4">
         <Link
           href="/"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F5F9FF] hover:text-[#111827]"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#6B7280] transition hover:bg-[#F5F9FF] hover:text-white"
           aria-label="Back to home"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -242,7 +242,7 @@ export default function CheckTicketClient() {
                   autoComplete="off"
                   autoCapitalize="characters"
                   spellCheck={false}
-                  className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] px-4 py-3.5 font-mono text-base text-[#111827] placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
+                  className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] px-4 py-3.5 font-mono text-base text-white placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
                 />
               </label>
               {error ? (
@@ -265,7 +265,7 @@ export default function CheckTicketClient() {
             <button
               type="button"
               onClick={reset}
-              className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[#FFFFFF] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#F5F9FF]"
+              className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] py-3 text-sm font-semibold text-[#FF8C00] transition hover:bg-[#F5F9FF]"
             >
               Check another ticket
             </button>

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { auth, db } from '@/lib/firebase-admin';
+import { auth } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 
-
-// GET /api/admin/users
+// GET /api/admin/users - Get all users
 export async function GET(req: Request) {
   const adminId = await verifyAdmin(req);
   if (!adminId) {
@@ -13,33 +13,25 @@ export async function GET(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const term = (searchParams.get('q') || searchParams.get('phone') || '').trim();
+    const q = searchParams.get('q');
 
-    const snapshot = await db.collection('users').orderBy('createdAt', 'desc').get();
-    let users = snapshot.docs.map((doc: any) => {
-      const d = doc.data();
-      return {
-        id: doc.id,
-        phone: d.phone,
-        role: d.role,
-        created_at: d.createdAt,
-        balance: String(d.balance ?? 0),
-        currency: d.currency || 'ETB',
-      };
-    });
+    let query = supabaseAdmin.from('users').select('*').order('created_at', { ascending: false }).limit(200);
 
-    if (term) {
-      users = users.filter((u: any) => u.phone?.includes(term));
+    if (q) {
+      query = query.ilike('phone', `%${q}%`);
     }
 
-    return NextResponse.json(users);
+    const { data: users, error } = await query;
+    if (error) throw error;
+    
+    return NextResponse.json(users || []);
   } catch (err: any) {
-    console.error('Admin list users error:', err);
-    return NextResponse.json({ message: 'Failed to list users' }, { status: 500 });
+    console.error('Error fetching users:', err);
+    return NextResponse.json({ message: 'Failed to fetch users' }, { status: 500 });
   }
 }
 
-// POST /api/admin/users - Create user
+// POST /api/admin/users - Create new user (manual)
 export async function POST(req: Request) {
   const adminId = await verifyAdmin(req);
   if (!adminId) {
@@ -48,41 +40,44 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { phone, password } = await req.json();
+    const { phone, password, balance } = await req.json();
+
     if (!phone || !password) {
       return NextResponse.json({ message: 'Phone and password are required' }, { status: 400 });
-    }
-    if (String(password).length < 6) {
-      return NextResponse.json({ message: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
     const email = `${phone.replace('+', '')}@betvers.bet`;
 
-    const userRecord = await auth.createUser({ email, password, displayName: phone });
-
-    const userData = {
-      phone,
-      role: 'user',
-      balance: 0,
-      currency: 'ETB',
-      createdAt: new Date().toISOString(),
-    };
-    await db.collection('users').doc(userRecord.uid).set(userData);
-
-    return NextResponse.json({
-      id: userRecord.uid,
-      phone,
-      role: 'user',
-      created_at: userData.createdAt,
-      balance: '0.00',
-      currency: 'ETB',
-    }, { status: 201 });
-  } catch (err: any) {
-    console.error('Admin create user error:', err);
-    if (err.code === 'auth/email-already-exists') {
-      return NextResponse.json({ message: 'Phone number already registered' }, { status: 400 });
+    let userRecord;
+    try {
+      userRecord = await auth.createUser({
+        email,
+        password,
+        phoneNumber: phone,
+      });
+    } catch (firebaseErr: any) {
+      if (firebaseErr.code === 'auth/email-already-exists' || firebaseErr.code === 'auth/phone-number-already-exists') {
+         return NextResponse.json({ message: 'User with this phone number already exists' }, { status: 400 });
+      }
+      throw firebaseErr;
     }
-    return NextResponse.json({ message: 'Failed to create user' }, { status: 500 });
+
+    const uid = userRecord.uid;
+    const initialBalance = parseFloat(String(balance)) || 0;
+
+    await supabaseAdmin.from('users').insert({
+      id: uid,
+      phone,
+      role: 'user',
+      balance: initialBalance,
+      currency: 'ETB',
+      created_at: new Date().toISOString(),
+    });
+
+    return NextResponse.json({ message: 'User created successfully', uid });
+  } catch (err: any) {
+    console.error('Error creating user:', err);
+    return NextResponse.json({ message: err.message || 'Failed to create user' }, { status: 500 });
   }
 }
 

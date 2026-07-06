@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
 const API_HOST = process.env.API_FOOTBALL_HOST || 'v3.football.api-sports.io';
 const API_BASE = `https://${API_HOST}`;
 
-// Leagues to ignore (top leagues)
 const TOP_LEAGUES = new Set([39, 2, 140, 135, 78, 61, 3, 848, 45, 40, 307, 253, 71, 88, 94]);
 
 export async function POST(req: Request) {
@@ -19,7 +18,6 @@ export async function POST(req: Request) {
   try {
     if (!API_KEY) throw new Error('API-Football Key is missing');
 
-    // Fetch the next 99 matches to give us a good pool to filter from
     const res = await fetch(`${API_BASE}/fixtures?next=99`, {
       headers: { 'x-apisports-key': API_KEY },
       cache: 'no-store',
@@ -29,11 +27,11 @@ export async function POST(req: Request) {
     const json = await res.json();
     const data = json?.response || [];
 
-    const batch = db.batch();
+    const recordsToUpsert: any[] = [];
     let savedCount = 0;
 
     for (const item of data) {
-      if (savedCount >= 50) break; // We only need 50 non-top matches per refresh
+      if (savedCount >= 50) break;
 
       const f = item?.fixture;
       const teams = item?.teams;
@@ -41,11 +39,10 @@ export async function POST(req: Request) {
 
       if (!f?.id || !teams?.home?.id || !teams?.away?.id || !league?.id) continue;
       
-      // Filter out top tier leagues to keep it "smaller leagues"
       if (TOP_LEAGUES.has(league.id)) continue;
 
-      const ref = db.collection('manual_ticket_matches').doc(String(f.id));
-      batch.set(ref, {
+      recordsToUpsert.push({
+        id: String(f.id),
         api_fixture_id: f.id,
         match_date: f.date || null,
         home_team_id: String(teams.home.id),
@@ -59,13 +56,13 @@ export async function POST(req: Request) {
         country_name: league.country || '',
         country_flag: league.flag || null,
         saved_at: new Date().toISOString()
-      }, { merge: true });
+      });
 
       savedCount++;
     }
 
-    if (savedCount > 0) {
-      await batch.commit();
+    if (recordsToUpsert.length > 0) {
+      await supabaseAdmin.from('manual_ticket_matches').upsert(recordsToUpsert, { onConflict: 'id' });
     }
 
     return NextResponse.json({ message: 'Success', saved: savedCount });

@@ -1,53 +1,62 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
-
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get('limit') || '100', 10);
-    const country = searchParams.get('country');
-    const api_league_id = searchParams.get('api_league_id');
+    const today = new Date().toISOString().split('T')[0];
 
-    let query: any = db.collection('fixtures');
+    // Main fixtures for today
+    const { data: fixtures, error } = await supabaseAdmin
+      .from('fixtures')
+      .select('*')
+      .like('match_date', `${today}%`)
+      .order('kickoff_at', { ascending: true })
+      .limit(50);
 
-    const now = new Date();
-    // Fetch recent and upcoming fixtures (from 2 hours ago onwards)
-    query = query
-      .where('match_date', '>=', new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString())
-      .orderBy('match_date', 'asc')
-      .limit(limit);
+    if (error) throw error;
 
-    const snapshot = await query.get();
+    // Live matches
+    const { data: liveData } = await supabaseAdmin
+      .from('fixtures')
+      .select('*')
+      .in('status', ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'SUSP', 'INT', 'LIVE'])
+      .order('kickoff_at', { ascending: false })
+      .limit(10);
 
-    const fixtures: any[] = [];
-    const odds: Record<string, any[]> = {};
-
-    snapshot.docs.forEach((doc: any) => {
-      const data = doc.data();
-      
-      // Filter in memory for parameters that don't have composite indexes
-      if (country && country !== 'All countries' && data.country_name !== country) return;
-      if (api_league_id && String(data.api_league_id) !== api_league_id) return;
-      
-      fixtures.push({ id: doc.id, ...data });
-
-      // Build odds from embedded fields (fast path - no extra DB query)
-      if (data.home_odds || data.draw_odds || data.away_odds) {
-        const fid = String(doc.id);
-        odds[fid] = [
-          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Home', odd_value: data.home_odds || null },
-          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Draw', odd_value: data.draw_odds || null },
-          { fixture_id: fid, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Away', odd_value: data.away_odds || null },
-        ].filter(o => o.odd_value !== null);
-      }
+    // Format like Firebase structure
+    const formatMatch = (doc: any) => ({
+      id: doc.id,
+      fixture: {
+        id: doc.id,
+        date: doc.kickoff_at,
+        status: { short: doc.status, elapsed: doc.elapsed },
+        referee: doc.referee,
+        venue: { name: doc.venue_name, city: doc.venue_city }
+      },
+      teams: {
+        home: { id: doc.home_team_id, name: doc.home_team_name, logo: doc.home_team_logo },
+        away: { id: doc.away_team_id, name: doc.away_team_name, logo: doc.away_team_logo }
+      },
+      league: {
+        id: doc.league_id,
+        name: doc.league_name,
+        logo: doc.league_logo,
+        country: doc.country_name
+      },
+      goals: {
+        home: doc.home_goals,
+        away: doc.away_goals
+      },
+      ...doc.data
     });
 
-    return NextResponse.json({ fixtures, odds });
+    return NextResponse.json({
+      matches: (fixtures || []).map(formatMatch),
+      live: (liveData || []).map(formatMatch),
+    });
   } catch (err: any) {
-    console.error('[fixtures/home]', err);
-    // Always return a valid response — never crash the page
-    return NextResponse.json({ fixtures: [], odds: {} });
+    console.error('fixtures/home err:', err);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 

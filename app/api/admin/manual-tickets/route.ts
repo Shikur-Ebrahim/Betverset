@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 import { allocateUniqueTicketCode } from '@/lib/services/ticketCode';
 
@@ -13,15 +13,15 @@ export async function GET(req: Request) {
   }
 
   try {
-    const snapshot = await db.collection('bet_slips')
-      .where('is_manual_preset', '==', true)
-      .limit(100)
-      .get();
+    const { data: tickets, error } = await supabaseAdmin
+      .from('bet_slips')
+      .select('*')
+      .eq('is_manual_preset', true)
+      .order('created_at', { ascending: false })
+      .limit(100);
 
-    const tickets = snapshot.docs
-      .map((doc: any) => ({ id: doc.id, ...doc.data() }))
-      .sort((a: any, b: any) => (b.created_at || '').localeCompare(a.created_at || ''));
-    return NextResponse.json(tickets);
+    if (error) throw error;
+    return NextResponse.json(tickets || []);
   } catch (err: any) {
     console.error('manual-tickets list:', err);
     return NextResponse.json({ message: 'Failed to list manual tickets' }, { status: 500 });
@@ -110,9 +110,7 @@ export async function POST(req: Request) {
     const ticketCode = await allocateUniqueTicketCode();
     const roundedOdds = Math.round(totalOdds * 10000) / 10000;
 
-    const slipRef = db.collection('bet_slips').doc();
     const slipData = {
-      id: slipRef.id,
       user_id: null,
       total_odds: roundedOdds,
       stake: 0,
@@ -124,10 +122,16 @@ export async function POST(req: Request) {
       created_at: new Date().toISOString(),
     };
 
-    await slipRef.set(slipData);
+    const { data: inserted, error } = await supabaseAdmin
+      .from('bet_slips')
+      .insert(slipData)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({
-      id: slipRef.id,
+      id: inserted.id,
       ticket_code: ticketCode,
       total_odds: roundedOdds,
       created_at: slipData.created_at,

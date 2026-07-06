@@ -1,26 +1,23 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
-
 
 export async function GET(req: Request) {
   const userId = await verifyUser(req);
   if (!userId) return unauthorized();
 
   try {
-    const snapshot = await db.collection('deposit_requests')
-      .where('user_id', '==', userId)
-      .where('status', '==', 'pending')
-      .limit(1)
-      .get();
-
-    return NextResponse.json({
-      hasPending: !snapshot.empty,
-      request: snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() },
-    });
+    const { count, error } = await supabaseAdmin
+      .from('deposit_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'pending');
+      
+    if (error) throw error;
+    return NextResponse.json({ count: count || 0 });
   } catch (err: any) {
-    console.error('Error checking pending deposit:', err);
-    return NextResponse.json({ message: 'Failed to check pending deposit' }, { status: 500 });
+    console.error('Error fetching pending deposits:', err);
+    return NextResponse.json({ message: 'Failed to fetch pending deposits' }, { status: 500 });
   }
 }
 

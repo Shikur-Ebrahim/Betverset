@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 const CODE_PATTERN = /^[BT]\d{2}[A-Z]{2}\d{2}[A-Z]{2}\d$/;
 
@@ -49,12 +49,11 @@ export function normalizePhone(raw: string): string {
 }
 
 export async function allocateUniquePromotionCode(maxAttempts = 40): Promise<string> {
-  const codesRef = db.collection('user_promotion_codes');
   for (let i = 0; i < maxAttempts; i++) {
     const code = buildPromotionCode();
     if (!CODE_PATTERN.test(code)) continue;
-    const existing = await codesRef.where('code', '==', code).get();
-    if (existing.empty) return code;
+    const { data } = await supabaseAdmin.from('user_promotion_codes').select('id').eq('code', code).limit(1);
+    if (!data || data.length === 0) return code;
   }
   throw new Error('Could not allocate a unique promotion code');
 }
@@ -65,23 +64,25 @@ export async function generatePromotionCodeForPhone(phone: string): Promise<{
   created: boolean;
 }> {
   const normalized = normalizePhone(phone);
-  const codesRef = db.collection('user_promotion_codes');
-  const existing = await codesRef.where('phone', '==', normalized).get();
+  const { data: existing } = await supabaseAdmin
+    .from('user_promotion_codes')
+    .select('*')
+    .eq('phone', normalized)
+    .limit(1);
 
-  if (!existing.empty) {
-    const doc = existing.docs[0];
+  if (existing && existing.length > 0) {
     return {
-      phone: doc.data().phone,
-      code: doc.data().code,
+      phone: existing[0].phone,
+      code: existing[0].code,
       created: false,
     };
   }
 
   const code = await allocateUniquePromotionCode();
-  await codesRef.add({
+  await supabaseAdmin.from('user_promotion_codes').insert({
     phone: normalized,
     code,
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   });
 
   return {
@@ -92,15 +93,15 @@ export async function generatePromotionCodeForPhone(phone: string): Promise<{
 }
 
 export async function validatePromotionCodeForUser(
-  userId: string, // now string for Firebase UID
+  userId: string,
   promoCode: string
 ): Promise<{ valid: boolean; message?: string }> {
-  const userDoc = await db.collection('users').doc(userId).get();
-  if (!userDoc.exists) {
+  const { data: userData } = await supabaseAdmin.from('users').select('phone').eq('id', userId).single();
+  if (!userData) {
     return { valid: false, message: 'User not found' };
   }
 
-  const userPhone = userDoc.data()?.phone;
+  const userPhone = userData.phone;
   if (!userPhone) return { valid: false, message: 'User phone missing' };
 
   const lookupPhone = normalizePhone(userPhone);
@@ -110,18 +111,19 @@ export async function validatePromotionCodeForUser(
     return { valid: false, message: 'Please enter correct agent ID code' };
   }
 
-  const codesRef = db.collection('user_promotion_codes');
-  // Revert back to enforcing that the code must have been issued to this specific user
-  const row = await codesRef.where('phone', 'in', [userPhone, lookupPhone]).get();
+  const { data: rows } = await supabaseAdmin
+    .from('user_promotion_codes')
+    .select('code')
+    .in('phone', [userPhone, lookupPhone]);
   
-  if (row.empty) {
+  if (!rows || rows.length === 0) {
     return {
       valid: false,
       message: 'No promotion code has been issued for your account. Contact support.',
     };
   }
   
-  const matched = row.docs.some(doc => doc.data().code === code);
+  const matched = rows.some((row: any) => row.code === code);
   
   if (!matched) {
     return { valid: false, message: 'Please enter correct agent ID code' };

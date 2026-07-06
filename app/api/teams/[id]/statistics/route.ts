@@ -1,23 +1,24 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
-
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const snapshot = await db.collection('team_statistics')
-      .where('team_id', '==', parseInt(params.id, 10))
-      // .orderBy('season_year', 'desc') // Requires composite index if querying by equality then sorting by different field
-      .get();
-      
-    // Sort in memory to avoid needing complex indexes for this migration
-    const stats = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }))
-      .sort((a: any, b: any) => (b.season_year || 0) - (a.season_year || 0));
+    const { searchParams } = new URL(req.url);
+    const league_id = searchParams.get('league_id');
+    const season = searchParams.get('season');
 
-    return NextResponse.json(stats);
+    let query = supabaseAdmin.from('team_statistics').select('*').eq('team_id', params.id);
+    if (league_id) query = query.eq('league_id', league_id);
+    if (season) query = query.eq('season', season);
+
+    const { data: stats, error } = await query.single();
+    if (error && error.code !== '42P01') throw error;
+
+    return NextResponse.json(stats || {});
   } catch (err: any) {
-    console.error('Failed to fetch team statistics:', err);
-    return NextResponse.json({ error: 'Failed to fetch team statistics' }, { status: 500 });
+    console.error(`Failed to fetch team statistics ${params.id}:`, err);
+    return NextResponse.json({ error: 'Failed to fetch statistics' }, { status: 500 });
   }
 }
 

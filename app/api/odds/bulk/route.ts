@@ -1,55 +1,72 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
-
-const MAX_BULK_FIXTURE_IDS = 120;
-
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const raw = searchParams.get('ids') || searchParams.get('fixture_ids') || '';
-    
-    if (!raw.trim()) {
+    const { fixtureIds } = await req.json();
+
+    if (!Array.isArray(fixtureIds) || fixtureIds.length === 0) {
+      return NextResponse.json({ message: 'Invalid fixtureIds array' }, { status: 400 });
+    }
+
+    const numericIds = fixtureIds.map(id => Number(id)).filter(id => !isNaN(id));
+    if (numericIds.length === 0) {
+      return NextResponse.json({ message: 'No valid fixture IDs provided' }, { status: 400 });
+    }
+
+    const { data: oddsRows, error } = await supabaseAdmin
+      .from('odds')
+      .select('fixture_id, markets')
+      .in('fixture_id', numericIds);
+
+    if (error) throw error;
+    if (!oddsRows || oddsRows.length === 0) {
       return NextResponse.json({});
     }
 
-    const ids = raw
-      .split(/[,\s]+/)
-      .filter(Boolean)
-      .slice(0, MAX_BULK_FIXTURE_IDS);
+    const result: Record<string, any[]> = {};
 
-    if (ids.length === 0) {
-      return NextResponse.json({});
-    }
+    oddsRows.forEach((row: any) => {
+      const fid = String(row.fixture_id);
+      if (!result[fid]) {
+        result[fid] = [];
+      }
+      
+      const m = row.markets;
+      if (!m || !m.bookmaker) return;
 
-    const byFixture: Record<string, any[]> = {};
+      const bmId = String(m.bookmaker.id);
+      let bmIndex = result[fid].findIndex((b: any) => String(b.id) === bmId);
+      
+      if (bmIndex === -1) {
+        result[fid].push({
+          id: m.bookmaker.id,
+          name: m.bookmaker.name,
+          bets: []
+        });
+        bmIndex = result[fid].length - 1;
+      }
 
-    // Firestore 'in' query supports max 10 items per chunk
-    const chunks: string[][] = [];
-    for (let i = 0; i < ids.length; i += 10) {
-      chunks.push(ids.slice(i, i + 10));
-    }
-
-    await Promise.all(chunks.map(async (chunk) => {
-      const snapshot = await db.collection('odds')
-        .where('fixture_id', 'in', chunk)
-        .get();
-        
-      snapshot.docs.forEach((doc: any) => {
-        const data = doc.data();
-        if (!data.odd_value || data.odd_value <= 0) return;
-        const fid = String(data.fixture_id);
-        if (!byFixture[fid]) byFixture[fid] = [];
-        byFixture[fid].push({ id: doc.id, ...data });
-      });
-    }));
-
-    return NextResponse.json(byFixture, {
-      headers: { 'Cache-Control': 'no-store' }
+      const bm = result[fid][bmIndex];
+      let bet = bm.bets.find((b: any) => String(b.id) === String(m.bet.id));
+      if (!bet) {
+        bet = {
+          id: m.bet.id,
+          name: m.bet.name,
+          values: []
+        };
+        bm.bets.push(bet);
+      }
+      
+      if (!bet.values.find((v: any) => v.value === m.value.value)) {
+        bet.values.push(m.value);
+      }
     });
+
+    return NextResponse.json(result);
   } catch (err: any) {
-    console.error('Bulk odds error:', err);
-    return NextResponse.json({});
+    console.error('Bulk odds fetch error:', err);
+    return NextResponse.json({ message: 'Failed to fetch bulk odds' }, { status: 500 });
   }
 }
 

@@ -1,108 +1,79 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { verifyUser, unauthorized } from '@/lib/auth-helper';
 
-
-function normalizeTicketCodeParam(raw: string): string {
-  return String(raw || '')
-    .trim()
-    .replace(/^#/i, '')
-    .replace(/^code:\s*/i, '')
-    .trim()
-    .toUpperCase();
-}
-
-function isFixturePreMatchOnly(status: string | null | undefined): boolean {
-  if (!status) return false;
-  return status === 'NS' || status === 'TBD';
-}
-
+// GET /api/betting/ticket-code/[code]
 export async function GET(req: Request, props: { params: Promise<{ code: string }> }) {
   const params = await props.params;
-  const code = normalizeTicketCodeParam(params.code);
-  if (!code) {
-    return NextResponse.json({ message: 'Enter a ticket code' }, { status: 400 });
-  }
+  const { code } = params;
 
   try {
-    const slipsRef = db.collection('bet_slips');
-    const snapshot = await slipsRef.where('ticket_code', '==', code).limit(1).get();
+    const { data: slips, error } = await supabaseAdmin
+      .from('bet_slips')
+      .select('*')
+      .eq('ticket_code', code.toUpperCase())
+      .limit(1);
 
-    if (snapshot.empty) {
-      return NextResponse.json({ message: 'No ticket found for this code' }, { status: 404 });
+    if (error) throw error;
+
+    if (!slips || slips.length === 0) {
+      return NextResponse.json({ message: 'Ticket not found' }, { status: 404 });
     }
 
-    const slipDoc = snapshot.docs[0];
-    const data = slipDoc.data();
-    const selectionsRaw = data.selections || [];
+    const ticket = slips[0];
+    const isManualPreset = ticket.is_manual_preset === true;
 
-    const now = Date.now();
-    const selections = await Promise.all(selectionsRaw.map(async (r: any) => {
-      const fid = r.fixture_id;
-      let st = r.fixture_status;
-      
-      // Fetch current fixture status if available
-      if (fid != null) {
-        const fixDoc = await db.collection('fixtures').doc(String(fid)).get();
-        if (fixDoc.exists) {
-          st = fixDoc.data()?.status || st;
-        }
+    const selectionsRaw = ticket.selections || [];
+    const neededFixtureIds = new Set<number>();
+    
+    selectionsRaw.forEach((bsel: any) => {
+      if (!bsel.manual_kickoff_at && bsel.fixture_id) {
+        neededFixtureIds.add(Number(bsel.fixture_id));
       }
-
-      const isManual = r.is_manual_fixture === true || (fid == null && r.manual_kickoff_at != null);
-      let blocked = false;
-      if (isManual) {
-        const kick = r.manual_kickoff_at ? new Date(r.manual_kickoff_at).getTime() : NaN;
-        blocked = !Number.isFinite(kick) || now >= kick;
-      } else {
-        const missing = fid == null;
-        const prematch = !missing && isFixturePreMatchOnly(st);
-        blocked = missing || !prematch;
-      }
-      return {
-        fixture_id: fid,
-        selection: r.selection,
-        odd: parseFloat(String(r.odd)) || 1,
-        home_team: r.home_team,
-        away_team: r.away_team,
-        home_logo: r.home_logo ?? '',
-        away_logo: r.away_logo ?? '',
-        league_name: r.league_name ?? '',
-        market_name: r.market_name ?? 'General',
-        fixture_status: st ?? (isManual ? 'MANUAL' : ''),
-        manual_kickoff_at: r.manual_kickoff_at ? new Date(r.manual_kickoff_at).toISOString() : null,
-        manual_end_at: r.manual_end_at ? new Date(r.manual_end_at).toISOString() : null,
-        is_manual: isManual,
-        blocked,
-      };
-    }));
-
-    const anyBlocked = selections.some((s) => s.blocked);
-    const allManualWithEnd =
-      selections.length > 0 &&
-      selections.every((s) => s.is_manual && s.manual_end_at != null && String(s.manual_end_at).length > 0);
-    const allManualLegsFinished =
-      allManualWithEnd &&
-      selections.every((s) => {
-        const t = new Date(s.manual_end_at as string).getTime();
-        return Number.isFinite(t) && now >= t;
-      });
-
-    let message: string | null = null;
-    if (allManualLegsFinished) {
-      message = 'This ticket code has expired. All matches have finished.';
-    } else if (anyBlocked) {
-      message = 'The game has already started. You cannot place this bet.';
-    }
-
-    return NextResponse.json({
-      ticket_code: code,
-      selections,
-      can_place: !anyBlocked && !allManualLegsFinished,
-      message,
     });
+
+    const fixturesMap = new Map<string, string>();
+    const fixtureIdsArr = Array.from(neededFixtureIds);
+    
+    if (fixtureIdsArr.length > 0) {
+      const { data: fixtureRows } = await supabaseAdmin
+        .from('fixtures')
+        .select('id, match_date, kickoff_at')
+        .in('id', fixtureIdsArr);
+      
+      (fixtureRows || []).forEach((row: any) => {
+        fixturesMap.set(String(row.id), row.match_date || row.kickoff_at);
+      });
+    }
+
+    const selections = selectionsRaw.map((bsel: any) => {
+      let kickoff_at = bsel.manual_kickoff_at;
+      if (!kickoff_at && bsel.fixture_id) {
+        kickoff_at = fixturesMap.get(String(bsel.fixture_id));
+      }
+
+      return {
+        fixture_id: bsel.fixture_id,
+        selection: bsel.selection,
+        odd: bsel.odd,
+        result: bsel.result,
+        home_team: bsel.home_team,
+        away_team: bsel.away_team,
+        home_logo: bsel.home_logo,
+        away_logo: bsel.away_logo,
+        league_name: bsel.league_name,
+        market_name: bsel.market_name,
+        kickoff_at: kickoff_at || null,
+        is_manual_fixture: bsel.is_manual_fixture,
+        manual_kickoff_at: bsel.manual_kickoff_at,
+        manual_end_at: bsel.manual_end_at,
+      };
+    });
+
+    return NextResponse.json({ selections, is_manual_preset: isManualPreset });
   } catch (err: any) {
-    console.error('Ticket code lookup error:', err);
-    return NextResponse.json({ message: 'Failed to look up ticket' }, { status: 500 });
+    console.error('ticket-code err:', err);
+    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 

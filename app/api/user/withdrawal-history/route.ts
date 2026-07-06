@@ -1,47 +1,32 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
-
 
 export async function GET(req: Request) {
   const userId = await verifyUser(req);
   if (!userId) return unauthorized();
 
   try {
-    const snapshot = await db.collection('withdrawal_requests')
-      .where('user_id', '==', userId)
-      .get();
+    const { data: requests, error } = await supabaseAdmin
+      .from('withdrawal_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-    docs.sort((a: any, b: any) => {
-      const timeA = new Date(a.created_at || 0).getTime();
-      const timeB = new Date(b.created_at || 0).getTime();
-      return timeB - timeA;
-    });
-    docs = docs.slice(0, 100);
+    if (error) throw error;
 
-    const history = await Promise.all(docs.map(async (data: any) => {
+    const enriched = await Promise.all((requests || []).map(async (row: any) => {
       let method_name = '';
-      let method_type = '';
-      
-      if (data.method_id) {
-        const methodDoc = await db.collection('withdrawal_methods').doc(String(data.method_id)).get();
-        if (methodDoc.exists) {
-          method_name = methodDoc.data()?.name || '';
-          method_type = methodDoc.data()?.type || '';
-        }
+      if (row.method_id) {
+        const { data: method } = await supabaseAdmin.from('withdrawal_methods').select('name').eq('id', row.method_id).single();
+        if (method) method_name = method.name || '';
       }
-
-      return {
-        ...data,
-        method_name,
-        method_type,
-      };
+      return { ...row, method_name };
     }));
 
-    return NextResponse.json(history);
+    return NextResponse.json(enriched);
   } catch (err: any) {
-    console.error('withdrawal-history error:', err);
+    console.error('Error fetching withdrawal history:', err);
     return NextResponse.json({ message: 'Failed to fetch withdrawal history' }, { status: 500 });
   }
 }

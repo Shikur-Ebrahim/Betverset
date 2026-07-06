@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
 
 
@@ -10,57 +10,48 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
 
   const requestedUserId = params.userId;
   if (tokenUserId !== requestedUserId) {
-    return NextResponse.json({ message: 'Cannot view another user’s bet history' }, { status: 403 });
+    return NextResponse.json({ message: 'Cannot view another user\'s bet history' }, { status: 403 });
   }
 
   try {
-    const slipsRef = db.collection('bet_slips');
-    const snapshot = await slipsRef
-      .where('user_id', '==', requestedUserId)
-      .get();
+    const { data: slips, error } = await supabaseAdmin
+      .from('bet_slips')
+      .select('*')
+      .eq('user_id', requestedUserId)
+      .order('created_at', { ascending: false });
 
-    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-    docs.sort((a: any, b: any) => {
-      const timeA = new Date(a.created_at || 0).getTime();
-      const timeB = new Date(b.created_at || 0).getTime();
-      return timeB - timeA;
-    });
+    if (error) throw error;
 
-    const history = await Promise.all(docs.map(async (data: any) => {
-      const selectionsRaw = data.selections || [];
+    const history = await Promise.all((slips || []).map(async (slip: any) => {
+      const selectionsRaw = slip.selections || [];
 
       // Gather all unique fixture IDs needed
-      const neededFixtureIds = new Set<string>();
+      const neededFixtureIds = new Set<number>();
       selectionsRaw.forEach((bsel: any) => {
         if (!bsel.manual_kickoff_at && bsel.fixture_id) {
-          neededFixtureIds.add(String(bsel.fixture_id));
+          neededFixtureIds.add(Number(bsel.fixture_id));
         }
       });
 
-      // Fetch all needed fixtures in one query (or chunks of 10)
+      // Fetch all needed fixtures in chunks
       const fixturesMap = new Map<string, string>();
       const fixtureIdsArr = Array.from(neededFixtureIds);
       
       if (fixtureIdsArr.length > 0) {
-        const chunks: string[][] = [];
-        for (let i = 0; i < fixtureIdsArr.length; i += 10) {
-          chunks.push(fixtureIdsArr.slice(i, i + 10));
-        }
+        const { data: fixtureRows } = await supabaseAdmin
+          .from('fixtures')
+          .select('id, match_date, kickoff_at')
+          .in('id', fixtureIdsArr);
         
-        await Promise.all(chunks.map(async (chunk) => {
-          const snap = await db.collection('fixtures').where('__name__', 'in', chunk).get();
-          snap.docs.forEach((doc: any) => {
-            fixturesMap.set(doc.id, doc.data().match_date);
-          });
-        }));
+        (fixtureRows || []).forEach((row: any) => {
+          fixturesMap.set(String(row.id), row.match_date || row.kickoff_at);
+        });
       }
 
-      // We need to map selections to format expected by frontend
       const selections = selectionsRaw.map((bsel: any) => {
         let kickoff_at = bsel.manual_kickoff_at;
-        
         if (!kickoff_at && bsel.fixture_id) {
-           kickoff_at = fixturesMap.get(String(bsel.fixture_id));
+          kickoff_at = fixturesMap.get(String(bsel.fixture_id));
         }
 
         return {
@@ -78,10 +69,7 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
         };
       });
 
-      return {
-        ...data,
-        selections
-      };
+      return { ...slip, selections };
     }));
 
     return NextResponse.json(history);

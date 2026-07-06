@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
-
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const doc = await db.collection('teams').doc(params.id).get();
+    const { data: team, error } = await supabaseAdmin.from('teams').select('*').eq('id', params.id).single();
+    if (error && error.code !== '42P01') throw error;
     
-    if (!doc.exists) {
+    if (!team) {
       return NextResponse.json({ error: 'Team not found' }, { status: 404 });
     }
-    
-    return NextResponse.json({ id: doc.id, ...doc.data() });
+
+    return NextResponse.json(team);
   } catch (err: any) {
-    console.error('Failed to fetch team:', err);
+    console.error(`Failed to fetch team ${params.id}:`, err);
     return NextResponse.json({ error: 'Failed to fetch team' }, { status: 500 });
   }
 }

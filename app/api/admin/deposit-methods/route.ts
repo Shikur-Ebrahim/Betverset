@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 
 
@@ -13,19 +13,23 @@ export async function POST(req: Request) {
 
   try {
     const { name, logoUrl, minAmount, accountDetails, accountName } = await req.json();
-    const docRef = db.collection('deposit_methods').doc();
-    const data = {
-      id: docRef.id,
-      name,
-      logo_url: logoUrl,
-      min_amount: minAmount,
-      account_details: accountDetails,
-      account_name: accountName,
-      active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    await docRef.set(data);
+    const { data, error } = await supabaseAdmin
+      .from('deposit_methods')
+      .insert({
+        name,
+        logo_url: logoUrl,
+        min_amount: minAmount,
+        account_details: accountDetails,
+        account_name: accountName,
+        is_active: true,
+        active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    
+    if (error) throw error;
     return NextResponse.json(data, { status: 201 });
   } catch (err: any) {
     console.error('Error adding deposit method:', err);
@@ -36,12 +40,14 @@ export async function POST(req: Request) {
 // GET /api/admin/deposit-methods - Get all active deposit methods
 export async function GET(req: Request) {
   try {
-    const snapshot = await db.collection('deposit_methods')
-      .where('active', '==', true)
-      .get();
-    let methods = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-    methods.sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
-    return NextResponse.json(methods);
+    const { data, error } = await supabaseAdmin
+      .from('deposit_methods')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+    
+    if (error) throw error;
+    return NextResponse.json(data || []);
   } catch (err: any) {
     console.error(err);
     return NextResponse.json([], { status: 500 });

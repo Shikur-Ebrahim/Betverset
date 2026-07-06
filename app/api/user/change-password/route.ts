@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
-
 
 export async function POST(req: Request) {
   const userId = await verifyUser(req);
@@ -19,10 +18,8 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-    // First, verify the current password is correct by trying to re-authenticate
-    // To re-authenticate, we need the user's email. Let's get it from Firestore using the userId
-    const userDoc = await db.collection('users').doc(userId).get();
-    const phone = userDoc.data()?.phone;
+    const { data: userData } = await supabaseAdmin.from('users').select('phone').eq('id', userId).single();
+    const phone = userData?.phone;
     if (!phone) {
       return NextResponse.json({ message: 'User phone not found' }, { status: 400 });
     }
@@ -41,7 +38,6 @@ export async function POST(req: Request) {
     const verifyData = await verifyRes.json();
     const freshIdToken = verifyData.idToken;
 
-    // Now update the password using the REST API
     const updateRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

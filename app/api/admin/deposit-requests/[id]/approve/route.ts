@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 
 
@@ -13,28 +13,28 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
   }
 
   try {
-    await db.runTransaction(async (transaction: any) => {
-      const depositRef = db.collection('deposit_requests').doc(params.id);
-      const depositDoc = await transaction.get(depositRef);
+    const { data: depositRow, error } = await supabaseAdmin
+      .from('deposit_requests')
+      .select('*')
+      .eq('id', params.id)
+      .single();
 
-      if (!depositDoc.exists || depositDoc.data()?.status !== 'pending') {
-        throw new Error('Request not found or already processed');
-      }
+    if (error || !depositRow || depositRow.status !== 'pending') {
+      return NextResponse.json({ message: 'Request not found or already processed' }, { status: 404 });
+    }
 
-      const { user_id, amount } = depositDoc.data()!;
-      const userRef = db.collection('users').doc(String(user_id));
-      
-      // READS MUST COME BEFORE WRITES in a Firestore transaction
-      const userDoc = await transaction.get(userRef);
-      const currentBalance = Number(userDoc.data()?.balance) || 0;
+    const { user_id, amount } = depositRow;
+    const { data: userData } = await supabaseAdmin.from('users').select('balance').eq('id', user_id).single();
+    const currentBalance = Number(userData?.balance) || 0;
 
-      // WRITES
-      transaction.update(depositRef, {
-        status: 'approved',
-        updated_at: new Date().toISOString(),
-      });
-      transaction.update(userRef, { balance: currentBalance + Number(amount) });
-    });
+    await supabaseAdmin.from('deposit_requests').update({
+      status: 'approved',
+      updated_at: new Date().toISOString(),
+    }).eq('id', params.id);
+
+    await supabaseAdmin.from('users').update({
+      balance: currentBalance + Number(amount)
+    }).eq('id', user_id);
 
     return NextResponse.json({ message: 'Deposit approved and balance updated' });
   } catch (err: any) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { generatePromotionCodeForPhone } from '@/lib/services/promotionCode';
 
 
@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
     if (!apiKey) throw new Error('Firebase API Key missing');
 
-    // 1. Create user and get token in one request using Firebase Auth REST API
     const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,16 +33,17 @@ export async function POST(req: Request) {
     const uid = data.localId;
     const idToken = data.idToken;
 
-    // 2. Create Firestore document — single write, fast
-    const userDocRef = db.collection('users').doc(uid);
-    await userDocRef.set({
+    // Create user in Supabase
+    await supabaseAdmin.from('users').insert({
+      id: uid,
       phone,
       role: 'user',
       balance: 0,
-      createdAt: new Date().toISOString(),
+      currency: 'ETB',
+      created_at: new Date().toISOString(),
     });
 
-    // 3. Generate promotion code — fire and forget (do NOT await, avoids 10s Vercel timeout)
+    // Generate promotion code — fire and forget
     generatePromotionCodeForPhone(phone).catch((err: any) => {
       console.error('Promo code generation failed (non-critical):', err?.message);
     });

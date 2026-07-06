@@ -1,47 +1,41 @@
 import { NextResponse } from 'next/server';
-import { auth, db } from '@/lib/firebase-admin';
+import { auth } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
-// ONE-TIME USE: Set a user as admin by email
-// Protected by CRON_SECRET so only you can call it
-// DELETE this file after use for security
-
-const CRON_SECRET = process.env.CRON_SECRET || '';
-
-export async function GET(req: Request) {
-  // Require secret
-  const { searchParams } = new URL(req.url);
-  const secret = searchParams.get('secret');
-
-  if (!CRON_SECRET || secret !== CRON_SECRET) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  const email = searchParams.get('email');
-  if (!email) {
-    return NextResponse.json({ error: 'email param required' }, { status: 400 });
-  }
-
+export async function POST(req: Request) {
   try {
-    // Get user from Firebase Auth
-    const userRecord = await auth.getUserByEmail(email);
-    const uid = userRecord.uid;
+    const { uid, adminSecret } = await req.json();
 
-    // Set admin role in Firestore users collection
-    await db.collection('users').doc(uid).set(
-      { role: 'admin', email: email, uid },
-      { merge: true }
-    );
+    if (!uid) {
+      return NextResponse.json({ message: 'Missing uid' }, { status: 400 });
+    }
 
-    // Also set custom claim on Firebase Auth token
-    await auth.setCustomUserClaims(uid, { role: 'admin' });
+    if (adminSecret !== process.env.ADMIN_SECRET) {
+      return NextResponse.json({ message: 'Invalid admin secret' }, { status: 403 });
+    }
 
-    return NextResponse.json({
-      ok: true,
-      message: `✅ ${email} is now admin`,
-      uid,
-    });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    await auth.setCustomUserClaims(uid, { admin: true });
+
+    let phone = '';
+    try {
+      const userRec = await auth.getUser(uid);
+      phone = userRec.phoneNumber || '';
+    } catch (e) {
+      console.error('Could not get phone from firebase auth', e);
+    }
+
+    // Upsert the user into Supabase just in case they don't exist yet, but make sure they are admin
+    await supabaseAdmin.from('users').upsert({
+      id: uid,
+      role: 'admin',
+      phone,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'id' });
+
+    return NextResponse.json({ message: `Success. User ${uid} is now an admin.` });
+  } catch (error: any) {
+    console.error('Error setting admin role:', error);
+    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
   }
 }
 

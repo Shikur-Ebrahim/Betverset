@@ -1,22 +1,19 @@
 /**
- * apiFootball service - fetches from API-Football and writes to Firestore.
- * This replaces the PostgreSQL-based backend syncService.
+ * apiFootball service - fetches from API-Football and writes to Supabase PostgreSQL.
  */
-import { db } from '@/lib/firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 const API_HOST = process.env.API_FOOTBALL_HOST || 'v3.football.api-sports.io';
 const API_BASE = `https://${API_HOST}`;
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
 const DAILY_LIMIT = 7500;
 
-// In-memory quota cache to avoid blocking Firestore reads on every API call
+// In-memory quota cache to avoid blocking DB reads on every API call
 let quotaCache: { date: string; count: number } = { date: '', count: 0 };
 
 async function checkAndIncrementQuota(): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
   
-  // Reset cache on new day
   if (quotaCache.date !== today) {
     quotaCache = { date: today, count: 0 };
   }
@@ -27,10 +24,15 @@ async function checkAndIncrementQuota(): Promise<void> {
     throw new Error(`API-Football daily limit reached (${DAILY_LIMIT}). Wait for tomorrow.`);
   }
   
-  // Fire-and-forget Firestore update — don't block the API call on this
-  const ref = db.collection('app_settings').doc('api_quota');
-  ref.set({ date: today, requests_today: quotaCache.count, limit: DAILY_LIMIT }, { merge: true })
-    .catch(() => {}); // Silently ignore Firestore write errors
+  // Fire-and-forget DB update
+  ;(async () => {
+    try {
+      await supabaseAdmin.from('app_settings').upsert(
+        { key: 'api_quota', value: { date: today, requests_today: quotaCache.count, limit: DAILY_LIMIT } },
+        { onConflict: 'key' }
+      );
+    } catch (e) {}
+  })();
 }
 
 export async function apiFetch(endpoint: string, params: Record<string, string | number> = {}) {
@@ -51,43 +53,18 @@ export async function apiFetch(endpoint: string, params: Record<string, string |
 
 export const TOP_LEAGUES = [39, 2, 140, 135, 78, 61, 3, 848, 45, 40, 307, 253, 71, 88, 94];
 
-function getFixtureWindowRange() {
-  const now = new Date();
-  const start = new Date(now);
-  start.setDate(start.getDate() - 1);
-  const end = new Date(now);
-  end.setDate(end.getDate() + 7);
-  return { start: start.toISOString(), end: end.toISOString() };
-}
-
 export async function fetchAndStoreCountries() {
   const data = await apiFetch('/countries');
-  const batch = db.batch();
-  let count = 0;
-
-  for (const item of data) {
-    if (!item?.name) continue;
-    const id = item.name.toLowerCase().replace(/\s+/g, '_');
-    const ref = db.collection('countries').doc(id);
-    batch.set(ref, {
-      name: item.name,
-      code: item.code || null,
-      flag_url: item.flag || null,
-      updated_at: new Date().toISOString(),
-    }, { merge: true });
-    count++;
-    if (count % 400 === 0) await batch.commit();
-  }
-  await batch.commit();
+  await supabaseAdmin.from('app_settings').upsert(
+    { key: 'countries_cache', value: data },
+    { onConflict: 'key' }
+  );
   return { countriesSeen: data.length };
 }
 
 export async function fetchAndStoreLeagues(leagueIds?: number[]) {
-  const params: Record<string, string | number> = {};
-  const data = await apiFetch('/leagues', params);
-  const batch = db.batch();
-  let count = 0;
-  let stored = 0;
+  const data = await apiFetch('/leagues');
+  const records: any[] = [];
 
   for (const item of data) {
     const l = item?.league;
@@ -97,12 +74,13 @@ export async function fetchAndStoreLeagues(leagueIds?: number[]) {
     if (leagueIds && !leagueIds.includes(l.id)) continue;
 
     const currentSeason = seasons.find((s: any) => s.current)?.year ?? null;
-    const ref = db.collection('leagues').doc(String(l.id));
-    batch.set(ref, {
+    records.push({
+      id: l.id,
       api_league_id: l.id,
       name: l.name || '',
       type: l.type || '',
       logo: l.logo || null,
+      country: c?.name || null,
       country_name: c?.name || null,
       country_code: c?.code || null,
       flag_url: c?.flag || null,
@@ -110,19 +88,20 @@ export async function fetchAndStoreLeagues(leagueIds?: number[]) {
       is_top: leagueIds ? leagueIds.includes(l.id) : false,
       top_rank: leagueIds ? leagueIds.indexOf(l.id) : null,
       updated_at: new Date().toISOString(),
-    }, { merge: true });
-    stored++;
-    count++;
-    if (count % 400 === 0) await batch.commit();
+    });
   }
-  await batch.commit();
-  return { leaguesSeen: data.length, stored };
+
+  if (records.length > 0) {
+    // batch in chunks of 100
+    for (let i = 0; i < records.length; i += 100) {
+      await supabaseAdmin.from('leagues').upsert(records.slice(i, i + 100), { onConflict: 'id' });
+    }
+  }
+  return { leaguesSeen: data.length, stored: records.length };
 }
 
-// Helper: store odds from already-fetched data (no extra API call)
 export async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Promise<number> {
-  const batch = db.batch();
-  let count = 0;
+  const records: any[] = [];
   for (const item of oddsItems) {
     const bookmakers: any[] = item?.bookmakers ?? [];
     for (const bookmaker of bookmakers) {
@@ -130,9 +109,9 @@ export async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Pr
       for (const bet of bookmaker?.bets ?? []) {
         for (const value of bet?.values ?? []) {
           const oddId = `${fixtureId}_${bookmaker.id}_${bet.id}_${value.value}`.replace(/\//g, '-').replace(/\s+/g, '_');
-          const ref = db.collection('odds').doc(oddId);
-          batch.set(ref, {
-            fixture_id: String(fixtureId),
+          records.push({
+            id: oddId,
+            fixture_id: fixtureId,
             bookmaker_id: String(bookmaker.id),
             bookmaker_name: bookmaker.name || '',
             market_id: String(bet.id),
@@ -141,15 +120,18 @@ export async function storeOddsFromData(fixtureId: number, oddsItems: any[]): Pr
             selection: value.value || '',
             odd_value: parseFloat(value.odd) || null,
             last_update: new Date().toISOString(),
-          }, { merge: true });
-          count++;
-          if (count % 400 === 0) await batch.commit();
+            markets: { bookmaker, bet, value },
+            updated_at: new Date().toISOString(),
+          });
         }
       }
     }
   }
-  if (count % 400 !== 0) await batch.commit();
-  return count;
+
+  for (let i = 0; i < records.length; i += 100) {
+    await supabaseAdmin.from('odds').upsert(records.slice(i, i + 100), { onConflict: 'id' });
+  }
+  return records.length;
 }
 
 export async function fetchAndStoreFixturesForWindow() {
@@ -157,7 +139,6 @@ export async function fetchAndStoreFixturesForWindow() {
     const today = new Date().toISOString().split('T')[0];
     console.log(`[sync] Fetching odds page 1 for date ${today}...`);
 
-    // Step 1: Fetch odds by date - this guarantees matches have odds
     const oddsPage = await apiFetch('/odds', { date: today, page: 1 });
     if (!oddsPage || oddsPage.length === 0) {
       console.log('[sync] No odds available for today. Skipping.');
@@ -166,7 +147,6 @@ export async function fetchAndStoreFixturesForWindow() {
 
     console.log(`[sync] Got ${oddsPage.length} fixtures with odds. Processing...`);
 
-    // Step 2: Build a map of fixtureId -> odds items (already in memory)
     const oddsMap = new Map<number, any[]>();
     for (const item of oddsPage) {
       const fid: number = item?.fixture?.id;
@@ -174,12 +154,11 @@ export async function fetchAndStoreFixturesForWindow() {
       oddsMap.set(fid, [item]);
     }
 
-    // Step 3: Fetch fixture details for up to 20 at a time
     const allIds = Array.from(oddsMap.keys()).slice(0, 20);
     const fixtureDetails = await apiFetch('/fixtures', { id: allIds.join('-') });
 
     let fixturesStored = 0;
-    const batch = db.batch();
+    const fixtureRecords: any[] = [];
 
     for (const item of fixtureDetails) {
       const f = item?.fixture;
@@ -191,38 +170,41 @@ export async function fetchAndStoreFixturesForWindow() {
       const oddsItems = oddsMap.get(f.id) || [];
       if (oddsItems.length === 0) continue;
 
-      // Save fixture
-      const ref = db.collection('fixtures').doc(String(f.id));
-      batch.set(ref, {
+      fixtureRecords.push({
+        id: f.id,
         api_fixture_id: f.id,
         match_date: f.date || null,
         status: f.status?.short || 'NS',
+        kickoff_at: f.date || new Date().toISOString(),
         elapsed: f.status?.elapsed || null,
         referee: f.referee || null,
-        home_team_id: String(teams?.home?.id || ''),
-        away_team_id: String(teams?.away?.id || ''),
+        home_team_id: teams?.home?.id || null,
+        away_team_id: teams?.away?.id || null,
         home_team_name: teams?.home?.name || '',
         away_team_name: teams?.away?.name || '',
         home_team_logo: teams?.home?.logo || null,
         away_team_logo: teams?.away?.logo || null,
         home_goals: goals?.home ?? null,
         away_goals: goals?.away ?? null,
-        league_id: String(league?.id || ''),
+        league_id: league?.id || null,
         league_name: league?.name || '',
         league_logo: league?.logo || null,
         api_league_id: league?.id || 0,
         country_name: league?.country || null,
         venue_name: f.venue?.name || null,
         venue_city: f.venue?.city || null,
+        data: item,
         updated_at: new Date().toISOString(),
-      }, { merge: true });
+      });
 
-      // Save odds from memory (no extra API call)
       await storeOddsFromData(f.id, oddsItems);
       fixturesStored++;
     }
 
-    await batch.commit();
+    if (fixtureRecords.length > 0) {
+      await supabaseAdmin.from('fixtures').upsert(fixtureRecords, { onConflict: 'id' });
+    }
+
     console.log(`[sync] Stored ${fixturesStored} fixtures with odds.`);
     return { fixturesSeen: fixturesStored };
   } catch (err) {
@@ -238,70 +220,67 @@ export async function fetchAndStoreOddsForFixture(fixtureId: number) {
 }
 
 export async function settleFinishedBets() {
-  // Get recently finished fixtures
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
   let finishedFixtureIds = new Set<string>();
 
   try {
-    const snapshot = await db.collection('fixtures')
-      .where('status', '==', 'FT')
-      .where('updated_at', '>=', twoHoursAgo)
-      .get();
+    const { data: finishedFixtures } = await supabaseAdmin
+      .from('fixtures')
+      .select('id')
+      .eq('status', 'FT')
+      .gte('updated_at', twoHoursAgo);
       
-    if (!snapshot.empty) {
-      finishedFixtureIds = new Set(snapshot.docs.map(d => d.id));
+    if (finishedFixtures && finishedFixtures.length > 0) {
+      finishedFixtureIds = new Set(finishedFixtures.map((f: any) => String(f.id)));
     }
   } catch (err) {
-    console.error('Failed to query fixtures for settlement (missing index?):', err);
-    // Proceed to check manual tickets even if real fixtures fail
+    console.error('Failed to query fixtures for settlement:', err);
   }
 
   let settled = 0;
 
-  // Find pending bet slips with selections on these fixtures
-  const slipsSnap = await db.collection('bet_slips').where('status', '==', 'pending').get();
+  const { data: pendingSlips } = await supabaseAdmin
+    .from('bet_slips')
+    .select('*')
+    .eq('status', 'pending');
 
-  for (const slipDoc of slipsSnap.docs) {
-    const slip = slipDoc.data();
+  for (const slip of (pendingSlips || [])) {
     const selections: any[] = slip.selections || [];
-
     let allResolved = true;
     let anyLost = false;
     let updatedManual = false;
+    const updatedSelections = selections.map(s => ({ ...s }));
 
-    for (const s of selections) {
+    for (const s of updatedSelections) {
       if (s.is_manual || s.manual_end_at) {
-        // Manual match: check if end time has passed
         if (s.result !== 'won' && s.result !== 'lost') {
           const ended = new Date(s.manual_end_at).getTime() <= Date.now();
           if (!ended) {
             allResolved = false;
           } else {
-            // If ended, it's an automatic win
             s.result = 'won';
             updatedManual = true;
           }
         }
       } else {
-        // Real match
         if (s.result === 'lost') {
           anyLost = true;
-        } else if (s.result === 'won') {
-          // already resolved
-        } else if (finishedFixtureIds.has(String(s.fixture_id))) {
-          if (s.result !== 'won' && s.result !== 'lost') {
-            allResolved = false; 
+        } else if (s.result !== 'won') {
+          if (finishedFixtureIds.has(String(s.fixture_id))) {
+            allResolved = false;
+          } else {
+            allResolved = false;
           }
-        } else {
-          allResolved = false;
         }
       }
     }
 
     if (!allResolved) {
-      // Save partial progress if any manual legs were just marked won
       if (updatedManual) {
-        await slipDoc.ref.update({ selections, updated_at: new Date().toISOString() });
+        await supabaseAdmin.from('bet_slips').update({
+          selections: updatedSelections,
+          updated_at: new Date().toISOString()
+        }).eq('id', slip.id);
       }
       continue;
     }
@@ -309,25 +288,25 @@ export async function settleFinishedBets() {
     const newStatus: string = anyLost ? 'lost' : 'won';
 
     try {
-      await db.runTransaction(async (tx: any) => {
-        let userDoc: any = null;
-        let userRef: any = null;
+      await supabaseAdmin.from('bet_slips').update({
+        status: newStatus,
+        selections: updatedSelections,
+        updated_at: new Date().toISOString()
+      }).eq('id', slip.id);
 
-        if (newStatus === 'won' && slip.user_id) {
-          userRef = db.collection('users').doc(String(slip.user_id));
-          userDoc = await tx.get(userRef);
+      if (newStatus === 'won' && slip.user_id && !slip.paid_out) {
+        const { data: userData } = await supabaseAdmin.from('users').select('balance').eq('id', slip.user_id).single();
+        if (userData) {
+          const currentBalance = Number(userData.balance) || 0;
+          await supabaseAdmin.from('users').update({
+            balance: currentBalance + Number(slip.possible_win || 0)
+          }).eq('id', slip.user_id);
+          await supabaseAdmin.from('bet_slips').update({ paid_out: true }).eq('id', slip.id);
         }
-
-        tx.update(slipDoc.ref, { status: newStatus, selections, updated_at: new Date().toISOString() });
-        
-        if (userDoc?.exists && userRef) {
-          const currentBalance = Number(userDoc.data()?.balance) || 0;
-          tx.update(userRef, { balance: currentBalance + Number(slip.possible_win || 0) });
-        }
-      });
+      }
       settled++;
     } catch (txErr) {
-      console.error(`[sync] Failed to settle ticket ${slipDoc.id}:`, txErr);
+      console.error(`[settle] Failed to settle ticket ${slip.id}:`, txErr);
     }
   }
 
@@ -335,41 +314,28 @@ export async function settleFinishedBets() {
 }
 
 export async function purgeOldFinishedFixtures() {
-  // Purge FT fixtures older than 24 hours
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const snapshot = await db.collection('fixtures')
-    .where('status', '==', 'FT')
-    .where('match_date', '<', cutoff)
-    .limit(50)
-    .get();
+  
+  const { data: oldFixtures } = await supabaseAdmin
+    .from('fixtures')
+    .select('id')
+    .eq('status', 'FT')
+    .lt('match_date', cutoff)
+    .limit(50);
 
   let deletedFixtures = 0;
   let deletedOdds = 0;
 
-  for (const doc of snapshot.docs) {
-    const fixtureId = doc.id;
+  for (const fixture of (oldFixtures || [])) {
+    const { data } = await supabaseAdmin
+      .from('odds')
+      .delete()
+      .eq('fixture_id', fixture.id)
+      .select('id');
     
-    // Delete odds for this fixture first
-    const oddsSnap = await db.collection('odds').where('fixture_id', '==', fixtureId).get();
-    
-    let oddsBatch = db.batch();
-    let oddsCount = 0;
-    
-    for (const oddDoc of oddsSnap.docs) {
-      oddsBatch.delete(oddDoc.ref);
-      oddsCount++;
-      if (oddsCount % 400 === 0) {
-        await oddsBatch.commit();
-        oddsBatch = db.batch();
-      }
-    }
-    if (oddsCount > 0 && oddsCount % 400 !== 0) {
-      await oddsBatch.commit();
-    }
-    deletedOdds += oddsCount;
+    deletedOdds += data?.length || 0;
 
-    // Finally delete the fixture itself
-    await doc.ref.delete();
+    await supabaseAdmin.from('fixtures').delete().eq('id', fixture.id);
     deletedFixtures++;
   }
   
@@ -377,6 +343,6 @@ export async function purgeOldFinishedFixtures() {
 }
 
 export async function getApiQuotaStatus() {
-  const doc = await db.collection('app_settings').doc('api_quota').get();
-  return doc.exists ? doc.data() : { requests_today: 0, limit: 7500 };
+  const { data } = await supabaseAdmin.from('app_settings').select('value').eq('key', 'api_quota').single();
+  return data?.value || { requests_today: 0, limit: 7500 };
 }

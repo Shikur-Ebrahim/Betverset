@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
+import { checkDailyWithdrawalLimit } from '@/lib/services/withdrawalDailyLimit';
 import { checkWithdrawalDepositEligibility } from '@/lib/services/depositRule';
-import { checkDailyWithdrawalLimit, MAX_DAILY_WITHDRAWAL_ETB } from '@/lib/services/withdrawalDailyLimit';
-import { validatePromotionCodeForUser } from '@/lib/services/promotionCode';
 
 
 export async function POST(req: Request) {
@@ -11,94 +10,77 @@ export async function POST(req: Request) {
   if (!userId) return unauthorized();
 
   try {
-    const body = await req.json();
-    const { methodId, amount, accountName, accountDetails, promoCode } = body;
-    const amt = Number(amount);
+    const { methodId, amount, holderName, accountNumber, agentCode } = await req.json();
 
-    if (!methodId || !Number.isFinite(amt) || amt < 100) {
-      return NextResponse.json({ message: 'Valid method and amount (min 100 ETB) are required' }, { status: 400 });
-    }
-    if (!accountName?.trim() || !accountDetails?.trim()) {
-      return NextResponse.json({ message: 'Account name and details are required' }, { status: 400 });
+    if (!methodId || !amount || !holderName || !accountNumber) {
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
-    const pendingCheck = await db.collection('withdrawal_requests')
-      .where('user_id', '==', userId)
-      .where('status', '==', 'pending')
-      .limit(1)
-      .get();
-      
-    if (!pendingCheck.empty) {
-      return NextResponse.json({ message: 'You already have a withdrawal in processing. Wait for it to complete.' }, { status: 400 });
+    const requestedAmount = parseFloat(String(amount));
+    if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+      return NextResponse.json({ message: 'Invalid withdrawal amount' }, { status: 400 });
     }
 
-    const { eligible, totalDeposits, minRequired } = await checkWithdrawalDepositEligibility(userId);
-    if (!eligible) {
+    // 1. Check if user is eligible based on deposit history
+    const eligibility = await checkWithdrawalDepositEligibility(userId);
+    if (!eligibility.eligible) {
       return NextResponse.json({
-        message: `To withdraw in Betvers betting, your total approved deposits must reach ${minRequired} ETB. You have deposited ${totalDeposits.toFixed(2)} ETB so far.`,
-        code: 'DEPOSIT_RULE_NOT_MET',
-        totalDeposits,
-        minRequired,
+        message: `You must deposit at least ${eligibility.minRequired} ETB before you can make a withdrawal. (Current total: ${eligibility.totalDeposits})`
       }, { status: 400 });
     }
 
-    const promoCheck = await validatePromotionCodeForUser(userId, promoCode);
-    if (!promoCheck.valid) {
-      return NextResponse.json({
-        message: promoCheck.message || 'Invalid promotion code',
-        code: 'PROMO_CODE_INVALID',
-      }, { status: 400 });
+    // 2. Check daily limits
+    const limitCheck = await checkDailyWithdrawalLimit(userId, requestedAmount);
+    if (!limitCheck.allowed) {
+      return NextResponse.json({ message: limitCheck.message }, { status: 400 });
     }
 
-    const dailyCheck = await checkDailyWithdrawalLimit(userId, amt);
-    if (!dailyCheck.allowed) {
-      return NextResponse.json({
-        message: dailyCheck.message,
-        code: 'DAILY_WITHDRAWAL_LIMIT',
-        maxDailyWithdrawal: MAX_DAILY_WITHDRAWAL_ETB,
-        withdrawnToday: dailyCheck.withdrawnToday,
-        remainingToday: dailyCheck.remainingToday,
-      }, { status: 400 });
+    // 3. Get user balance
+    const { data: userData } = await supabaseAdmin.from('users').select('balance').eq('id', userId).single();
+    if (!userData) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const resultData = await db.runTransaction(async (transaction: any) => {
-      const userRef = db.collection('users').doc(userId);
-      const userDoc = await transaction.get(userRef);
+    const balance = Number(userData.balance) || 0;
+    if (balance < requestedAmount) {
+      return NextResponse.json({ message: `Insufficient balance. You only have ${balance.toFixed(2)} ETB.` }, { status: 400 });
+    }
 
-      if (!userDoc.exists) {
-        throw new Error('User not found');
-      }
+    // 4. Update balance (deduct upfront)
+    const { error: updateError } = await supabaseAdmin.from('users').update({
+      balance: balance - requestedAmount
+    }).eq('id', userId);
 
-      const currentBalance = Number(userDoc.data()?.balance) || 0;
-      if (currentBalance < amt) {
-        throw new Error('Insufficient balance');
-      }
+    if (updateError) {
+      return NextResponse.json({ message: 'Failed to deduct balance' }, { status: 500 });
+    }
 
-      // Deduct balance
-      transaction.update(userRef, { balance: currentBalance - amt });
-
-      // Create withdrawal request
-      const requestRef = db.collection('withdrawal_requests').doc();
-      const requestData = {
-        id: requestRef.id,
+    // 5. Insert request
+    const { data: inserted, error: insertError } = await supabaseAdmin
+      .from('withdrawal_requests')
+      .insert({
         user_id: userId,
         method_id: methodId,
-        amount: amt,
-        account_name: accountName.trim(),
-        account_details: accountDetails.trim(),
-        promo_code: promoCode ? promoCode.trim().toUpperCase() : null,
+        amount: requestedAmount,
+        holder_name: holderName,
+        account_number: accountNumber,
+        agent_code: agentCode || '',
         status: 'pending',
         created_at: new Date().toISOString(),
-      };
-      transaction.set(requestRef, requestData);
+      })
+      .select()
+      .single();
 
-      return requestData;
-    });
+    if (insertError) {
+      // Rollback
+      await supabaseAdmin.from('users').update({ balance }).eq('id', userId);
+      throw insertError;
+    }
 
-    return NextResponse.json(resultData, { status: 201 });
+    return NextResponse.json({ message: 'Withdrawal request submitted', request: inserted }, { status: 201 });
   } catch (err: any) {
-    console.error('Withdrawal error:', err);
-    return NextResponse.json({ message: err.message || 'Failed to process withdrawal' }, { status: 500 });
+    console.error('Error submitting withdrawal request:', err);
+    return NextResponse.json({ message: 'Failed to submit withdrawal request' }, { status: 500 });
   }
 }
 

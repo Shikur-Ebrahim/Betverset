@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 
 export async function POST(req: Request) {
@@ -38,14 +38,12 @@ export async function POST(req: Request) {
 
     const uid = data.localId;
 
-    // Fetch user profile from Firestore — with graceful fallback if Firestore is slow
     let userData: any = null;
     try {
-      const userDoc = await db.collection('users').doc(uid).get();
-      userData = userDoc.data();
-    } catch (firestoreErr: any) {
-      console.error('Firestore read failed during login (non-critical):', firestoreErr?.message);
-      // Still allow login — we have uid and phone from Auth token
+      const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', uid).single();
+      userData = user;
+    } catch (err: any) {
+      console.error('Supabase read failed during login (non-critical):', err?.message);
     }
 
     return NextResponse.json({

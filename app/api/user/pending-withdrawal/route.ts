@@ -1,41 +1,23 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
-
 
 export async function GET(req: Request) {
   const userId = await verifyUser(req);
   if (!userId) return unauthorized();
 
   try {
-    const snapshot = await db.collection('withdrawal_requests')
-      .where('user_id', '==', userId)
-      .get();
-
-    const pendingDoc = snapshot.docs.find((doc: any) => doc.data().status === 'pending');
-
-    if (!pendingDoc) {
-      return NextResponse.json({ hasPending: false, request: null });
-    }
-
-    const doc = pendingDoc;
-    const data = doc.data();
-
-    let method_name = '';
-    if (data.method_id) {
-      const methodDoc = await db.collection('withdrawal_methods').doc(String(data.method_id)).get();
-      if (methodDoc.exists) {
-        method_name = methodDoc.data()?.name || '';
-      }
-    }
-
-    return NextResponse.json({
-      hasPending: true,
-      request: { ...data, method_name },
-    });
+    const { count, error } = await supabaseAdmin
+      .from('withdrawal_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'pending');
+      
+    if (error) throw error;
+    return NextResponse.json({ count: count || 0 });
   } catch (err: any) {
-    console.error('pending-withdrawal error:', err);
-    return NextResponse.json({ message: 'Failed to check withdrawal status' }, { status: 500 });
+    console.error('Error fetching pending withdrawals:', err);
+    return NextResponse.json({ message: 'Failed to fetch pending withdrawals' }, { status: 500 });
   }
 }
 

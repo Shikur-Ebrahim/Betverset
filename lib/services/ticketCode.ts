@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 function randomDigit(): string {
   return String(Math.floor(Math.random() * 10));
@@ -21,11 +21,10 @@ function buildTicketCode(): string {
 }
 
 export async function allocateUniqueTicketCode(): Promise<string> {
-  const slipsRef = db.collection('bet_slips');
   for (let i = 0; i < 40; i++) {
     const code = buildTicketCode();
-    const existing = await slipsRef.where('ticket_code', '==', code).get();
-    if (existing.empty) return code;
+    const { data } = await supabaseAdmin.from('bet_slips').select('id').eq('ticket_code', code).limit(1);
+    if (!data || data.length === 0) return code;
   }
   throw new Error('Could not allocate a unique ticket code');
 }

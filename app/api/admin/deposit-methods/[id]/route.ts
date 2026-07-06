@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyAdmin, forbidden, unauthorized } from '@/lib/auth-helper';
 
 
@@ -14,9 +14,9 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
 
   try {
     const { name, logoUrl, minAmount, accountDetails, accountName } = await req.json();
-    const docRef = db.collection('deposit_methods').doc(params.id);
-    const doc = await docRef.get();
-    if (!doc.exists) return NextResponse.json({ message: 'Method not found' }, { status: 404 });
+    
+    const { data: existing } = await supabaseAdmin.from('deposit_methods').select('id').eq('id', params.id).single();
+    if (!existing) return NextResponse.json({ message: 'Method not found' }, { status: 404 });
 
     const updated = {
       name,
@@ -26,8 +26,9 @@ export async function PUT(req: Request, props: { params: Promise<{ id: string }>
       account_name: accountName,
       updated_at: new Date().toISOString(),
     };
-    await docRef.update(updated);
-    return NextResponse.json({ id: params.id, ...doc.data(), ...updated });
+    const { data, error } = await supabaseAdmin.from('deposit_methods').update(updated).eq('id', params.id).select().single();
+    if (error) throw error;
+    return NextResponse.json(data);
   } catch (err: any) {
     return NextResponse.json({ message: 'Failed to update deposit method' }, { status: 500 });
   }
@@ -43,11 +44,10 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
   }
 
   try {
-    const docRef = db.collection('deposit_methods').doc(params.id);
-    const doc = await docRef.get();
-    if (!doc.exists) return NextResponse.json({ message: 'Method not found' }, { status: 404 });
+    const { data: existing } = await supabaseAdmin.from('deposit_methods').select('id').eq('id', params.id).single();
+    if (!existing) return NextResponse.json({ message: 'Method not found' }, { status: 404 });
 
-    await docRef.update({ active: false, updated_at: new Date().toISOString() });
+    await supabaseAdmin.from('deposit_methods').update({ is_active: false, active: false, updated_at: new Date().toISOString() }).eq('id', params.id);
     return NextResponse.json({ message: 'Method deleted successfully', id: params.id });
   } catch (err: any) {
     return NextResponse.json({ message: 'Failed to delete deposit method' }, { status: 500 });

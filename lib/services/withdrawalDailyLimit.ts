@@ -1,4 +1,4 @@
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export const MAX_DAILY_WITHDRAWAL_ETB = 8000;
 
@@ -15,27 +15,24 @@ export async function getDailyWithdrawalLimitInfo(userId: string): Promise<{
 }> {
   const { start, end } = getTodayRangeUTC();
 
-  // Single-field query to avoid composite index requirement
-  const snapshot = await db.collection('withdrawal_requests')
-    .where('user_id', '==', userId)
-    .get();
+  const { data } = await supabaseAdmin
+    .from('withdrawal_requests')
+    .select('amount, status, created_at')
+    .eq('user_id', userId);
 
-  const withdrawnToday = snapshot.docs
-    .filter((doc: any) => {
-      const d = doc.data();
-      // Filter: today's date range and not rejected/failed
-      const createdAt = d.created_at || '';
+  const withdrawnToday = (data || [])
+    .filter((row: any) => {
+      const createdAt = row.created_at || '';
       return (
         createdAt >= start &&
         createdAt <= end &&
-        d.status !== 'rejected' &&
-        d.status !== 'failed'
+        row.status !== 'rejected' &&
+        row.status !== 'failed'
       );
     })
-    .reduce((sum: number, doc: any) => sum + (Number(doc.data().amount) || 0), 0);
+    .reduce((sum: number, row: any) => sum + (Number(row.amount) || 0), 0);
 
   const remainingToday = Math.max(0, MAX_DAILY_WITHDRAWAL_ETB - withdrawnToday);
-  
   return { withdrawnToday, remainingToday };
 }
 

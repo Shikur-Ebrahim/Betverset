@@ -1,44 +1,30 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
-
 
 export async function GET(req: Request) {
   const userId = await verifyUser(req);
   if (!userId) return unauthorized();
 
   try {
-    const snapshot = await db.collection('deposit_requests')
-      .where('user_id', '==', userId)
-      .get();
+    const { data: requests, error } = await supabaseAdmin
+      .from('deposit_requests')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-    let docs = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
-    docs.sort((a: any, b: any) => {
-      const timeA = new Date(a.created_at || 0).getTime();
-      const timeB = new Date(b.created_at || 0).getTime();
-      return timeB - timeA;
-    });
+    if (error) throw error;
 
-    const history = await Promise.all(docs.map(async (data: any) => {
+    const enriched = await Promise.all((requests || []).map(async (row: any) => {
       let method_name = '';
-      let method_logo = '';
-      
-      if (data.method_id) {
-        const methodDoc = await db.collection('deposit_methods').doc(String(data.method_id)).get();
-        if (methodDoc.exists) {
-          method_name = methodDoc.data()?.name || '';
-          method_logo = methodDoc.data()?.logo_url || '';
-        }
+      if (row.method_id) {
+        const { data: method } = await supabaseAdmin.from('deposit_methods').select('name').eq('id', row.method_id).single();
+        if (method) method_name = method.name || '';
       }
-
-      return {
-        ...data,
-        method_name,
-        method_logo,
-      };
+      return { ...row, method_name };
     }));
 
-    return NextResponse.json(history);
+    return NextResponse.json(enriched);
   } catch (err: any) {
     console.error('Error fetching deposit history:', err);
     return NextResponse.json({ message: 'Failed to fetch deposit history' }, { status: 500 });

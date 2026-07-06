@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { verifyUser, unauthorized } from '@/lib/auth-helper';
 
 
@@ -8,15 +8,14 @@ export async function GET(req: Request) {
   if (!userId) return unauthorized();
 
   try {
-    const userDoc = await db.collection('users').doc(userId).get();
-    if (!userDoc.exists) {
+    const { data: userData, error } = await supabaseAdmin.from('users').select('balance, currency').eq('id', userId).single();
+    if (error || !userData) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    const userData = userDoc.data();
     return NextResponse.json({
-      balance: Number(userData?.balance) || 0,
-      currency: userData?.currency || 'ETB',
+      balance: Number(userData.balance) || 0,
+      currency: userData.currency || 'ETB',
     });
   } catch (err: any) {
     console.error('Wallet fetch error:', err);

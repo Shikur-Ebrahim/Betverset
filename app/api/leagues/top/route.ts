@@ -1,17 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
-
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET() {
   try {
-    const snapshot = await db.collection('leagues')
-      .where('is_top', '==', true)
-      .get();
+    const { data: leagues, error } = await supabaseAdmin
+      .from('leagues')
+      .select('*')
+      .eq('is_top', true)
+      .limit(15);
       
-    const leagues = snapshot.docs
-      .map((doc: any) => ({ id: doc.id, ...doc.data() }))
-      .sort((a: any, b: any) => (a.top_rank ?? 999) - (b.top_rank ?? 999));
-    return NextResponse.json(leagues);
+    if (error) throw error;
+      
+    const topLeagues = (leagues || []).sort((a: any, b: any) => (a.top_rank ?? 999) - (b.top_rank ?? 999));
+    return NextResponse.json(topLeagues);
   } catch (err: any) {
     console.error('Failed to fetch top leagues:', err);
     return NextResponse.json({ error: 'Failed to fetch top leagues' }, { status: 500 });

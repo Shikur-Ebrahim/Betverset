@@ -436,7 +436,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     <img src={selectedMethod.logo_url} alt="" className="h-full w-full object-contain" />
                   </div>
                   <div>
-                    <div className="text-sm font-black text-white">{selectedMethod.name}</div>
+                    <div className="text-sm font-black text-slate-900">{selectedMethod.name}</div>
                     <div className="text-[11px] font-black text-orange-500">{amount} ETB</div>
                   </div>
                 </div>
@@ -450,7 +450,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-name"
                       type="text"
                       placeholder="Account holder name"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
                     />
@@ -464,7 +464,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       id="wd-details"
                       type="text"
                       placeholder={selectedMethod.type === 'bank' ? 'Enter bank account' : 'Enter phone number'}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={accountDetails}
                       onChange={(e) => setAccountDetails(e.target.value)}
                     />
@@ -492,7 +492,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       autoComplete="off"
                       spellCheck={false}
                       maxLength={10}
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-white shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-5 py-4 font-mono text-lg font-black uppercase tracking-wider text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={promoCode}
                       onChange={(e) => {
                         setPromoCode(e.target.value.toUpperCase());
@@ -539,7 +539,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   </svg>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-xl font-black tracking-tight text-white">Submitted</div>
+                  <div className="text-xl font-black tracking-tight text-slate-900">Submitted</div>
                   <p className="text-[11px] font-bold leading-relaxed text-gray-500">
                     Your wallet balance has been updated. Support will complete your payout or contact you if needed.
                   </p>

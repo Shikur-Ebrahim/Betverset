@@ -188,7 +188,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
 
       <div className="relative flex h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-t-[32px] bg-[var(--site-surface)] shadow-2xl sm:h-auto sm:rounded-[32px]">
         <header className="flex shrink-0 items-center justify-between border-b border-gray-50 px-6 py-6">
-          <div className="text-2xl font-black tracking-tighter text-white">Deposit</div>
+          <div className="text-2xl font-black tracking-tighter text-slate-900">Deposit</div>
           <button
             type="button"
             onClick={onClose}
@@ -232,7 +232,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                   <input
                     type="number"
                     placeholder={`Min: ${minAllowedAmount.toFixed(2)}`}
-                    className="w-full rounded-[24px] border-2 border-transparent bg-[var(--site-surface-soft)] px-6 py-5 text-2xl font-black text-white shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[var(--site-surface)]"
+                    className="w-full rounded-[24px] border-2 border-transparent bg-[var(--site-surface-soft)] px-6 py-5 text-2xl font-black text-slate-900 shadow-inner outline-none transition-all placeholder:text-gray-400 focus:border-orange-500 focus:bg-[var(--site-surface)]"
                     value={amount}
                     onChange={(e) => {
                       setAmount(e.target.value);
@@ -277,7 +277,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                         <div className="flex h-14 w-16 items-center justify-center">
                           <img src={m.logo_url} alt={m.name} className="h-full w-full object-contain" />
                         </div>
-                        <div className="text-sm font-bold tracking-tight text-white">{m.name}</div>
+                        <div className="text-sm font-bold tracking-tight text-slate-900">{m.name}</div>
                       </button>
                     ))}
                   </div>
@@ -292,7 +292,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                     <img src={selectedMethod?.logo_url} className="h-full w-full object-contain" alt="" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold tracking-tight text-white">{selectedMethod?.name}</div>
+                    <div className="text-sm font-bold tracking-tight text-slate-900">{selectedMethod?.name}</div>
                     <MotionlessTransferAmount amount={amount} />
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export default function DepositModal({ isOpen, onClose, user }: DepositModalProp
                     <div className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                       Name: {selectedMethod?.account_name}
                     </div>
-                    <div className="truncate text-lg font-black tracking-tighter text-white">
+                    <div className="truncate text-lg font-black tracking-tighter text-slate-900">
                       {selectedMethod?.account_details}
                     </div>
                   </div>
@@ -407,7 +407,7 @@ function MotionlessBackdrop({ isOpen, onClose }: { isOpen: boolean; onClose: () 
 }
 
 function MotionlessPendingTitle() {
-  return <div className="text-xl font-black tracking-tight text-white">Deposit in review</div>;
+  return <div className="text-xl font-black tracking-tight text-slate-900">Deposit in review</div>;
 }
 
 function MotionlessTransferAmount({ amount }: { amount: string }) {

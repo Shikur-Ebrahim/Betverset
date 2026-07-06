@@ -210,7 +210,7 @@ export default function CheckTicketClient() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--site-surface-soft)] text-white">
+    <div className="flex min-h-dvh flex-col bg-[var(--site-surface-soft)] text-slate-900">
       <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] px-4">
         <Link
           href="/"
@@ -242,7 +242,7 @@ export default function CheckTicketClient() {
                   autoComplete="off"
                   autoCapitalize="characters"
                   spellCheck={false}
-                  className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] px-4 py-3.5 font-mono text-base text-white placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
+                  className="w-full rounded-xl border border-[rgba(0,0,0,0.08)] bg-[var(--site-surface)] px-4 py-3.5 font-mono text-base text-slate-900 placeholder-[#484F58] outline-none focus:border-[#FF8C00] focus:ring-1 focus:ring-[#FF8C00]"
                 />
               </label>
               {error ? (

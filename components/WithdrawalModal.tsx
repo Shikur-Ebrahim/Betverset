@@ -309,12 +309,12 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex flex-col bg-[var(--site-surface-soft)] text-white ${isOpen ? '' : 'pointer-events-none invisible'}`}
+      className={`fixed inset-0 z-[200] flex flex-col bg-[var(--site-surface-soft)] text-slate-900 ${isOpen ? '' : 'pointer-events-none invisible'}`}
       aria-hidden={!isOpen}
     >
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div>
-          <h1 className="text-lg font-black tracking-tight text-white sm:text-xl">Withdrawal</h1>
+          <h1 className="text-lg font-black tracking-tight text-slate-900 sm:text-xl">Withdrawal</h1>
           <p className="mt-0.5 text-[11px] font-bold text-slate-500">Funds are held until support completes payout</p>
         </div>
         <button
@@ -353,7 +353,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
               <div className="space-y-6 animate-in fade-in duration-300">
                 <div className="rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Available</p>
-                  <p className="mt-1 text-2xl font-black tabular-nums text-white">
+                  <p className="mt-1 text-2xl font-black tabular-nums text-slate-900">
                     {Number(user?.balance || 0).toFixed(2)} <span className="text-sm text-orange-600">ETB</span>
                   </p>
                 </div>
@@ -364,7 +364,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                     <input
                       type="number"
                       placeholder="0.00"
-                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-6 py-4 text-lg font-black text-white shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-6 py-4 text-lg font-black text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                     />

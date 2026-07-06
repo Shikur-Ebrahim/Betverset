@@ -214,7 +214,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 </svg>
               </div>
               <div>
-                <h2 id="bet-history-title" className="text-lg font-semibold tracking-tight text-white">
+                <h2 id="bet-history-title" className="text-lg font-semibold tracking-tight text-slate-900">
                   Bet history
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -243,7 +243,7 @@ export default function BetHistory({ isOpen, onClose, user }: BetHistoryProps) {
                 type="button"
                 onClick={() => setActiveTab(tab)}
                 className={`relative flex-1 py-3.5 text-sm font-medium transition-colors ${
-                  activeTab === tab ? 'text-white' : 'text-slate-400 hover:text-slate-600'
+                  activeTab === tab ? 'text-orange-500' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 {tabLabel(tab)}

@@ -11,12 +11,16 @@ export async function GET(req: Request) {
   }
 
   try {
-    // Fetch all non-preset bet slips with user phone
+    // Fetch all bet slips ordered by creation date, then filter out presets in memory
+    // (Firestore '!=' operator excludes documents where the field does not exist)
     const snapshot = await db.collection('bet_slips')
-      .where('is_manual_preset', '!=', true)
+      .orderBy('created_at', 'desc')
+      .limit(600)
       .get();
 
-    const tickets = await Promise.all(snapshot.docs.map(async (doc: any) => {
+    let validDocs = snapshot.docs.filter((doc: any) => doc.data().is_manual_preset !== true);
+    
+    const tickets = await Promise.all(validDocs.map(async (doc: any) => {
       const data = doc.data();
       let user_phone = '';
       if (data.user_id) {

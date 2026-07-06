@@ -174,7 +174,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
   const messageIsError = message.startsWith('Error');
 
   return (
-    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-slate-900 flex flex-col h-screen overflow-hidden">
       <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button
@@ -185,7 +185,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="text-xl font-black text-white tracking-tight">Withdrawal Methods</div>
+          <div className="text-xl font-black text-slate-900 tracking-tight">Withdrawal Methods</div>
         </div>
       </header>
 
@@ -196,7 +196,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
               type="button"
               onClick={() => setType('bank')}
               className={`flex-1 py-3 rounded-xl font-black text-xs transition-all ${
-                type === 'bank' ? 'bg-[var(--site-surface)] text-white shadow-sm' : 'text-[#64748B]'
+                type === 'bank' ? 'bg-[var(--site-surface)] text-slate-900 shadow-sm' : 'text-[#64748B]'
               }`}
             >
               Banks
@@ -205,7 +205,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
               type="button"
               onClick={() => setType('wallet')}
               className={`flex-1 py-3 rounded-xl font-black text-xs transition-all ${
-                type === 'wallet' ? 'bg-[var(--site-surface)] text-white shadow-sm' : 'text-[#64748B]'
+                type === 'wallet' ? 'bg-[var(--site-surface)] text-slate-900 shadow-sm' : 'text-[#64748B]'
               }`}
             >
               Wallets
@@ -258,7 +258,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                     </svg>
                   </div>
                 )}
-                <div className="text-xs font-black text-white">
+                <div className="text-xs font-black text-slate-700">
                   {logo ? logo.name : 'Click to upload logo'}
                 </div>
               </div>
@@ -307,7 +307,7 @@ export default function WithdrawalManagement({ onClose }: WithdrawalManagementPr
                     <img src={method.logo_url} alt={method.name} className="w-full h-full object-contain" />
                   </div>
                   <div>
-                    <div className="text-sm font-black text-white uppercase tracking-tight">
+                    <div className="text-sm font-black text-slate-900 uppercase tracking-tight">
                       {method.name}
                     </div>
                     <div className="text-[10px] text-[#64748B] font-bold capitalize">{method.type}</div>

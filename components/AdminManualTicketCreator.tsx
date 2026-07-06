@@ -260,7 +260,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-slate-900">
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-3">
         <button
           type="button"

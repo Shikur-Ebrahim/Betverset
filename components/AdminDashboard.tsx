@@ -265,10 +265,10 @@ export default function AdminDashboard({ user, onLogout, onClose }: AdminDashboa
   }
 
   return (
-    <div className="fixed inset-0 z-[150] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[150] bg-[var(--site-surface)] text-slate-900 flex flex-col h-screen overflow-hidden">
       {/* Top Header */}
       <header className="bg-[var(--site-surface)] px-6 py-5 flex justify-between items-center shrink-0 border-b border-[var(--site-border)]">
-        <div className="text-2xl italic font-black text-white tracking-tighter">BETVERS</div>
+        <div className="text-2xl italic font-black text-slate-900 tracking-tighter">BETVERS</div>
         <button
           onClick={onLogout}
           className="text-xs bg-[var(--site-surface-soft)] text-[#475569] px-5 py-2.5 rounded-full font-bold transition-all active:scale-95"
@@ -348,7 +348,7 @@ export default function AdminDashboard({ user, onLogout, onClose }: AdminDashboa
             <div className={`w-10 h-10 ${action.color} rounded-xl flex items-center justify-center text-white shadow-sm`}>
               {action.icon}
             </div>
-            <span className="text-[11px] font-black text-white uppercase tracking-tight">{action.label}</span>
+            <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">{action.label}</span>
           </button>
         ))}
       </main>

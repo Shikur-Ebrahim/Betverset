@@ -109,7 +109,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
   };
 
   return (
-    <div className="fixed inset-0 z-[160] bg-[var(--site-bg)] text-white flex flex-col h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-bg)] text-slate-900 flex flex-col h-screen overflow-hidden">
       <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button
@@ -119,7 +119,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div className="text-xl font-black text-white tracking-tighter">Deposit requests</div>
+          <div className="text-xl font-black text-slate-900 tracking-tighter">Deposit requests</div>
         </div>
         <div className="bg-orange-100 text-orange-600 text-[10px] font-black px-3 py-1.5 rounded-full tracking-widest">{tickets.filter(t => t.status === 'pending').length} New</div>
       </header>
@@ -148,12 +148,12 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                   </div>
                   <div>
-                    <div className="text-sm font-black text-white tracking-tight">{t.phone}</div>
+                    <div className="text-sm font-black text-slate-900 tracking-tight">{t.phone}</div>
                     <div className="text-[10px] text-gray-400 font-bold tracking-wider">{t.method_name} • {new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-black text-white leading-none">{t.amount}</div>
+                  <div className="text-lg font-black text-slate-900 leading-none">{t.amount}</div>
                   <div className={`text-[9px] font-black tracking-widest mt-1 ${t.status === 'approved' ? 'text-green-500' : 'text-orange-500'}`}>ETB</div>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export default function DepositRequests({ onClose, initialTickets = null }: Depo
             </div>
             
             <div className="space-y-2">
-              <div className="text-xl font-black text-white tracking-tight">
+              <div className="text-xl font-black text-slate-900 tracking-tight">
                 {confirming.type === 'approve'
                   ? 'Confirm approval'
                   : confirming.type === 'deleteVerified'

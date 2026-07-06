@@ -133,7 +133,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
   }, [filteredSlips]);
 
   return (
-    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-white">
+    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-slate-900">
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-6 py-5">
         <div className="flex items-center gap-4">
           <button
@@ -146,7 +146,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
             </svg>
           </button>
           <div>
-            <div className="text-xl font-black tracking-tighter text-white">All tickets</div>
+            <div className="text-xl font-black tracking-tighter text-slate-900">All tickets</div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
               {slips.length} slip{slips.length === 1 ? '' : 's'}
               {activeTab !== 'all' ? ` · ${sortedSlips.length} in ${tabLabel(activeTab)}` : ''}
@@ -170,7 +170,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
               type="button"
               onClick={() => setActiveTab(tab)}
               className={`relative flex-1 py-3.5 text-sm font-semibold transition-colors ${
-                activeTab === tab ? 'text-white' : 'text-slate-400 hover:text-slate-600'
+                activeTab === tab ? 'text-orange-500' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               {tabLabel(tab)}
@@ -217,7 +217,7 @@ export default function AdminBetTickets({ onClose, initialSlips = null }: AdminB
                   <div className="flex items-center justify-between gap-2 border-b border-[var(--site-border)] bg-[var(--site-bg)]/80 px-3 py-2.5 sm:px-4">
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Ticket</p>
-                      <p className="truncate font-mono text-sm font-semibold text-white">{ticketLine}</p>
+                      <p className="truncate font-mono text-sm font-semibold text-slate-900">{ticketLine}</p>
                       <p className="mt-0.5 truncate text-[11px] font-medium text-slate-500">
                         User #{slip.user_id}
                         {slip.user_phone ? ` · ${slip.user_phone}` : ''}

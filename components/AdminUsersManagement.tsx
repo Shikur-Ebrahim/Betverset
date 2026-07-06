@@ -185,10 +185,10 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
   const showBlockingLoader = loading && users.length === 0 && !searchPhone.trim();
 
   return (
-    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-white">
+    <div className="fixed inset-0 z-[160] flex flex-col bg-[var(--site-bg)] text-slate-900">
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div className="min-w-0 pr-2">
-          <h1 className="text-lg font-bold leading-tight tracking-tight text-white sm:text-xl">Users</h1>
+          <h1 className="text-lg font-bold leading-tight tracking-tight text-slate-900 sm:text-xl">Users</h1>
           <p className="mt-0.5 text-[11px] font-medium text-slate-500 sm:text-xs">
             Search by phone · view and edit wallet balance
           </p>
@@ -219,7 +219,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
               placeholder="Search by phone number…"
               value={searchPhone}
               onChange={(e) => setSearchPhone(e.target.value)}
-              className="min-h-[48px] w-full rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] py-3 pl-11 pr-10 text-base text-white shadow-sm outline-none ring-0 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[48px] w-full rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] py-3 pl-11 pr-10 text-base text-slate-900 shadow-sm outline-none ring-0 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
             />
             <svg
               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -306,7 +306,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                   type="tel"
                   inputMode="tel"
                   autoComplete="tel"
-                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-white outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
+                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-slate-900 outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
                   placeholder="e.g. 0912345678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -320,7 +320,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                   id="new-user-pw"
                   type="password"
                   autoComplete="new-password"
-                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-white outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
+                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-slate-900 outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
                   placeholder="Min 6 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -334,7 +334,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                   id="new-user-pw2"
                   type="password"
                   autoComplete="new-password"
-                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-white outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
+                  className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-bg)] px-4 text-base text-slate-900 outline-none ring-1 ring-slate-200 transition focus:border-indigo-500 focus:bg-[var(--site-surface)] focus:ring-indigo-200"
                   placeholder="Repeat password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -375,7 +375,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="break-all text-base font-semibold text-white">{u.phone}</p>
+                      <p className="break-all text-base font-semibold text-slate-900">{u.phone}</p>
                       <p className="mt-1 text-xs font-medium capitalize text-slate-500">
                         {u.role} · ID {u.id}
                       </p>
@@ -389,7 +389,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-orange-600/80">
                           Balance
                         </p>
-                        <p className="text-lg font-bold tabular-nums text-white">
+                        <p className="text-lg font-bold tabular-nums text-slate-900">
                           {Number(u.balance ?? 0).toFixed(2)}
                         </p>
                         <p className="text-[10px] font-bold text-orange-600">{u.currency || 'ETB'}</p>
@@ -413,7 +413,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
                         step="0.01"
                         value={editBalance}
                         onChange={(e) => setEditBalance(e.target.value)}
-                        className="min-h-[48px] w-full rounded-xl border border-[var(--site-border)] bg-[var(--site-bg)] px-4 text-base font-semibold tabular-nums text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        className="min-h-[48px] w-full rounded-xl border border-[var(--site-border)] bg-[var(--site-bg)] px-4 text-base font-semibold tabular-nums text-slate-900 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                       />
                       <div className="flex gap-2">
                         <button

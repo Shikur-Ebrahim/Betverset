@@ -156,13 +156,13 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-white flex flex-col h-screen overflow-hidden">
+    <div className="fixed inset-0 z-[160] bg-[var(--site-surface)] text-slate-900 flex flex-col h-screen overflow-hidden">
       <header className="bg-[var(--site-surface)] px-6 py-5 flex items-center justify-between shrink-0 border-b border-[var(--site-border)]">
         <div className="flex items-center gap-4">
           <button onClick={onClose} className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div className="text-xl font-black text-white tracking-tight">Deposit Methods</div>
+          <div className="text-xl font-black text-slate-900 tracking-tight">Deposit Methods</div>
         </div>
         
         <button 
@@ -255,7 +255,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     </div>
                   )}
-                  <div className="text-xs font-black text-white">{logo ? logo.name : (editId ? 'Change logo (optional)' : 'Click to upload logo')}</div>
+                  <div className="text-xs font-black text-slate-700">{logo ? logo.name : (editId ? 'Change logo (optional)' : 'Click to upload logo')}</div>
                 </div>
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function DepositManagement({ onClose }: DepositManagementProps) {
                       <img src={m.logo_url} alt={m.name} className="w-full h-full object-contain" />
                     </div>
                     <div>
-                      <div className="text-sm font-black text-white uppercase tracking-tight">{m.name}</div>
+                      <div className="text-sm font-black text-slate-900 uppercase tracking-tight">{m.name}</div>
                       <div className="text-[10px] text-[#64748B] font-bold">NAME: {m.account_name} • {m.account_details}</div>
                     </div>
                   </div>

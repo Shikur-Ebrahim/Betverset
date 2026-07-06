@@ -105,7 +105,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
   const pendingN = tickets.filter((t) => t.status === 'pending').length;
 
   return (
-    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-white">
+    <div className="fixed inset-0 z-[160] flex h-screen flex-col overflow-hidden bg-[var(--site-bg)] text-slate-900">
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-6 py-5">
         <div className="flex items-center gap-4">
           <button
@@ -117,7 +117,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <div className="text-xl font-black tracking-tighter text-white">Withdrawal requests</div>
+          <div className="text-xl font-black tracking-tighter text-slate-900">Withdrawal requests</div>
         </div>
         <div className="rounded-full bg-orange-100 px-3 py-1.5 text-[10px] font-black tracking-widest text-orange-600">
           {pendingN} pending
@@ -168,7 +168,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                     </svg>
                   </div>
                   <div className="min-w-0">
-                    <div className="truncate text-sm font-black tracking-tight text-white">{t.phone}</div>
+                    <div className="truncate text-sm font-black tracking-tight text-slate-900">{t.phone}</div>
                     <div className="text-[10px] font-bold tracking-wider text-gray-400">
                       {t.method_name || 'Method'} ·{' '}
                       {new Date(t.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
@@ -176,7 +176,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <div className="text-lg font-black leading-none text-white">{t.amount}</div>
+                  <div className="text-lg font-black leading-none text-slate-900">{t.amount}</div>
                   <div
                     className={`mt-1 text-[9px] font-black tracking-widest ${
                       t.status === 'approved' ? 'text-green-500' : 'text-orange-500'
@@ -189,12 +189,12 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
 
               <div className="rounded-2xl bg-[var(--site-bg)] p-4 text-xs font-bold text-gray-300">
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pay to</p>
-                <p className="mt-1 font-black text-white">{t.account_name}</p>
+                <p className="mt-1 font-black text-slate-900">{t.account_name}</p>
                 <p className="mt-1 break-all text-gray-400">{t.account_details}</p>
                 {t.promo_code && (
                   <div className="mt-3 border-t border-[var(--site-border)] pt-2">
                     <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">Agent Code</p>
-                    <p className="mt-0.5 font-mono text-sm font-black text-white">{t.promo_code}</p>
+                    <p className="mt-0.5 font-mono text-sm font-black text-slate-900">{t.promo_code}</p>
                   </div>
                 )}
               </div>
@@ -245,7 +245,7 @@ export default function WithdrawalRequests({ onClose, initialTickets = null }: W
             </div>
 
             <div className="space-y-2">
-              <div className="text-xl font-black tracking-tight text-white">
+              <div className="text-xl font-black tracking-tight text-slate-900">
                 Confirm {confirming.type === 'approve' ? 'payout' : 'rejection'}
               </div>
               <p className="text-xs font-medium leading-relaxed text-gray-500">

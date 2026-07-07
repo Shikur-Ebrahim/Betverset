@@ -1,4 +1,4 @@
-﻿type Props = {
+type Props = {
   maxDaily: number;
   withdrawnToday: number;
   remainingToday: number;
@@ -17,7 +17,7 @@ export default function WithdrawalDailyLimitBanner({
         atLimit ? 'border-amber-200 bg-amber-50' : 'border-[var(--site-border)] bg-[var(--site-surface)]'
       }`}
     >
-      <p className={`text-sm font-black ${atLimit ? 'text-amber-950' : 'text-white'}`}>
+      <p className={`text-sm font-black ${atLimit ? 'text-amber-950' : 'text-slate-900'}`}>
         Daily limit: {maxDaily.toLocaleString()} ETB
       </p>
       <p className={`mt-1 text-xs font-semibold leading-relaxed ${atLimit ? 'text-amber-900/90' : 'text-slate-600'}`}>

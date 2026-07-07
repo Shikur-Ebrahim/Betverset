@@ -68,7 +68,7 @@ export async function GET(req: Request, props: { params: Promise<{ code: string 
       };
     });
 
-    return NextResponse.json({ ...ticket, selections });
+    return NextResponse.json({ ...ticket, possible_win: ticket.potential_win, selections });
   } catch (err: any) {
     console.error('ticket-check err:', err);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });

@@ -69,7 +69,7 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
         };
       });
 
-      return { ...slip, selections };
+      return { ...slip, possible_win: slip.potential_win, selections };
     }));
 
     return NextResponse.json(history);

@@ -109,7 +109,7 @@ export async function POST(req: Request) {
       user_id: tokenUserId,
       total_odds: totalOdds,
       stake: stakeNum,
-      possible_win: possibleWin,
+      potential_win: possibleWin,
       status: 'pending',
       ticket_code: ticketCode,
       selections: processedSelections,

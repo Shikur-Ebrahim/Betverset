@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const { methodId, amount, senderName, accountDetails, screenshotUrl } = await req.json();
 
-    if (!methodId || !amount || !senderName) {
+    if (!methodId || !amount) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
         user_id: userId,
         method_id: methodId,
         amount: Number(amount),
-        sender_name: senderName,
+        sender_name: senderName || '',
         account_details: accountDetails || '',
         screenshot_url: screenshotUrl || '',
         status: 'pending',

@@ -75,7 +75,7 @@ function computePollDelayMs(f: Fixture): number {
   const s = (f.status || '').toUpperCase();
   if (isMatchClosedForBetting(f)) {
     const kick = new Date(f.match_date || f.kickoff_at || 0).getTime();
-    if (Number.isNaN(kick)) return null;
+    if (Number.isNaN(kick)) return 90_000;
     const sinceKickoffMs = Date.now() - kick;
     if (sinceKickoffMs < 3 * 60 * 60 * 1000) {
       return 30_000;
@@ -87,7 +87,7 @@ function computePollDelayMs(f: Fixture): number {
   }
   if (['FT', 'AET', 'PEN'].includes(s)) {
     const kick = new Date(f.match_date || f.kickoff_at || 0).getTime();
-    if (Number.isNaN(kick)) return null;
+    if (Number.isNaN(kick)) return 90_000;
     const sinceKickoffMs = Date.now() - kick;
     if (sinceKickoffMs < 3 * 60 * 60 * 1000) {
       return 30_000;

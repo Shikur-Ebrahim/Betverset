@@ -1,16 +1,23 @@
 import MatchDetailPageClient from '../../../components/match-detail-page-client';
-import { db } from '@/lib/firebase-admin';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
-/** Fetch fixture + odds server-side so the detail page renders instantly with data. */
+/** Fetch fixture + odds server-side from Supabase so the detail page renders instantly. */
 async function fetchMatchData(fixtureId: string) {
   try {
-    const [fixtureDoc, oddsSnap] = await Promise.all([
-      db.collection('fixtures').doc(fixtureId).get(),
-      db.collection('odds').where('fixture_id', '==', fixtureId).get(),
+    const id = Number(fixtureId);
+    if (!Number.isFinite(id) || id <= 0) return { fixture: null, odds: [] };
+
+    const [fixtureRes, oddsRes] = await Promise.all([
+      supabaseAdmin.from('fixtures').select('*').eq('id', id).single(),
+      supabaseAdmin
+        .from('odds')
+        .select('*')
+        .eq('fixture_id', id)
+        .limit(200),
     ]);
 
-    const fixture = fixtureDoc.exists ? { id: fixtureDoc.id, ...fixtureDoc.data() } : null;
-    const odds = oddsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const fixture = fixtureRes.data || null;
+    const odds = oddsRes.data || [];
     return { fixture, odds };
   } catch {
     return { fixture: null, odds: [] };
@@ -21,9 +28,10 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const matchId = Number(id);
 
-  const { fixture, odds } = Number.isFinite(matchId) && matchId > 0
-    ? await fetchMatchData(id)
-    : { fixture: null, odds: [] };
+  const { fixture, odds } =
+    Number.isFinite(matchId) && matchId > 0
+      ? await fetchMatchData(id)
+      : { fixture: null, odds: [] };
 
   return (
     <MatchDetailPageClient

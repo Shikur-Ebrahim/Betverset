@@ -72,6 +72,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
   const [minDepositRequired, setMinDepositRequired] = useState(6665);
   const [withdrawnToday, setWithdrawnToday] = useState(0);
   const [remainingToday, setRemainingToday] = useState(MAX_DAILY_WITHDRAW);
+  const [showEligibilityPopup, setShowEligibilityPopup] = useState(false);
   const methodsRef = useRef<WithdrawalMethod[]>([]);
   const fetchGenRef = useRef(0);
   const userStateGenRef = useRef(0);
@@ -196,7 +197,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   const handleMethodSelect = (method: WithdrawalMethod) => {
     if (eligibilityLoaded && !depositEligible) {
-      setError(null);
+      setShowEligibilityPopup(true);
       return;
     }
     const val = parseFloat(amount);
@@ -307,10 +308,60 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
     promoPromptVisible && eligibilityLoaded && depositEligible && step === 'details' && !hasPending;
 
   return (
-    <div
-      className={`fixed inset-0 z-[200] flex flex-col bg-[var(--site-surface-soft)] text-slate-900 ${isOpen ? '' : 'pointer-events-none invisible'}`}
-      aria-hidden={!isOpen}
-    >
+    <>
+      {/* Eligibility Popup Overlay */}
+      {showEligibilityPopup && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-5" style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            {/* Icon */}
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4M12 16h.01" />
+              </svg>
+            </div>
+            {/* Title */}
+            <h2 className="text-center text-lg font-black text-slate-900">Withdrawal Locked 🔒</h2>
+            <p className="mt-2 text-center text-sm font-medium text-slate-500">
+              To activate withdrawals, your total <span className="font-bold text-slate-700">approved deposits</span> must reach:
+            </p>
+            {/* Amount display */}
+            <div className="my-4 rounded-2xl bg-orange-50 py-4 text-center">
+              <p className="text-3xl font-black text-orange-600">{minDepositRequired.toLocaleString()} ETB</p>
+              <p className="mt-0.5 text-xs font-semibold text-orange-400">minimum required</p>
+            </div>
+            {/* Progress */}
+            <div className="mb-5">
+              <div className="mb-1.5 flex justify-between text-xs font-bold text-slate-600">
+                <span>Your deposits</span>
+                <span>{totalDeposits.toFixed(2)} / {minDepositRequired.toLocaleString()} ETB</span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-700"
+                  style={{ width: `${Math.min(100, minDepositRequired > 0 ? (totalDeposits / minDepositRequired) * 100 : 0).toFixed(1)}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-center text-xs font-bold text-slate-500">
+                {Math.max(0, minDepositRequired - totalDeposits).toFixed(2)} ETB more needed to unlock
+              </p>
+            </div>
+            {/* OK Button */}
+            <button
+              type="button"
+              onClick={() => setShowEligibilityPopup(false)}
+              className="w-full rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 py-4 text-sm font-black text-white shadow-lg shadow-orange-200 transition active:scale-95"
+            >
+              Got it — I'll keep depositing!
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`fixed inset-0 z-[200] flex flex-col bg-[var(--site-surface-soft)] text-slate-900 ${isOpen ? '' : 'pointer-events-none invisible'}`}
+        aria-hidden={!isOpen}
+      >
       <header className="flex shrink-0 items-center justify-between border-b border-[var(--site-border)] bg-[var(--site-surface)] px-4 py-4 sm:px-5">
         <div>
           <h1 className="text-lg font-black tracking-tight text-slate-900 sm:text-xl">Withdrawal</h1>
@@ -614,5 +665,6 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
             </section>
       </main>
     </div>
+    </>
   );
 }

@@ -156,7 +156,7 @@ export async function GET(req: Request) {
 
     // 3. Save fixtures to DB in chunks with retry
     push('Saving fixtures to database...');
-    const fixtureRecords = [];
+    const fixtureRecords: NonNullable<ReturnType<typeof buildFixtureRecord>>[] = [];
     for (const fid of importedIds) {
       const rec = buildFixtureRecord(fixtureMap.get(fid));
       if (rec) fixtureRecords.push(rec);
@@ -181,7 +181,7 @@ export async function GET(req: Request) {
 
     // 4. Build compact odds records (1 per fixture) and save in one upsert
     push('Saving odds to database...');
-    const compactOddsRecords = [];
+    const compactOddsRecords: ReturnType<typeof buildCompactOddsRecord>[] = [];
     for (const fid of importedIds) {
       const oddsItem = oddsDataMap.get(fid);
       const rec = buildCompactOddsRecord(fid, oddsItem);

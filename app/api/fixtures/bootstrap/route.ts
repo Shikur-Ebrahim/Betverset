@@ -80,7 +80,7 @@ export async function GET(req: Request) {
 
     const fixtures = fixturesRows || [];
 
-    // Build odds map from inline fields + odds table
+    // Build odds map: first try inline home/draw/away odds on the fixture row
     const odds: Record<string, any[]> = {};
     fixtures.forEach((f: any) => {
       if (f.home_odds || f.draw_odds || f.away_odds) {
@@ -94,27 +94,65 @@ export async function GET(req: Request) {
       }
     });
 
-    // Fetch match_winner odds from odds table
+    // Fetch odds from DB (handles both compact JSONB and legacy per-row formats)
     if (fixtures.length > 0) {
       const fixtureIds = fixtures.map((f: any) => f.id);
       const { data: oddsRows } = await supabaseAdmin
         .from('odds')
-        .select('fixture_id, market_key, market_name, selection, odd_value')
-        .in('fixture_id', fixtureIds.slice(0, 500))
-        .like('market_key', '%match_winner%');
+        .select('fixture_id, market_name, market_key, selection, odd_value, markets')
+        .in('fixture_id', fixtureIds.slice(0, 500));
 
-      if (oddsRows) {
-        for (const o of oddsRows) {
-          const fid = String(o.fixture_id);
+      if (oddsRows && oddsRows.length > 0) {
+        // For home page we only need Match Winner (1X2) odds to show on cards
+        const MW_KEYS = ['match_winner', 'home_away', '1x2'];
+        const MW_NAMES = ['match winner', 'home/away', 'full time result', '1x2'];
+
+        for (const row of oddsRows) {
+          const fid = String(row.fixture_id);
           if (!odds[fid]) odds[fid] = [];
-          const exists = odds[fid].some((x: any) => x.selection === o.selection);
+
+          // Compact format: one row with all markets in flat_markets
+          if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
+            const flatMarkets: any[] = row.markets.flat_markets;
+            // Find the match winner market
+            const mwMarket = flatMarkets.find((m: any) =>
+              MW_KEYS.includes(m.market_key) ||
+              MW_NAMES.includes((m.market_name || '').toLowerCase())
+            );
+            if (mwMarket) {
+              for (const val of mwMarket.values || []) {
+                if (!val.odd || val.odd <= 0) continue;
+                const selLower = (val.selection || '').toLowerCase();
+                const exists = odds[fid].some((x: any) => (x.selection || '').toLowerCase() === selLower);
+                if (!exists) {
+                  odds[fid].push({
+                    fixture_id: row.fixture_id,
+                    market_name: mwMarket.market_name,
+                    market_key: mwMarket.market_key,
+                    selection: val.selection,
+                    odd_value: val.odd,
+                  });
+                }
+              }
+            }
+            continue;
+          }
+
+          // Legacy per-row format: only include match winner rows
+          const mk = (row.market_key || '').toLowerCase();
+          const mn = (row.market_name || '').toLowerCase();
+          const isMW = MW_KEYS.some(k => mk.includes(k)) || MW_NAMES.some(n => mn.includes(n));
+          if (!isMW || !row.odd_value || row.odd_value <= 0 || !row.selection) continue;
+
+          const selLower = (row.selection || '').toLowerCase();
+          const exists = odds[fid].some((x: any) => (x.selection || '').toLowerCase() === selLower);
           if (!exists) {
             odds[fid].push({
-              fixture_id: o.fixture_id,
-              market_name: o.market_name,
-              market_key: o.market_key,
-              selection: o.selection,
-              odd_value: o.odd_value,
+              fixture_id: row.fixture_id,
+              market_name: row.market_name,
+              market_key: row.market_key,
+              selection: row.selection,
+              odd_value: row.odd_value,
             });
           }
         }

@@ -59,6 +59,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Provide exactly 3 matches' }, { status: 400 });
     }
 
+    // Validation: 3 matches = 6 clubs. All 6 clubs must be unique.
+    const allClubs = new Set<string>();
+
     let totalOdds = 1;
     const selectionsToInsert: any[] = [];
 
@@ -79,9 +82,24 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: 'Selection required on each leg' }, { status: 400 });
       }
 
-      if (String(m.home_team_id) === String(m.away_team_id)) {
-        return NextResponse.json({ message: 'Each match needs two different team ids' }, { status: 400 });
+      const homeName = String(m.home_team_name || 'Home').trim();
+      const awayName = String(m.away_team_name || 'Away').trim();
+
+      // Check same club in a match
+      if (homeName.toLowerCase() === awayName.toLowerCase()) {
+        return NextResponse.json({ message: `Home and Away cannot be the same club (${homeName})` }, { status: 400 });
       }
+
+      // Check uniqueness across the ticket
+      if (allClubs.has(homeName.toLowerCase())) {
+        return NextResponse.json({ message: `Club "${homeName}" appears in more than one game in this ticket.` }, { status: 400 });
+      }
+      allClubs.add(homeName.toLowerCase());
+
+      if (allClubs.has(awayName.toLowerCase())) {
+        return NextResponse.json({ message: `Club "${awayName}" appears in more than one game in this ticket.` }, { status: 400 });
+      }
+      allClubs.add(awayName.toLowerCase());
 
       const leagueLabel = m.league_name || 'Football';
       totalOdds *= odd;
@@ -90,8 +108,8 @@ export async function POST(req: Request) {
         selection: sel,
         odd,
         market_name: String(m.market_name || '1X2').trim() || '1X2',
-        home_team: String(m.home_team_name || 'Home'),
-        away_team: String(m.away_team_name || 'Away'),
+        home_team: homeName,
+        away_team: awayName,
         home_logo: m.home_team_logo || null,
         away_logo: m.away_team_logo || null,
         home_team_id: String(m.home_team_id),

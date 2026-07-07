@@ -125,7 +125,7 @@ export default function AdminTelegramSettings({ onClose }: AdminTelegramSettings
                 type="text"
                 required
                 autoComplete="off"
-                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-sky-500 focus:ring-sky-200"
+                className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-sky-500 focus:ring-sky-200"
                 placeholder="@BetversEt"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}

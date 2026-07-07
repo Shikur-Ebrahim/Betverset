@@ -119,7 +119,7 @@ export default function AdminPromoCodeGenerator({ onClose }: AdminPromoCodeGener
               id="promo-phone"
               type="tel"
               autoComplete="tel"
-              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-white shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
+              className="min-h-[48px] w-full rounded-2xl border-2 border-transparent bg-[var(--site-surface)] px-4 text-base font-bold text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition focus:border-orange-500 focus:ring-orange-200"
               placeholder="e.g. +251912345678 or 0912345678"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}

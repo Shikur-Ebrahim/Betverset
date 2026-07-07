@@ -22,7 +22,6 @@ export async function POST(req: Request) {
         account_details: accountDetails,
         account_name: accountName,
         is_active: true,
-        active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })

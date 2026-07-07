@@ -47,7 +47,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
     const { data: existing } = await supabaseAdmin.from('deposit_methods').select('id').eq('id', params.id).single();
     if (!existing) return NextResponse.json({ message: 'Method not found' }, { status: 404 });
 
-    await supabaseAdmin.from('deposit_methods').update({ is_active: false, active: false, updated_at: new Date().toISOString() }).eq('id', params.id);
+    await supabaseAdmin.from('deposit_methods').update({ is_active: false, updated_at: new Date().toISOString() }).eq('id', params.id);
     return NextResponse.json({ message: 'Method deleted successfully', id: params.id });
   } catch (err: any) {
     return NextResponse.json({ message: 'Failed to delete deposit method' }, { status: 500 });

@@ -295,8 +295,8 @@ export default function BetSlipDrawer({ onAuthTrigger, onBetPlaced }: BetSlipDra
           return;
         }
         replaceAll(nextItems, true);
-        setTicketImportBlocked(!data.can_place);
-        setTicketBlockedMessage(data.can_place ? null : data.message);
+        setTicketImportBlocked(data.can_place === false);
+        setTicketBlockedMessage(data.can_place === false ? data.message : null);
         setError(null);
         lastTicketFetchRef.current = stripTicketInputPrefixes(data.ticket_code || trimmed).toUpperCase();
         setTicketInput(data.ticket_code || lastTicketFetchRef.current);

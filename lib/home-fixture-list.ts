@@ -23,7 +23,9 @@ export function pickCarouselFixtures(fixtures: Fixture[], limit = 12): Fixture[]
       const rankA = priorityA === -1 ? 999 : priorityA;
       const rankB = priorityB === -1 ? 999 : priorityB;
       if (rankA !== rankB) return rankA - rankB;
-      return new Date(a.match_date).getTime() - new Date(b.match_date).getTime();
+      const timeA = new Date(a.match_date || a.kickoff_at || 0).getTime();
+      const timeB = new Date(b.match_date || b.kickoff_at || 0).getTime();
+      return (Number.isNaN(timeA) ? 0 : timeA) - (Number.isNaN(timeB) ? 0 : timeB);
     })
     .slice(0, limit);
 }

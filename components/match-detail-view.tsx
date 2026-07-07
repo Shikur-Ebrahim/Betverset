@@ -10,14 +10,18 @@ import AuthModal from './auth-modal';
 import BetHistory from './BetHistory';
 import { BETVERS_AUTH_SUCCESS_EVENT } from '../lib/ui-events';
 
-function formatMatchDate(value: string) {
+function formatMatchDate(value: string | undefined | null, fallback?: string | null) {
+  const dateStr = value || fallback;
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
   return new Intl.DateTimeFormat('en-GB', {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(value));
+  }).format(d);
 }
 
 function getInitials(name?: string | null) {
@@ -70,7 +74,9 @@ function renderStatusBadge(fixture: Fixture) {
 function computePollDelayMs(f: Fixture): number {
   const s = (f.status || '').toUpperCase();
   if (isMatchClosedForBetting(f)) {
-    const sinceKickoffMs = Date.now() - new Date(f.match_date).getTime();
+    const kick = new Date(f.match_date || f.kickoff_at || 0).getTime();
+    if (Number.isNaN(kick)) return null;
+    const sinceKickoffMs = Date.now() - kick;
     if (sinceKickoffMs < 3 * 60 * 60 * 1000) {
       return 30_000;
     }
@@ -80,13 +86,15 @@ function computePollDelayMs(f: Fixture): number {
     return 30_000;
   }
   if (['FT', 'AET', 'PEN'].includes(s)) {
-    const sinceKickoffMs = Date.now() - new Date(f.match_date).getTime();
+    const kick = new Date(f.match_date || f.kickoff_at || 0).getTime();
+    if (Number.isNaN(kick)) return null;
+    const sinceKickoffMs = Date.now() - kick;
     if (sinceKickoffMs < 3 * 60 * 60 * 1000) {
       return 30_000;
     }
     return 90_000;
   }
-  const kick = new Date(f.match_date).getTime();
+  const kick = new Date(f.match_date || f.kickoff_at || 0).getTime();
   const t = Date.now();
   if (t >= kick - 20 * 60 * 1000 && t <= kick + 4 * 60 * 60 * 1000) {
     return 30_000;
@@ -226,7 +234,7 @@ export default function MatchDetailView({ initialFixture, initialOdds, oddsLoadi
 
         <div className="relative px-5 py-6">
           <div className="text-center text-[10px] font-black text-[#5C8D70] mb-5 tracking-[0.2em] uppercase flex flex-col gap-1">
-            <span>{formatMatchDate(fixture.match_date)}</span>
+            <span>{formatMatchDate(fixture.match_date, fixture.kickoff_at)}</span>
             {fixture.venue_name && (
               <span className="opacity-70">
                 {fixture.venue_name}, {fixture.venue_city}

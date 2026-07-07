@@ -320,7 +320,7 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
                 {savedMatches.map((m) => (
                   <div key={m.id} className="border-b border-[var(--site-border)] pb-1 last:border-0 flex justify-between">
                     <span className="font-bold text-[#334155]">{m.home_team_name} vs {m.away_team_name}</span>
-                    <span className="text-[#64748B]">{new Date(m.match_date).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    <span className="text-[#64748B]">{new Date(m.match_date || m.kickoff_at || 0).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span>
                   </div>
                 ))}
               </div>

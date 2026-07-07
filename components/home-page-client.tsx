@@ -86,14 +86,18 @@ type HomePageClientProps = {
   featuredMatches: FeaturedMatch[];
 };
 
-function formatMatchDate(value: string) {
+function formatMatchDate(value: string | undefined | null, fallback?: string | null) {
+  const dateStr = value || fallback;
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
   return new Intl.DateTimeFormat('en-GB', {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(value));
+  }).format(d);
 }
 
 function formatDayHeader(value: string | Date) {
@@ -195,7 +199,7 @@ function dayIdToLabel(dayId: string) {
 function isInSelectedDayRange(fixture: Fixture, dayId: string) {
   if (dayId === 'all') return true;
 
-  const fixtureDate = new Date(fixture.match_date);
+  const fixtureDate = new Date(fixture.match_date || fixture.kickoff_at || 0);
   const now = new Date();
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -1685,7 +1689,7 @@ export default function HomePageClient({
                       className="text-[10px] text-[#2563EB] font-bold bg-[rgba(37,99,235,0.10)] px-2 py-1 rounded"
                       suppressHydrationWarning
                     >
-                      {formatMatchDate(fixture.match_date)}
+                      {formatMatchDate(fixture.match_date, fixture.kickoff_at)}
                     </span>
                     <span className="text-[10px] text-[#94A3B8] uppercase font-bold tracking-tight">
                       {fixture.country_name ? `${fixture.country_name}: ` : ''}{fixture.league_name}
@@ -1806,10 +1810,10 @@ export default function HomePageClient({
                             return (
                               <>
                                 <span className="text-[11px] font-black text-white">
-                                  {isMounted ? new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date(fixture.match_date)) : ''}
+                                  {isMounted ? new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(new Date(fixture.match_date || fixture.kickoff_at || 0)) : ''}
                                 </span>
                                 <span className="text-[9px] text-[#CBD5E1] font-bold mt-0.5">
-                                  {isMounted ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit' }).format(new Date(fixture.match_date)) : ''}
+                                  {isMounted ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit' }).format(new Date(fixture.match_date || fixture.kickoff_at || 0)) : ''}
                                 </span>
                               </>
                             );

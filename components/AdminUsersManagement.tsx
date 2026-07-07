@@ -7,7 +7,7 @@ import { getPublicApiBaseUrl } from '@/lib/public-api-url';
 const API_BASE = getPublicApiBaseUrl();
 
 export type AdminUserRow = {
-  id: number;
+  id: string;
   phone: string;
   role: string;
   created_at: string;
@@ -24,14 +24,14 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [savingBalanceId, setSavingBalanceId] = useState<number | null>(null);
+  const [savingBalanceId, setSavingBalanceId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [searchPhone, setSearchPhone] = useState('');
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editBalance, setEditBalance] = useState('');
   const usersRef = useRef<AdminUserRow[]>([]);
   const fetchGenRef = useRef(0);
@@ -140,7 +140,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
     setEditBalance('');
   };
 
-  const saveBalance = async (userId: number) => {
+  const saveBalance = async (userId: string) => {
     const balance = parseFloat(editBalance);
     if (!Number.isFinite(balance) || balance < 0) {
       setError('Enter a valid balance (0 or more)');
@@ -155,7 +155,7 @@ export default function AdminUsersManagement({ onClose }: AdminUsersManagementPr
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ balance }),
+        body: JSON.stringify({ amount: balance }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

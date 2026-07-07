@@ -16,6 +16,7 @@ export async function POST(req: Request) {
     const { data: inserted, error } = await supabaseAdmin
       .from('deposit_requests')
       .insert({
+        id: crypto.randomUUID(),
         user_id: userId,
         method_id: methodId,
         amount: Number(amount),

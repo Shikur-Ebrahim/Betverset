@@ -106,6 +106,7 @@ export async function POST(req: Request) {
     });
 
     const slipData = {
+      id: crypto.randomUUID(),
       user_id: tokenUserId,
       total_odds: totalOdds,
       stake: stakeNum,

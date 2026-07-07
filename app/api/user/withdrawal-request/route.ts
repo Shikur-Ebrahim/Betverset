@@ -59,6 +59,7 @@ export async function POST(req: Request) {
     const { data: inserted, error: insertError } = await supabaseAdmin
       .from('withdrawal_requests')
       .insert({
+        id: crypto.randomUUID(),
         user_id: userId,
         method_id: methodId,
         amount: requestedAmount,

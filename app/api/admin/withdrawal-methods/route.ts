@@ -26,6 +26,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabaseAdmin
       .from('withdrawal_methods')
       .insert({
+        id: crypto.randomUUID(),
         name,
         type,
         logo_url: logoUrl,

@@ -10,9 +10,9 @@ export async function POST(req: Request) {
   if (!userId) return unauthorized();
 
   try {
-    const { methodId, amount, holderName, accountNumber, agentCode } = await req.json();
+    const { methodId, amount, accountName, accountDetails, promoCode } = await req.json();
 
-    if (!methodId || !amount || !holderName || !accountNumber) {
+    if (!methodId || !amount || !accountName || !accountDetails) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
 
@@ -62,9 +62,9 @@ export async function POST(req: Request) {
         user_id: userId,
         method_id: methodId,
         amount: requestedAmount,
-        holder_name: holderName,
-        account_number: accountNumber,
-        agent_code: agentCode || '',
+        holder_name: accountName,
+        account_number: accountDetails,
+        agent_code: promoCode || '',
         status: 'pending',
         created_at: new Date().toISOString(),
       })

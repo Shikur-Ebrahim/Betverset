@@ -114,7 +114,7 @@ export async function POST(req: Request) {
       user_id: null,
       total_odds: roundedOdds,
       stake: 0,
-      possible_win: 0,
+      potential_win: 0,
       status: 'pending',
       ticket_code: ticketCode,
       is_manual_preset: true,

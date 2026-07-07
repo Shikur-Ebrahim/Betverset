@@ -223,7 +223,8 @@ export async function fetchAndStoreFixturesForWindow() {
   const today = new Date();
   const dates: string[] = [];
 
-  for (let i = 0; i < 7; i++) {
+  // Start from 7 days ago to update missed/finished matches, up to 7 days ahead
+  for (let i = -7; i <= 7; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
     dates.push(d.toISOString().split('T')[0]);

@@ -215,13 +215,23 @@ export default function AdminManualTicketCreator({ onClose }: Props) {
 
   const submit = async () => {
     setSubmitError(null);
+    setLastCode(null);
     setSubmitting(true);
     try {
+      const chosenTeamIds = new Set<string>();
+
       const payload = matches.map((m, idx) => {
         if (!m.home_team_id || !m.away_team_id) throw new Error(`Match ${idx + 1}: Pick both home and away clubs`);
         const hid = String(m.home_team_id);
         const aid = String(m.away_team_id);
         if (hid === aid) throw new Error(`Match ${idx + 1}: Home and Away clubs cannot be the same team!`);
+        
+        if (chosenTeamIds.has(hid)) throw new Error(`Duplicate club detected in Match ${idx + 1}: A club can only play once per ticket.`);
+        chosenTeamIds.add(hid);
+
+        if (chosenTeamIds.has(aid)) throw new Error(`Duplicate club detected in Match ${idx + 1}: A club can only play once per ticket.`);
+        chosenTeamIds.add(aid);
+
         const odd = parseFloat(m.odd);
         if (!Number.isFinite(odd) || odd < 1.01) throw new Error(`Match ${idx + 1}: Invalid odds`);
         const kick = new Date(m.kickoff);

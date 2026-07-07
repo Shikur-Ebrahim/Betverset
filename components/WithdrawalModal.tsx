@@ -601,12 +601,12 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                       className="flex items-center justify-between rounded-xl border border-[var(--site-border)] bg-[var(--site-surface)] px-3 py-3 text-xs shadow-sm"
                     >
                       <div className="min-w-0">
-                        <p className="font-black text-white">{h.method_name || 'Withdrawal'}</p>
+                        <p className="font-black text-slate-900">{h.method_name || 'Withdrawal'}</p>
                         <p className="text-[10px] font-semibold capitalize text-slate-500">
                           <span className={h.status === 'approved' ? 'font-bold text-green-500' : ''}>{h.status}</span> · {new Date(h.created_at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}
                         </p>
                       </div>
-                      <span className="shrink-0 font-black tabular-nums text-white">{h.amount} ETB</span>
+                      <span className="shrink-0 font-black tabular-nums text-slate-900">{h.amount} ETB</span>
                     </li>
                   ))}
                 </ul>

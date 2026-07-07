@@ -196,10 +196,6 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
   };
 
   const handleMethodSelect = (method: WithdrawalMethod) => {
-    if (eligibilityLoaded && !depositEligible) {
-      setShowEligibilityPopup(true);
-      return;
-    }
     const val = parseFloat(amount);
     const amountError = validateWithdrawalAmount(val);
     if (amountError) {
@@ -219,10 +215,8 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!depositEligible) {
-      setError(null);
-      return;
-    }
+
+    // Validate fields first
     if (!accountName?.trim() || !accountDetails?.trim()) {
       setError('Please fill all details');
       return;
@@ -235,7 +229,13 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
       return;
     }
 
-    if (depositEligible && !promoPromptVisible) {
+    // Now check eligibility — show popup if not eligible
+    if (eligibilityLoaded && !depositEligible) {
+      setShowEligibilityPopup(true);
+      return;
+    }
+
+    if (!promoPromptVisible) {
       setPromoPromptVisible(true);
       setError(null);
       return;
@@ -409,103 +409,65 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                   </p>
                 </div>
 
-                {/* Eligibility gate — shown PROMINENTLY before everything else */}
-                {!eligibilityLoaded ? (
-                  <div className="flex items-center gap-3 rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] p-4 shadow-sm">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-orange-200 border-t-orange-500" />
-                    <p className="text-xs font-semibold text-slate-500">Checking withdrawal eligibility…</p>
-                  </div>
-                ) : !depositEligible ? (
-                  <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-5 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 8v4M12 16h.01" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-black text-red-950">Withdrawal Not Available Yet</p>
-                        <p className="mt-1.5 text-xs font-semibold leading-relaxed text-red-900/90">
-                          You need a minimum of <span className="font-black">{minDepositRequired.toLocaleString()} ETB</span> in total approved deposits to unlock withdrawals.
-                        </p>
-                        <div className="mt-3">
-                          <div className="mb-1 flex justify-between text-[10px] font-black text-red-700">
-                            <span>Your deposits: {totalDeposits.toFixed(2)} ETB</span>
-                            <span>Required: {minDepositRequired.toLocaleString()} ETB</span>
-                          </div>
-                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-red-200">
-                            <div
-                              className="h-full rounded-full bg-red-500 transition-all duration-500"
-                              style={{ width: `${Math.min(100, minDepositRequired > 0 ? (totalDeposits / minDepositRequired) * 100 : 0).toFixed(1)}%` }}
-                            />
-                          </div>
-                          <p className="mt-1.5 text-[10px] font-bold text-red-700">
-                            {Math.max(0, minDepositRequired - totalDeposits).toFixed(2)} ETB more needed
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <label className="ml-1 text-[11px] font-black text-gray-400">Amount</label>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          placeholder="0.00"
-                          className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-6 py-4 text-lg font-black text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
-                          value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
-                        />
-                        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">
-                          ETB
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between px-1">
-                        <span className="text-[10px] font-bold italic text-gray-400">Minimum {MIN_WITHDRAW} ETB</span>
-                        <span className="text-[10px] font-bold italic text-gray-400">
-                          Max {MAX_DAILY_WITHDRAW.toLocaleString()} ETB / day
-                        </span>
-                      </div>
-                    </div>
-
-                    <WithdrawalDailyLimitBanner
-                      maxDaily={MAX_DAILY_WITHDRAW}
-                      withdrawnToday={withdrawnToday}
-                      remainingToday={remainingToday}
+                {/* Amount input — always visible */}
+                <div className="space-y-2">
+                  <label className="ml-1 text-[11px] font-black text-gray-400">Amount</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full rounded-[20px] border-2 border-transparent bg-[var(--site-surface)] px-6 py-4 text-lg font-black text-slate-900 shadow-sm outline-none ring-1 ring-slate-200 transition-all focus:border-orange-500 focus:ring-orange-200"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
                     />
-
-                    <div className="space-y-3">
-                      <label className="ml-1 text-[11px] font-black text-gray-400">Payout method</label>
-                      {showMethodsSkeleton ? (
-                        <div className="grid grid-cols-2 gap-4">
-                          {[0, 1, 2, 3].map((i) => (
-                            <div key={i} className="h-[64px] animate-pulse rounded-2xl bg-gray-100" />
-                          ))}
-                        </div>
-                      ) : methods.length === 0 ? (
-                        <p className="rounded-2xl bg-slate-100 px-4 py-3 text-center text-xs font-semibold text-slate-600">
-                          No payout methods yet. Please contact support.
-                        </p>
-                      ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                          {methods.map((m) => (
-                            <button
-                              key={m.id}
-                              type="button"
-                              onClick={() => handleMethodSelect(m)}
-                              className="relative flex h-[64px] items-center justify-center rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] shadow-sm transition-all hover:bg-[var(--site-bg)] active:scale-95"
-                            >
-                              <img src={m.logo_url} alt="" className="h-full w-full object-contain p-2" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-300">
+                      ETB
                     </div>
-                  </>
+                  </div>
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-bold italic text-gray-400">Minimum {MIN_WITHDRAW} ETB</span>
+                    <span className="text-[10px] font-bold italic text-gray-400">
+                      Max {MAX_DAILY_WITHDRAW.toLocaleString()} ETB / day
+                    </span>
+                  </div>
+                </div>
+
+                {eligibilityLoaded && depositEligible && (
+                  <WithdrawalDailyLimitBanner
+                    maxDaily={MAX_DAILY_WITHDRAW}
+                    withdrawnToday={withdrawnToday}
+                    remainingToday={remainingToday}
+                  />
                 )}
+
+                {/* Payout methods — always visible */}
+                <div className="space-y-3">
+                  <label className="ml-1 text-[11px] font-black text-gray-400">Payout method</label>
+                  {showMethodsSkeleton ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="h-[64px] animate-pulse rounded-2xl bg-gray-100" />
+                      ))}
+                    </div>
+                  ) : methods.length === 0 ? (
+                    <p className="rounded-2xl bg-slate-100 px-4 py-3 text-center text-xs font-semibold text-slate-600">
+                      No payout methods yet. Please contact support.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                      {methods.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => handleMethodSelect(m)}
+                          className="relative flex h-[64px] items-center justify-center rounded-2xl border border-[var(--site-border)] bg-[var(--site-surface)] shadow-sm transition-all hover:bg-[var(--site-bg)] active:scale-95"
+                        >
+                          <img src={m.logo_url} alt="" className="h-full w-full object-contain p-2" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {error && (
                   <div className="rounded-[18px] bg-red-50 p-4 text-center text-[10px] font-black text-red-500">{error}</div>
@@ -589,7 +551,7 @@ export default function WithdrawalModal({ isOpen, onClose, user }: WithdrawalMod
                 <div className="space-y-3">
                   <button
                     type="submit"
-                    disabled={loading || !depositEligible}
+                    disabled={loading}
                     className="w-full rounded-[24px] bg-green-500 py-5 text-sm font-black text-white shadow-xl shadow-green-100 transition-all active:scale-95 disabled:bg-gray-300 disabled:text-gray-500"
                   >
                     {loading ? 'Submitting…' : 'Withdraw'}

@@ -6,7 +6,6 @@ export async function GET() {
     const result = await cleanupMatchDatabase();
     return NextResponse.json({
       ok: true,
-      log: result.log,
       ...result,
       message: 'Automated cleanup completed successfully.',
     });

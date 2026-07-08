@@ -1,8 +1,8 @@
 /**
  * /api/cron/bootstrap
  * 
- * Run ONCE PER DAY (early morning) to populate the full 7-day fixture window
- * with pre-match odds and league data.
+ * Run ONCE PER DAY (early morning) to populate the 7-day fixture window:
+ * up to 50 matches/day with odds (350 max after cleanup).
  *
  * Budget: ~80 API requests per run.
  * Schedule: "0 3 * * *" (3 AM UTC daily) in vercel.json

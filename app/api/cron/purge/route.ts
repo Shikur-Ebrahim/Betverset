@@ -1,8 +1,7 @@
 /**
  * /api/cron/purge
  *
- * Deletes finished match data (fixtures + odds) older than 24 hours.
- * Keeps the Supabase database clean and storage usage low.
+ * Deletes finished matches, fixtures without odds, and enforces 350 max total.
  *
  * Budget: 0 API requests per run.
  * Schedule: "0 2 * * *" (2 AM UTC daily) in vercel.json

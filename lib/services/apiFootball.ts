@@ -12,7 +12,7 @@
  */
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { loadFixtureIdsWithDisplayOdds, oddsRowHasMatchWinner } from '@/lib/load-fixture-odds';
-import { siteDayUtcRange, siteWindowRange } from '@/lib/fixture-date-utils';
+import { siteDayBuckets, siteDayUtcRange, siteWindowRange, toSiteDateStr } from '@/lib/fixture-date-utils';
 
 const API_HOST = process.env.API_FOOTBALL_HOST || 'v3.football.api-sports.io';
 const API_BASE = `https://${API_HOST}`;
@@ -276,22 +276,28 @@ async function clearScheduledFixturesForDate(dateStr: string) {
   return ids.length;
 }
 
-async function loadExistingScheduledFixtureIds(excludeIds: number[] = []) {
-  const exclude = new Set(excludeIds);
-  const { data } = await supabaseAdmin.from('fixtures').select('id').eq('status', 'NS');
-  return new Set((data || []).map((r) => r.id).filter((id) => !exclude.has(id)));
+function fixtureKickoffSiteDate(item: any): string {
+  return toSiteDateStr(item?.fixture?.date || '');
 }
 
-/** Import up to 50 fixtures with odds for one calendar day. */
+function buildSiteDayFixtureMap(allFixtures: any[], dateStr: string) {
+  const map = new Map<number, any>();
+  for (const item of allFixtures) {
+    const fid = item?.fixture?.id;
+    if (!fid) continue;
+    if (fixtureKickoffSiteDate(item) === dateStr) {
+      map.set(fid, item);
+    }
+  }
+  return map;
+}
+
+/** Import up to 50 fixtures with odds for one calendar day (UTC+3 site day). */
 export async function importFixturesForDate(dateStr: string, target = MATCHES_PER_DAY) {
   const cleared = await clearScheduledFixturesForDate(dateStr);
-  const alreadyStored = await loadExistingScheduledFixtureIds();
 
   const allFixtures = await apiFetch('/fixtures', { date: dateStr });
-  const fixtureMap = new Map<number, any>();
-  for (const item of allFixtures) {
-    if (item?.fixture?.id) fixtureMap.set(item.fixture.id, item);
-  }
+  const fixtureMap = buildSiteDayFixtureMap(allFixtures, dateStr);
 
   const importedIds = new Set<number>();
   const oddsDataMap = new Map<number, any>();
@@ -304,15 +310,49 @@ export async function importFixturesForDate(dateStr: string, target = MATCHES_PE
 
     for (const item of oddsPage) {
       const fid: number = item?.fixture?.id;
-      if (fid && fixtureMap.has(fid) && !alreadyStored.has(fid)) {
-        importedIds.add(fid);
-        oddsDataMap.set(fid, item);
-        if (importedIds.size >= target) break;
+      if (!fid || !fixtureMap.has(fid) || importedIds.has(fid)) {
+        continue;
       }
+      importedIds.add(fid);
+      oddsDataMap.set(fid, item);
+      if (importedIds.size >= target) break;
     }
 
     if (oddsPage.length < 10) break;
     page++;
+  }
+
+  // If API date grouping missed site-day matches, try adjacent calendar dates.
+  if (importedIds.size < target) {
+    const tryDates = [
+      addUtcDate(dateStr, -1),
+      addUtcDate(dateStr, 1),
+    ];
+    for (const altDate of tryDates) {
+      if (importedIds.size >= target) break;
+      const altFixtures = await apiFetch('/fixtures', { date: altDate });
+      const altMap = buildSiteDayFixtureMap(altFixtures, dateStr);
+      for (const [fid, item] of altMap) {
+        if (!fixtureMap.has(fid)) fixtureMap.set(fid, item);
+      }
+
+      let altPage = 1;
+      while (altPage <= MAX_PAGES && importedIds.size < target) {
+        const oddsPage: any[] = await apiFetch('/odds', { date: altDate, bookmaker: 8, page: altPage });
+        if (!oddsPage?.length) break;
+        for (const item of oddsPage) {
+          const fid: number = item?.fixture?.id;
+          if (!fid || !fixtureMap.has(fid) || importedIds.has(fid)) {
+            continue;
+          }
+          importedIds.add(fid);
+          oddsDataMap.set(fid, item);
+          if (importedIds.size >= target) break;
+        }
+        if (oddsPage.length < 10) break;
+        altPage++;
+      }
+    }
   }
 
   if (importedIds.size === 0) {
@@ -363,7 +403,13 @@ export async function importFixturesForDate(dateStr: string, target = MATCHES_PE
     if (!error) oddsSaved += chunk.length;
   }
 
-  return { date: dateStr, cleared, imported: validIds.size, oddsSaved };
+  return { date: dateStr, cleared, imported: validIds.size, oddsSaved, siteDayCandidates: fixtureMap.size };
+}
+
+function addUtcDate(dateStr: string, deltaDays: number): string {
+  const d = new Date(`${dateStr}T12:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + deltaDays);
+  return d.toISOString().slice(0, 10);
 }
 
 /**
@@ -372,15 +418,12 @@ export async function importFixturesForDate(dateStr: string, target = MATCHES_PE
  * Budget: ~7 fixture calls + ~70 odds pages = ~80 requests per run.
  */
 export async function fetchAndStoreFixturesForWindow() {
-  const today = new Date();
   const dayResults: Awaited<ReturnType<typeof importFixturesForDate>>[] = [];
   let totalFixtures = 0;
   let totalOdds = 0;
 
-  for (let i = 0; i < DAYS_AHEAD; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
+  for (const bucket of siteDayBuckets()) {
+    const dateStr = bucket.date;
 
     try {
       const result = await importFixturesForDate(dateStr, MATCHES_PER_DAY);
@@ -388,7 +431,7 @@ export async function fetchAndStoreFixturesForWindow() {
       totalFixtures += result.imported;
       totalOdds += result.oddsSaved;
       console.log(
-        `[bootstrap] ${dateStr}: cleared=${result.cleared} imported=${result.imported} odds=${result.oddsSaved}`
+        `[bootstrap] ${dateStr}: cleared=${result.cleared} imported=${result.imported} odds=${result.oddsSaved} candidates=${result.siteDayCandidates ?? 0}`
       );
     } catch (dayErr: any) {
       if (dayErr.message?.includes('daily limit')) {
@@ -396,7 +439,7 @@ export async function fetchAndStoreFixturesForWindow() {
         break;
       }
       console.error(`[bootstrap] Error on date ${dateStr}:`, dayErr.message);
-      dayResults.push({ date: dateStr, cleared: 0, imported: 0, oddsSaved: 0 });
+      dayResults.push({ date: dateStr, cleared: 0, imported: 0, oddsSaved: 0, siteDayCandidates: 0 });
     }
   }
 

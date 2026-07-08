@@ -496,8 +496,15 @@ export default function HomePageClient({
         count: d.count,
       }));
     }
-    return [{ id: 'all', label: 'All Games', count: 0 }];
-  }, [fixtureMeta]);
+    return [
+      { id: 'all', label: 'All Games', count: upcomingFixtures.length },
+      ...siteDayBuckets().map((b) => ({
+        id: b.id,
+        label: dayIdToLabel(b.id),
+        count: upcomingFixtures.filter((f) => isInSelectedDayRange(f, b.id)).length,
+      })),
+    ];
+  }, [fixtureMeta, upcomingFixtures]);
 
   const selectedDayLabel = useMemo(
     () => dayOptions.find((option) => option.id === selectedDay)?.label || 'Today',
@@ -751,10 +758,16 @@ export default function HomePageClient({
             api_league_id: selectedLeagueId ?? undefined,
           });
           if (gen !== fixtureFetchGenRef.current) return;
-          feed = { fixtures, odds: {} };
+          feed = { fixtures, odds: {}, meta: fixtureMetaRef.current };
         }
 
-        const apply = () => applyFeedToState(feed.fixtures, feed.odds, !background);
+        const apply = () => {
+          applyFeedToState(feed.fixtures, feed.odds, !background);
+          if (feed.meta?.days?.length) {
+            setFixtureMeta(feed.meta);
+            fixtureMetaRef.current = feed.meta;
+          }
+        };
         if (background) startTransition(apply);
         else apply();
       } finally {
@@ -1317,38 +1330,48 @@ export default function HomePageClient({
     setSelectedCountry('All countries');
     setVisibleLimit(HOME_INITIAL_VISIBLE);
     setSelectedDay(dayId);
-    setListFetchSettled(true);
 
     const cached = peekHomeFeedCache(filterCacheKey(dayId, 'All countries', null));
     if (cached?.fixtures.length) {
       setUpcomingFixtures(cached.fixtures);
       setOddsMap((prev) => ({ ...prev, ...cached.odds }));
       if (cached.meta) setFixtureMeta(cached.meta);
-    } else if (dayId === 'all') {
+      setListFetchSettled(true);
+      void loadFixtureList({ background: true });
+      return;
+    }
+
+    if (dayId === 'all') {
       const allCached = peekHomeFeedCache(filterCacheKey('all', 'All countries', null));
       if (allCached?.fixtures.length) {
         setUpcomingFixtures(allCached.fixtures);
         setOddsMap((prev) => ({ ...prev, ...allCached.odds }));
         if (allCached.meta) setFixtureMeta(allCached.meta);
-      } else {
-        void loadFixtureList({ background: true });
       }
     }
+
+    setListFetchSettled(false);
+    void loadFixtureList().finally(() => setListFetchSettled(true));
   }, [loadFixtureList]);
 
   const selectCountry = useCallback((name: string) => {
     setOpenSheet(null);
     setVisibleLimit(HOME_INITIAL_VISIBLE);
     setSelectedCountry(name);
-    setListFetchSettled(true);
 
     const cached = peekHomeFeedCache(filterCacheKey(selectedDay, name, null));
     if (cached?.fixtures.length) {
       setUpcomingFixtures(cached.fixtures);
       setOddsMap((prev) => ({ ...prev, ...cached.odds }));
       if (cached.meta) setFixtureMeta(cached.meta);
+      setListFetchSettled(true);
+      void loadFixtureList({ background: true });
+      return;
     }
-  }, [selectedDay]);
+
+    setListFetchSettled(false);
+    void loadFixtureList().finally(() => setListFetchSettled(true));
+  }, [selectedDay, loadFixtureList]);
 
   return (
     <div className="site-shell overflow-x-hidden bg-[#1E293B] min-h-screen text-white pb-[70px]">

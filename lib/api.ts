@@ -58,6 +58,7 @@ export type FixtureDayCounts = {
 export type HomeFeedResponse = {
   fixtures: Fixture[];
   odds: Record<string, Odd[]>;
+  meta?: FixtureMeta;
 };
 
 export type HomeBootstrapResponse = HomeFeedResponse & {
@@ -282,9 +283,9 @@ export const api = {
         const id = parseInt(key, 10);
         if (Number.isFinite(id) && Array.isArray(rows)) oddsOut[id] = rows;
       }
-      return { fixtures, odds: oddsOut };
+      return { fixtures, odds: oddsOut, meta: raw?.meta ?? null };
     } catch {
-      return { fixtures: [] as Fixture[], odds: {} as Record<number, Odd[]> };
+      return { fixtures: [] as Fixture[], odds: {} as Record<number, Odd[]>, meta: null };
     }
   },
   /** Landing page bundle: matches + 7-day meta + countries + top leagues (one call). */

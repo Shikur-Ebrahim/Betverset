@@ -265,11 +265,23 @@ export async function filterFixturesWithOdds(fixtures: any[]) {
   return fixtures.filter((f) => idsWithOdds.has(Number(f.id)));
 }
 
-/** Fixture IDs that have at least one qualifying odds row (for cleanup). */
+/** Load fixture IDs that have displayable odds (compact rows only — fast path). */
 export async function loadFixtureIdsWithDisplayOdds(): Promise<Set<number>> {
   const { data: oddsRows, error } = await supabaseAdmin
     .from('odds')
-    .select('fixture_id, market_name, market_key, selection, odd_value, markets');
+    .select('fixture_id, market_name, market_key, selection, odd_value, markets')
+    .eq('market_key', 'all_markets');
   if (error) throw error;
-  return fixtureIdsWithDisplayOdds(oddsRows || []);
+
+  const valid = fixtureIdsWithDisplayOdds(oddsRows || []);
+
+  if (valid.size > 0) return valid;
+
+  const { data: legacyRows, error: legacyErr } = await supabaseAdmin
+    .from('odds')
+    .select('fixture_id, market_name, market_key, selection, odd_value, markets')
+    .neq('market_key', 'all_markets')
+    .limit(5000);
+  if (legacyErr) throw legacyErr;
+  return fixtureIdsWithDisplayOdds(legacyRows || []);
 }

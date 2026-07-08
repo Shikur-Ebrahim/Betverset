@@ -3,22 +3,14 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { filterFixturesWithOdds, loadMatchWinnerOddsForFixtures } from '@/lib/load-fixture-odds';
 import { formatFixtureRows } from '@/lib/fixture-format';
 import { MAX_TOTAL_MATCHES } from '@/lib/services/apiFootball';
+import { siteDayBuckets, siteDayUtcRange, siteWindowRange, toSiteDateStr } from '@/lib/fixture-date-utils';
 
 function buildMeta(fixtures: any[]) {
-  const now = new Date();
-  const dayBuckets: { id: string; date: string }[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-    const id = i === 0 ? 'today' : i === 1 ? 'tomorrow' : `date:${dateStr}`;
-    dayBuckets.push({ id, date: dateStr });
-  }
-
+  const dayBuckets = siteDayBuckets();
   const dayCounts = new Map<string, number>();
   let total = 0;
   for (const f of fixtures) {
-    const matchDate = (f.match_date || f.kickoff_at || '').split('T')[0];
+    const matchDate = toSiteDateStr(f.match_date || f.kickoff_at || '');
     if (!matchDate) continue;
     for (const bucket of dayBuckets) {
       if (matchDate === bucket.date) {
@@ -68,23 +60,21 @@ export async function GET(req: Request) {
 
     if (day && day !== 'all') {
       let dateStr: string;
+      const buckets = siteDayBuckets(now);
       if (day === 'today') {
-        dateStr = now.toISOString().split('T')[0];
+        dateStr = buckets[0].date;
       } else if (day === 'tomorrow') {
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        dateStr = tomorrow.toISOString().split('T')[0];
+        dateStr = buckets[1]?.date ?? buckets[0].date;
       } else if (day.startsWith('date:')) {
         dateStr = day.replace('date:', '');
       } else {
-        dateStr = now.toISOString().split('T')[0];
+        dateStr = buckets[0].date;
       }
-      query = query.like('match_date', `${dateStr}%`);
+      const { start, end } = siteDayUtcRange(dateStr);
+      query = query.gte('match_date', start).lte('match_date', end);
     } else {
-      // Default: 2 hours ago → 7 days ahead
-      const cutoff = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
-      const maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      query = query.gte('match_date', cutoff).lte('match_date', maxDate);
+      const { start, end } = siteWindowRange(now);
+      query = query.gte('match_date', start).lte('match_date', end);
     }
 
     if (country) query = query.eq('country_name', country);

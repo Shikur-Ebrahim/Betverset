@@ -41,6 +41,7 @@ import {
 
 const PREFETCH_TOP_COUNTRIES = 12;
 import { mergeDayCountsIntoMeta } from '../lib/fixture-meta-utils';
+import { siteDayBuckets, toSiteDateStr } from '../lib/fixture-date-utils';
 // Always-visible lightweight components — load immediately
 import TelegramSupportFab from './TelegramSupportFab';
 import SupportChat from './support-chat/SupportChat';
@@ -199,32 +200,13 @@ function dayIdToLabel(dayId: string) {
 function isInSelectedDayRange(fixture: Fixture, dayId: string) {
   if (dayId === 'all') return true;
 
-  const fixtureDate = new Date(fixture.match_date || fixture.kickoff_at || 0);
-  const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const tomorrowStart = new Date(todayStart);
-  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  const fixtureDate = toSiteDateStr(fixture.match_date || fixture.kickoff_at || '');
+  if (!fixtureDate) return false;
 
-  if (dayId === 'today') {
-    return fixtureDate >= todayStart && fixtureDate < tomorrowStart;
-  }
-
-  if (dayId === 'tomorrow') {
-    const tomorrowEnd = new Date(tomorrowStart);
-    tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
-    return fixtureDate >= tomorrowStart && fixtureDate < tomorrowEnd;
-  }
-
-  if (dayId.startsWith('date:')) {
-    const ymd = dayId.replace('date:', '');
-    const [y, m, d] = ymd.split('-').map((n) => parseInt(n, 10));
-    if (!y || !m || !d) return false;
-    const start = new Date(y, m - 1, d, 0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    return fixtureDate >= start && fixtureDate < end;
-  }
+  const buckets = siteDayBuckets();
+  if (dayId === 'today') return fixtureDate === buckets[0]?.date;
+  if (dayId === 'tomorrow') return fixtureDate === buckets[1]?.date;
+  if (dayId.startsWith('date:')) return fixtureDate === dayId.replace('date:', '');
 
   return true;
 }

@@ -1,59 +1,149 @@
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
-const MW_KEYS = ['match_winner', 'home_away', '1x2'];
-const MW_NAMES = ['match winner', 'home/away', 'full time result', '1x2'];
+const MW_KEYS = ['match_winner', 'home_away', '1x2', 'full_time_result'];
+const MW_NAME_PARTS = ['match winner', 'home/away', 'full time result', 'fulltime result', '1x2', '3way', 'winner'];
 
-function countPricedMatchWinnerSelections(row: {
+function parseMarkets(markets: unknown): { flat_markets?: any[]; bookmakers?: any[] } {
+  if (!markets) return {};
+  if (typeof markets === 'string') {
+    try {
+      return JSON.parse(markets);
+    } catch {
+      return {};
+    }
+  }
+  if (typeof markets === 'object') return markets as { flat_markets?: any[]; bookmakers?: any[] };
+  return {};
+}
+
+function pricedValues(values: any[] | undefined): any[] {
+  return (values || []).filter((v) => v?.odd && Number(v.odd) > 0);
+}
+
+function marketLooksLikeMatchWinner(market: any): boolean {
+  const mk = String(market?.market_key || '').toLowerCase();
+  const mn = String(market?.market_name || '').toLowerCase();
+  if (MW_KEYS.includes(mk)) return true;
+  return MW_NAME_PARTS.some((part) => mn.includes(part) || mk.includes(part.replace(/\s+/g, '_')));
+}
+
+function compactRowHasDisplayOdds(row: {
+  market_key?: string;
+  markets?: unknown;
+}): boolean {
+  if (row.market_key !== 'all_markets') return false;
+  const parsed = parseMarkets(row.markets);
+  const flatMarkets: any[] = parsed.flat_markets || [];
+
+  if (flatMarkets.length > 0) {
+    for (const market of flatMarkets) {
+      const priced = pricedValues(market.values);
+      if (marketLooksLikeMatchWinner(market) && priced.length >= 2) return true;
+    }
+    return flatMarkets.some((market) => pricedValues(market.values).length >= 2);
+  }
+
+  const bookmakers: any[] = parsed.bookmakers || [];
+  for (const bookmaker of bookmakers) {
+    for (const bet of bookmaker?.bets || []) {
+      const priced = pricedValues(
+        (bet?.values || []).map((v: any) => ({
+          odd: parseFloat(v.odd),
+          selection: v.value,
+        }))
+      );
+      if (marketLooksLikeMatchWinner({ market_key: bet.name, market_name: bet.name }) && priced.length >= 2) {
+        return true;
+      }
+      if (priced.length >= 2) return true;
+    }
+  }
+
+  return false;
+}
+
+function legacyRowSelectionCount(row: {
   market_key?: string;
   market_name?: string;
   selection?: string;
   odd_value?: number | null;
-  markets?: { flat_markets?: any[] };
 }): number {
-  if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
-    const flatMarkets: any[] = row.markets.flat_markets;
-    const mwMarket = flatMarkets.find(
-      (m: any) =>
-        MW_KEYS.includes(m.market_key) ||
-        MW_NAMES.includes((m.market_name || '').toLowerCase())
-    );
-    if (!mwMarket) return 0;
-    return (mwMarket.values || []).filter((v: any) => v.odd && v.odd > 0).length;
-  }
-
   const mk = (row.market_key || '').toLowerCase();
   const mn = (row.market_name || '').toLowerCase();
-  const isMW = MW_KEYS.some((k) => mk.includes(k)) || MW_NAMES.some((n) => mn.includes(n));
+  const isMW =
+    MW_KEYS.some((k) => mk.includes(k)) || MW_NAME_PARTS.some((n) => mn.includes(n));
   if (!isMW || !row.odd_value || row.odd_value <= 0 || !row.selection) return 0;
   return 1;
 }
 
-/** True when a stored odds row has at least two priced match-winner selections. */
+/** True when a stored odds row can be shown on the home list (1X2 or similar). */
 export function oddsRowHasMatchWinner(row: {
-  fixture_id?: number;
+  fixture_id?: number | string;
   market_key?: string;
   market_name?: string;
   selection?: string;
   odd_value?: number | null;
-  markets?: { flat_markets?: any[] };
+  markets?: unknown;
 }): boolean {
-  return countPricedMatchWinnerSelections(row) >= 2;
+  if (row.market_key === 'all_markets') return compactRowHasDisplayOdds(row);
+  return legacyRowSelectionCount(row) >= 1;
+}
+
+function fixtureIdFromRow(row: { fixture_id?: number | string }): number | null {
+  const id = Number(row.fixture_id);
+  return Number.isFinite(id) ? id : null;
+}
+
+async function fetchOddsRowsForFixtures(fixtureIds: number[]) {
+  const oddsRows: any[] = [];
+  for (let i = 0; i < fixtureIds.length; i += 80) {
+    const chunk = fixtureIds.slice(i, i + 80);
+    const { data, error } = await supabaseAdmin
+      .from('odds')
+      .select('fixture_id, market_name, market_key, selection, odd_value, markets')
+      .in('fixture_id', chunk);
+    if (error) throw error;
+    if (data?.length) oddsRows.push(...data);
+  }
+  return oddsRows;
+}
+
+function fixtureIdsWithDisplayOdds(oddsRows: any[]): Set<number> {
+  const legacyCounts = new Map<number, number>();
+  const valid = new Set<number>();
+
+  for (const row of oddsRows) {
+    const fid = fixtureIdFromRow(row);
+    if (fid == null) continue;
+
+    if (row.market_key === 'all_markets') {
+      if (compactRowHasDisplayOdds(row)) valid.add(fid);
+      continue;
+    }
+
+    const count = legacyRowSelectionCount(row);
+    if (count === 1) legacyCounts.set(fid, (legacyCounts.get(fid) || 0) + 1);
+  }
+
+  for (const [fid, count] of legacyCounts.entries()) {
+    if (count >= 2) valid.add(fid);
+  }
+
+  return valid;
 }
 
 function addMatchWinnerFromCompactRow(
   odds: Record<string, any[]>,
-  row: { fixture_id: number; markets?: { flat_markets?: any[] } }
+  row: { fixture_id: number; markets?: unknown }
 ) {
   const fid = String(row.fixture_id);
   if (!odds[fid]) odds[fid] = [];
 
-  const flatMarkets: any[] = row.markets?.flat_markets || [];
-  const mwMarket = flatMarkets.find(
-    (m: any) =>
-      MW_KEYS.includes(m.market_key) ||
-      MW_NAMES.includes((m.market_name || '').toLowerCase())
-  );
+  const parsed = parseMarkets(row.markets);
+  const flatMarkets: any[] = parsed.flat_markets || [];
 
+  let mwMarket = flatMarkets.find((m) => marketLooksLikeMatchWinner(m));
+  if (!mwMarket) mwMarket = flatMarkets.find((m) => pricedValues(m.values).length >= 2);
   if (!mwMarket) return;
 
   for (const val of mwMarket.values || []) {
@@ -75,7 +165,8 @@ function addMatchWinnerFromCompactRow(
 function addMatchWinnerFromLegacyRow(odds: Record<string, any[]>, row: any) {
   const mk = (row.market_key || '').toLowerCase();
   const mn = (row.market_name || '').toLowerCase();
-  const isMW = MW_KEYS.some((k) => mk.includes(k)) || MW_NAMES.some((n) => mn.includes(n));
+  const isMW =
+    MW_KEYS.some((k) => mk.includes(k)) || MW_NAME_PARTS.some((n) => mn.includes(n));
   if (!isMW || !row.odd_value || row.odd_value <= 0 || !row.selection) return;
 
   const fid = String(row.fixture_id);
@@ -98,8 +189,9 @@ export function expandOddsRows(fixtureId: number, oddsRows: any[]) {
   const allOdds: any[] = [];
 
   for (const row of oddsRows) {
-    if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
-      for (const market of row.markets.flat_markets) {
+    if (row.market_key === 'all_markets') {
+      const parsed = parseMarkets(row.markets);
+      for (const market of parsed.flat_markets || []) {
         for (const val of market.values || []) {
           if (!val.odd || val.odd <= 0) continue;
           allOdds.push({
@@ -148,14 +240,11 @@ export async function loadMatchWinnerOddsForFixtures(fixtures: any[]) {
 
   if (fixtures.length === 0) return odds;
 
-  const fixtureIds = fixtures.map((f: any) => f.id);
-  const { data: oddsRows } = await supabaseAdmin
-    .from('odds')
-    .select('fixture_id, market_name, market_key, selection, odd_value, markets')
-    .in('fixture_id', fixtureIds.slice(0, 500));
+  const fixtureIds = fixtures.map((f: any) => Number(f.id)).filter((id) => Number.isFinite(id));
+  const oddsRows = await fetchOddsRowsForFixtures(fixtureIds);
 
-  for (const row of oddsRows || []) {
-    if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
+  for (const row of oddsRows) {
+    if (row.market_key === 'all_markets') {
       addMatchWinnerFromCompactRow(odds, row);
     } else {
       addMatchWinnerFromLegacyRow(odds, row);
@@ -165,31 +254,22 @@ export async function loadMatchWinnerOddsForFixtures(fixtures: any[]) {
   return odds;
 }
 
-/** Keep only fixtures that have usable match-winner odds saved in the database. */
+/** Keep fixtures that have displayable odds in the database. */
 export async function filterFixturesWithOdds(fixtures: any[]) {
   if (fixtures.length === 0) return fixtures;
 
-  const fixtureIds = fixtures.map((f: any) => f.id);
-  const { data: oddsRows } = await supabaseAdmin
+  const fixtureIds = fixtures.map((f: any) => Number(f.id)).filter((id) => Number.isFinite(id));
+  const oddsRows = await fetchOddsRowsForFixtures(fixtureIds);
+  const idsWithOdds = fixtureIdsWithDisplayOdds(oddsRows);
+
+  return fixtures.filter((f) => idsWithOdds.has(Number(f.id)));
+}
+
+/** Fixture IDs that have at least one qualifying odds row (for cleanup). */
+export async function loadFixtureIdsWithDisplayOdds(): Promise<Set<number>> {
+  const { data: oddsRows, error } = await supabaseAdmin
     .from('odds')
-    .select('fixture_id, market_name, market_key, selection, odd_value, markets')
-    .in('fixture_id', fixtureIds);
-
-  const pricedCounts = new Map<number, number>();
-  for (const row of oddsRows || []) {
-    const fid = row.fixture_id as number;
-    const count = countPricedMatchWinnerSelections(row);
-    if (count >= 2) {
-      pricedCounts.set(fid, Math.max(pricedCounts.get(fid) || 0, count));
-    } else if (count === 1) {
-      pricedCounts.set(fid, (pricedCounts.get(fid) || 0) + 1);
-    }
-  }
-
-  const idsWithOdds = new Set<number>();
-  for (const [fid, count] of pricedCounts.entries()) {
-    if (count >= 2) idsWithOdds.add(fid);
-  }
-
-  return fixtures.filter((f) => idsWithOdds.has(f.id));
+    .select('fixture_id, market_name, market_key, selection, odd_value, markets');
+  if (error) throw error;
+  return fixtureIdsWithDisplayOdds(oddsRows || []);
 }

@@ -11,7 +11,8 @@
  * API-Football is only called from cron jobs.
  */
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { oddsRowHasMatchWinner } from '@/lib/load-fixture-odds';
+import { loadFixtureIdsWithDisplayOdds, oddsRowHasMatchWinner } from '@/lib/load-fixture-odds';
+import { siteDayUtcRange, siteWindowRange } from '@/lib/fixture-date-utils';
 
 const API_HOST = process.env.API_FOOTBALL_HOST || 'v3.football.api-sports.io';
 const API_BASE = `https://${API_HOST}`;
@@ -259,10 +260,12 @@ export function buildCompactOddsRecord(fixtureId: number, oddsItem: any) {
 }
 
 async function clearScheduledFixturesForDate(dateStr: string) {
+  const { start, end } = siteDayUtcRange(dateStr);
   const { data: toClear } = await supabaseAdmin
     .from('fixtures')
     .select('id')
-    .like('match_date', `${dateStr}%`)
+    .gte('match_date', start)
+    .lte('match_date', end)
     .eq('status', 'NS');
 
   if (!toClear?.length) return 0;
@@ -273,9 +276,16 @@ async function clearScheduledFixturesForDate(dateStr: string) {
   return ids.length;
 }
 
+async function loadExistingScheduledFixtureIds(excludeIds: number[] = []) {
+  const exclude = new Set(excludeIds);
+  const { data } = await supabaseAdmin.from('fixtures').select('id').eq('status', 'NS');
+  return new Set((data || []).map((r) => r.id).filter((id) => !exclude.has(id)));
+}
+
 /** Import up to 50 fixtures with odds for one calendar day. */
 export async function importFixturesForDate(dateStr: string, target = MATCHES_PER_DAY) {
   const cleared = await clearScheduledFixturesForDate(dateStr);
+  const alreadyStored = await loadExistingScheduledFixtureIds();
 
   const allFixtures = await apiFetch('/fixtures', { date: dateStr });
   const fixtureMap = new Map<number, any>();
@@ -294,7 +304,7 @@ export async function importFixturesForDate(dateStr: string, target = MATCHES_PE
 
     for (const item of oddsPage) {
       const fid: number = item?.fixture?.id;
-      if (fid && fixtureMap.has(fid)) {
+      if (fid && fixtureMap.has(fid) && !alreadyStored.has(fid)) {
         importedIds.add(fid);
         oddsDataMap.set(fid, item);
         if (importedIds.size >= target) break;
@@ -331,11 +341,17 @@ export async function importFixturesForDate(dateStr: string, target = MATCHES_PE
   }
 
   if (fixtureRecords.length > 0) {
+    let fixturesSaved = 0;
     for (let i = 0; i < fixtureRecords.length; i += 25) {
-      await supabaseAdmin
-        .from('fixtures')
-        .upsert(fixtureRecords.slice(i, i + 25), { onConflict: 'id' });
+      const chunk = fixtureRecords.slice(i, i + 25);
+      const { error } = await supabaseAdmin.from('fixtures').upsert(chunk, { onConflict: 'id' });
+      if (error) {
+        console.error(`[import] fixtures upsert failed for ${dateStr}:`, error.message);
+        throw new Error(`Failed to save fixtures: ${error.message}`);
+      }
+      fixturesSaved += chunk.length;
     }
+    console.log(`[import] ${dateStr}: saved ${fixturesSaved} fixtures`);
   }
 
   const compactOddsRecordsToSave = compactOddsRecords;
@@ -642,45 +658,18 @@ export async function cleanupMatchDatabase(maxTotal = MAX_TOTAL_MATCHES) {
     push(`Deleted ${deletedFixtures} finished matches older than 24h`);
   }
 
-  const { data: oddsRows } = await supabaseAdmin
-    .from('odds')
-    .select('fixture_id, market_name, market_key, selection, odd_value, markets');
-  const fixtureIdsWithOdds = new Set<number>();
-  const pricedCounts = new Map<number, number>();
-
-  for (const row of oddsRows || []) {
-    const fid = row.fixture_id as number;
-    if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
-      if (oddsRowHasMatchWinner(row)) fixtureIdsWithOdds.add(fid);
-      continue;
-    }
-    const mk = (row.market_key || '').toLowerCase();
-    const mn = (row.market_name || '').toLowerCase();
-    const isMW =
-      mk.includes('match_winner') ||
-      mk.includes('1x2') ||
-      mn.includes('match winner') ||
-      mn.includes('full time result');
-    if (isMW && row.odd_value && row.odd_value > 0) {
-      pricedCounts.set(fid, (pricedCounts.get(fid) || 0) + 1);
-    }
-  }
-
-  for (const [fid, count] of pricedCounts.entries()) {
-    if (count >= 2) fixtureIdsWithOdds.add(fid);
-  }
+  const fixtureIdsWithOdds = await loadFixtureIdsWithDisplayOdds();
 
   const { data: allFixtures } = await supabaseAdmin.from('fixtures').select('id, kickoff_at, status');
-  const now = Date.now();
-  const windowStart = new Date(now - 2 * 60 * 60 * 1000).toISOString();
-  const windowEnd = new Date(now + DAYS_AHEAD * 24 * 60 * 60 * 1000).toISOString();
+  const { start: windowStart, end: windowEnd } = siteWindowRange();
 
   const withoutOdds: number[] = [];
   const outsideWindow: number[] = [];
 
   for (const f of allFixtures || []) {
-    if (!fixtureIdsWithOdds.has(f.id)) {
-      withoutOdds.push(f.id);
+    const fid = Number(f.id);
+    if (!fixtureIdsWithOdds.has(fid)) {
+      withoutOdds.push(fid);
       continue;
     }
     const kickoff = f.kickoff_at || '';

@@ -3,31 +3,19 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { filterFixturesWithOdds, loadMatchWinnerOddsForFixtures } from '@/lib/load-fixture-odds';
 import { formatFixtureRows } from '@/lib/fixture-format';
 import { MAX_TOTAL_MATCHES } from '@/lib/services/apiFootball';
+import { siteDayBuckets, siteDayUtcRange, siteWindowRange, toSiteDateStr } from '@/lib/fixture-date-utils';
 
-/** Build a day-bucketed meta object for the dropdown */
+/** Build a day-bucketed meta object for the dropdown (UTC+3 site timezone). */
 function buildMeta(fixtures: any[]) {
-  const now = new Date();
-
-  // Create day buckets for next 7 days
-  const dayBuckets: { id: string; label: string; date: string }[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-    const id = i === 0 ? 'today' : i === 1 ? 'tomorrow' : `date:${dateStr}`;
-    dayBuckets.push({ id, label: id, date: dateStr });
-  }
-
-  // Count fixtures per day bucket
+  const dayBuckets = siteDayBuckets();
   const dayCounts = new Map<string, number>();
   let total = 0;
 
   for (const f of fixtures) {
-    const matchDate = f.match_date || f.kickoff_at || '';
+    const matchDate = toSiteDateStr(f.match_date || f.kickoff_at || '');
     if (!matchDate) continue;
-    const fixtureDate = matchDate.split('T')[0]; // YYYY-MM-DD
     for (const bucket of dayBuckets) {
-      if (fixtureDate === bucket.date) {
+      if (matchDate === bucket.date) {
         dayCounts.set(bucket.id, (dayCounts.get(bucket.id) || 0) + 1);
         break;
       }
@@ -68,11 +56,7 @@ export async function GET(req: Request) {
       MAX_TOTAL_MATCHES
     );
 
-    const now = new Date();
-    // Show fixtures from 2 hours ago onwards (to catch live matches that started)
-    const cutoffDate = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
-    // Show up to 7 days ahead
-    const maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { start: cutoffDate, end: maxDate } = siteWindowRange();
 
     const { data: fixturesRows, error } = await supabaseAdmin
       .from('fixtures')

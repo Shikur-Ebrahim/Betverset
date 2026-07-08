@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { filterFixturesWithOdds, loadMatchWinnerOddsForFixtures } from '@/lib/load-fixture-odds';
 import { formatFixtureRows } from '@/lib/fixture-format';
 import { MAX_TOTAL_MATCHES } from '@/lib/services/apiFootball';
+import { siteDayBuckets, siteDayUtcRange, siteWindowRange } from '@/lib/fixture-date-utils';
 
 export async function GET(req: Request) {
   try {
@@ -21,25 +22,20 @@ export async function GET(req: Request) {
     let query = supabaseAdmin.from('fixtures').select('*');
 
     if (dateStr) {
-      query = query.like('match_date', `${dateStr}%`);
+      const { start, end } = siteDayUtcRange(dateStr);
+      query = query.gte('match_date', start).lte('match_date', end);
     } else if (day && day !== 'all') {
+      const buckets = siteDayBuckets(now);
       let bucketDate: string;
-      if (day === 'today') {
-        bucketDate = now.toISOString().split('T')[0];
-      } else if (day === 'tomorrow') {
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        bucketDate = tomorrow.toISOString().split('T')[0];
-      } else if (day.startsWith('date:')) {
-        bucketDate = day.replace('date:', '');
-      } else {
-        bucketDate = now.toISOString().split('T')[0];
-      }
-      query = query.like('match_date', `${bucketDate}%`);
+      if (day === 'today') bucketDate = buckets[0].date;
+      else if (day === 'tomorrow') bucketDate = buckets[1]?.date ?? buckets[0].date;
+      else if (day.startsWith('date:')) bucketDate = day.replace('date:', '');
+      else bucketDate = buckets[0].date;
+      const { start, end } = siteDayUtcRange(bucketDate);
+      query = query.gte('match_date', start).lte('match_date', end);
     } else {
-      const cutoffDate = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
-      const maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-      query = query.gte('match_date', cutoffDate).lte('match_date', maxDate);
+      const { start, end } = siteWindowRange(now);
+      query = query.gte('match_date', start).lte('match_date', end);
     }
 
     if (country) query = query.eq('country_name', country);

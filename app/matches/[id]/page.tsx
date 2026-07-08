@@ -1,5 +1,7 @@
 import MatchDetailPageClient from '../../../components/match-detail-page-client';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { expandOddsRows } from '@/lib/load-fixture-odds';
+import { formatFixtureRow } from '@/lib/fixture-format';
 
 /** Fetch fixture + odds server-side from Supabase so the detail page renders instantly. */
 async function fetchMatchData(fixtureId: string) {
@@ -16,8 +18,8 @@ async function fetchMatchData(fixtureId: string) {
         .limit(200),
     ]);
 
-    const fixture = fixtureRes.data || null;
-    const odds = oddsRes.data || [];
+    const fixture = fixtureRes.data ? formatFixtureRow(fixtureRes.data) : null;
+    const odds = expandOddsRows(id, oddsRes.data || []);
     return { fixture, odds };
   } catch {
     return { fixture: null, odds: [] };

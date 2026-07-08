@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { api, FIXTURE_LIST_LIMIT, Fixture, LiveMatch, League } from '../../lib/api';
+import { api, Fixture, LiveMatch, League, Odd } from '../../lib/api';
 import { isMatchClosedForBetting } from '../../lib/match-status';
+import { getMatchWinnerDisplayOdds } from '../../lib/match-odds-display';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,14 @@ function getInitials(name: string) {
     .join('');
 }
 
+function getSelectionLabel(selection: string, fixture: Fixture) {
+  const sel = selection.toLowerCase();
+  if (sel === 'home' || sel === '1') return '1';
+  if (sel === 'draw' || sel === 'x') return 'X';
+  if (sel === 'away' || sel === '2') return '2';
+  return selection;
+}
+
 async function safeLoad<T>(loader: () => Promise<T>, fallback: T) {
   try {
     return await loader();
@@ -43,8 +52,13 @@ async function safeLoad<T>(loader: () => Promise<T>, fallback: T) {
 }
 
 async function loadMatchesPageData() {
-  const [fixtures, liveMatches, topLeagues] = await Promise.all([
-    safeLoad(() => api.getFixtures({ limit: FIXTURE_LIST_LIMIT, has_odds: true }), [] as Fixture[]),
+  const [bootstrap, liveMatches, topLeagues] = await Promise.all([
+    safeLoad(() => api.getHomeBootstrap(), {
+      fixtures: [] as Fixture[],
+      odds: {} as Record<number, Odd[]>,
+      meta: null,
+      topLeagues: [] as League[],
+    }),
     safeLoad(() => api.getLiveMatches(), [] as LiveMatch[]),
     safeLoad(() => api.getTopLeagues(), [] as League[]),
   ]);
@@ -52,15 +66,18 @@ async function loadMatchesPageData() {
   const liveFixtureIds = new Set(liveMatches.map((match) => match.fixture_id));
 
   return {
-    fixtures,
+    fixtures: bootstrap.fixtures,
+    oddsMap: bootstrap.odds,
     liveMatches,
     topLeagues: topLeagues.slice(0, 6),
     liveFixtureIds,
+    metaTotal: bootstrap.meta?.total ?? bootstrap.fixtures.length,
   };
 }
 
 export default async function MatchesPage() {
-  const { fixtures, liveMatches, topLeagues, liveFixtureIds } = await loadMatchesPageData();
+  const { fixtures, oddsMap, liveMatches, topLeagues, liveFixtureIds, metaTotal } =
+    await loadMatchesPageData();
 
   return (
     <div className="site-shell">
@@ -80,18 +97,18 @@ export default async function MatchesPage() {
         <section className="grid gap-4 sm:grid-cols-3">
           <div className="site-soft-card site-glow-card rounded-[1.9rem] p-5">
             <p className="site-muted text-sm">Saved upcoming games</p>
-            <p className="mt-3 text-3xl font-bold text-white">{fixtures.length}</p>
-            <p className="site-muted mt-2 text-sm">Only today through the next 7 days from PostgreSQL.</p>
+            <p className="mt-3 text-3xl font-bold text-white">{metaTotal}</p>
+            <p className="site-muted mt-2 text-sm">Up to 50 matches per day for the next 7 days (350 max).</p>
           </div>
           <div className="site-soft-card rounded-[1.9rem] p-5">
             <p className="site-muted text-sm">Live games</p>
             <p className="mt-3 text-3xl font-bold" style={{ color: 'var(--site-primary)' }}>{liveMatches.length}</p>
-            <p className="site-muted mt-2 text-sm">Updated by the backend cron from the saved database flow.</p>
+            <p className="site-muted mt-2 text-sm">Updated automatically from the saved database flow.</p>
           </div>
           <div className="site-soft-card rounded-[1.9rem] p-5">
             <p className="site-muted text-sm">Top synced leagues</p>
             <p className="mt-3 text-3xl font-bold text-white">{topLeagues.length}</p>
-            <p className="site-muted mt-2 text-sm">All data shown here comes from backend database routes.</p>
+            <p className="site-muted mt-2 text-sm">Only matches with saved odds are shown here.</p>
           </div>
         </section>
 
@@ -104,7 +121,7 @@ export default async function MatchesPage() {
             </div>
             <div className="hidden gap-2 md:flex">
               <span className="site-chip rounded-full px-4 py-2 text-xs font-semibold">Prematch</span>
-              <span className="site-chip rounded-full px-4 py-2 text-xs font-semibold">Backend tracked</span>
+              <span className="site-chip rounded-full px-4 py-2 text-xs font-semibold">With odds</span>
             </div>
           </div>
 
@@ -112,6 +129,9 @@ export default async function MatchesPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {fixtures.map((fixture) => {
                 const isLive = liveFixtureIds.has(fixture.id);
+                const displayOdds = getMatchWinnerDisplayOdds(oddsMap[fixture.id] || []);
+                const isFinished = isMatchClosedForBetting(fixture);
+                const shouldShowScore = isLive || isFinished;
 
                 return (
                   <Link
@@ -141,9 +161,11 @@ export default async function MatchesPage() {
                           </div>
                           <p className="truncate text-base font-semibold sm:text-lg">{fixture.home_team_name}</p>
                         </div>
-                        <div className="site-score-box rounded-2xl px-4 py-2 text-lg font-bold text-white">
-                          {fixture.home_score}
-                        </div>
+                        {shouldShowScore && (
+                          <div className="site-score-box rounded-2xl px-4 py-2 text-lg font-bold text-white">
+                            {fixture.home_score}
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between gap-3">
@@ -157,11 +179,29 @@ export default async function MatchesPage() {
                           </div>
                           <p className="truncate text-base font-semibold sm:text-lg">{fixture.away_team_name}</p>
                         </div>
-                        <div className="site-score-box rounded-2xl px-4 py-2 text-lg font-bold text-white">
-                          {fixture.away_score}
-                        </div>
+                        {shouldShowScore && (
+                          <div className="site-score-box rounded-2xl px-4 py-2 text-lg font-bold text-white">
+                            {fixture.away_score}
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {displayOdds.length > 0 && (
+                      <div className="mt-4 flex gap-2">
+                        {displayOdds.map((odd) => (
+                          <div
+                            key={`${fixture.id}-${odd.selection}`}
+                            className="site-score-box flex-1 rounded-xl px-2 py-2 text-center text-sm font-bold text-white"
+                          >
+                            <span className="site-muted block text-[10px] uppercase">
+                              {getSelectionLabel(odd.selection, fixture)}
+                            </span>
+                            {Number(odd.odd_value).toFixed(2)}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="site-score-box site-muted mt-5 rounded-2xl p-4 text-sm">
                       <p>{fixture.venue_name || 'Venue pending'}</p>
@@ -178,7 +218,7 @@ export default async function MatchesPage() {
             </div>
           ) : (
             <div className="site-card site-muted rounded-[1.9rem] p-6 text-sm">
-              No saved matches are available in the database right now.
+              No saved matches with odds are available right now. The daily bootstrap cron adds up to 50 matches per day.
             </div>
           )}
         </section>
@@ -188,10 +228,10 @@ export default async function MatchesPage() {
             <div>
               <div className="site-accent-line mb-4" />
               <h2 className="site-section-title text-lg font-semibold sm:text-2xl">Live tracker</h2>
-              <p className="site-muted mt-1 text-sm">Live cards below are still loaded from your backend database only.</p>
+              <p className="site-muted mt-1 text-sm">Live cards below are loaded from your backend database only.</p>
             </div>
             <span className="site-live-pill w-fit rounded-full px-4 py-2 text-xs font-semibold">
-              Live list: ~30s refresh (odds from DB)
+              Live list: ~45s refresh
             </span>
           </div>
 

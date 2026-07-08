@@ -11,6 +11,7 @@
  * API-Football is only called from cron jobs.
  */
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { oddsRowHasMatchWinner } from '@/lib/load-fixture-odds';
 
 const API_HOST = process.env.API_FOOTBALL_HOST || 'v3.football.api-sports.io';
 const API_BASE = `https://${API_HOST}`;
@@ -86,7 +87,7 @@ export const TOP_LEAGUES = [39, 2, 140, 135, 78, 61, 3, 848, 45, 40, 307, 253, 7
 // HELPERS
 // ──────────────────────────────────────────────
 
-function buildFixtureRecord(item: any): any {
+export function buildFixtureRecord(item: any): any {
   const f = item?.fixture;
   const teams = item?.teams;
   const league = item?.league;
@@ -210,81 +211,188 @@ export async function fetchAndStoreLeagues(leagueIds?: number[]) {
   return { leaguesSeen: data.length, stored: records.length };
 }
 
+export const MATCHES_PER_DAY = 50;
+export const DAYS_AHEAD = 7;
+export const MAX_TOTAL_MATCHES = 350;
+
+export function buildCompactOddsRecord(fixtureId: number, oddsItem: any) {
+  const bookmakers: any[] = oddsItem?.bookmakers ?? [];
+  const markets: any[] = [];
+
+  for (const bookmaker of bookmakers) {
+    if (!bookmaker?.id) continue;
+    for (const bet of bookmaker?.bets ?? []) {
+      const marketKey = (bet.name || '').toLowerCase().replace(/\s+/g, '_');
+      const values = (bet?.values ?? [])
+        .map((v: any) => ({
+          selection: String(v.value || ''),
+          odd: parseFloat(v.odd) || null,
+        }))
+        .filter((v: any) => v.odd && v.odd > 0);
+
+      if (values.length > 0) {
+        markets.push({
+          market_id: String(bet.id),
+          market_name: bet.name || '',
+          market_key: marketKey,
+          bookmaker_id: String(bookmaker.id),
+          bookmaker_name: bookmaker.name || '',
+          values,
+        });
+      }
+    }
+  }
+
+  return {
+    id: `fixture_${fixtureId}_all_odds`,
+    fixture_id: fixtureId,
+    bookmaker_id: 'all',
+    bookmaker_name: 'All',
+    market_id: 'all',
+    market_name: 'All Markets',
+    market_key: 'all_markets',
+    selection: 'all',
+    odd_value: null,
+    markets: { bookmakers, flat_markets: markets },
+    updated_at: new Date().toISOString(),
+  };
+}
+
+async function clearScheduledFixturesForDate(dateStr: string) {
+  const { data: toClear } = await supabaseAdmin
+    .from('fixtures')
+    .select('id')
+    .like('match_date', `${dateStr}%`)
+    .eq('status', 'NS');
+
+  if (!toClear?.length) return 0;
+
+  const ids = toClear.map((f) => f.id);
+  await supabaseAdmin.from('odds').delete().in('fixture_id', ids);
+  await supabaseAdmin.from('fixtures').delete().in('id', ids);
+  return ids.length;
+}
+
+/** Import up to 50 fixtures with odds for one calendar day. */
+export async function importFixturesForDate(dateStr: string, target = MATCHES_PER_DAY) {
+  const cleared = await clearScheduledFixturesForDate(dateStr);
+
+  const allFixtures = await apiFetch('/fixtures', { date: dateStr });
+  const fixtureMap = new Map<number, any>();
+  for (const item of allFixtures) {
+    if (item?.fixture?.id) fixtureMap.set(item.fixture.id, item);
+  }
+
+  const importedIds = new Set<number>();
+  const oddsDataMap = new Map<number, any>();
+  const MAX_PAGES = 10;
+
+  let page = 1;
+  while (page <= MAX_PAGES && importedIds.size < target) {
+    const oddsPage: any[] = await apiFetch('/odds', { date: dateStr, bookmaker: 8, page });
+    if (!oddsPage?.length) break;
+
+    for (const item of oddsPage) {
+      const fid: number = item?.fixture?.id;
+      if (fid && fixtureMap.has(fid)) {
+        importedIds.add(fid);
+        oddsDataMap.set(fid, item);
+        if (importedIds.size >= target) break;
+      }
+    }
+
+    if (oddsPage.length < 10) break;
+    page++;
+  }
+
+  if (importedIds.size === 0) {
+    return { date: dateStr, cleared, imported: 0, oddsSaved: 0 };
+  }
+
+  const validIds = new Set<number>();
+  const compactOddsRecords: ReturnType<typeof buildCompactOddsRecord>[] = [];
+
+  for (const fid of importedIds) {
+    const compact = buildCompactOddsRecord(fid, oddsDataMap.get(fid));
+    if (oddsRowHasMatchWinner(compact)) {
+      validIds.add(fid);
+      compactOddsRecords.push(compact);
+    }
+  }
+
+  if (validIds.size === 0) {
+    return { date: dateStr, cleared, imported: 0, oddsSaved: 0 };
+  }
+
+  const fixtureRecords: any[] = [];
+  for (const fid of validIds) {
+    const rec = buildFixtureRecord(fixtureMap.get(fid));
+    if (rec) fixtureRecords.push(rec);
+  }
+
+  if (fixtureRecords.length > 0) {
+    for (let i = 0; i < fixtureRecords.length; i += 25) {
+      await supabaseAdmin
+        .from('fixtures')
+        .upsert(fixtureRecords.slice(i, i + 25), { onConflict: 'id' });
+    }
+  }
+
+  const compactOddsRecordsToSave = compactOddsRecords;
+
+  let oddsSaved = 0;
+  for (let i = 0; i < compactOddsRecordsToSave.length; i += 10) {
+    const chunk = compactOddsRecordsToSave.slice(i, i + 10);
+    const { error } = await supabaseAdmin.from('odds').upsert(chunk, { onConflict: 'id' });
+    if (!error) oddsSaved += chunk.length;
+  }
+
+  return { date: dateStr, cleared, imported: validIds.size, oddsSaved };
+}
+
 /**
  * Fetch fixtures for the next 7 days (today + 6 days ahead).
- * For each day, we call /fixtures?date=YYYY-MM-DD (1 request each = 7 requests).
- * Then we call /odds?date=YYYY-MM-DD paginated (up to 10 pages = 10 requests each day = 70 max).
- * Total budget: ~80 requests per day.
+ * Up to 50 matches per day with odds (350 max total after cleanup).
+ * Budget: ~7 fixture calls + ~70 odds pages = ~80 requests per run.
  */
 export async function fetchAndStoreFixturesForWindow() {
+  const today = new Date();
+  const dayResults: Awaited<ReturnType<typeof importFixturesForDate>>[] = [];
   let totalFixtures = 0;
   let totalOdds = 0;
 
-  const today = new Date();
-  const dates: string[] = [];
-
-  // Start from 7 days ago to update missed/finished matches, up to 7 days ahead
-  for (let i = -7; i <= 7; i++) {
+  for (let i = 0; i < DAYS_AHEAD; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() + i);
-    dates.push(d.toISOString().split('T')[0]);
-  }
-
-  for (const dateStr of dates) {
-    console.log(`[bootstrap] Processing date: ${dateStr}`);
+    const dateStr = d.toISOString().split('T')[0];
 
     try {
-      // 1 request per day — get all fixtures for this date
-      const fixtureList = await apiFetch('/fixtures', { date: dateStr });
-
-      const fixtureRecords: any[] = [];
-      for (const item of fixtureList) {
-        const record = buildFixtureRecord(item);
-        if (record) fixtureRecords.push(record);
-      }
-
-      if (fixtureRecords.length > 0) {
-        for (let i = 0; i < fixtureRecords.length; i += 200) {
-          await supabaseAdmin.from('fixtures').upsert(fixtureRecords.slice(i, i + 200), { onConflict: 'id' });
-        }
-        totalFixtures += fixtureRecords.length;
-        console.log(`[bootstrap] Stored ${fixtureRecords.length} fixtures for ${dateStr}`);
-      }
-
-      // Fetch pre-match odds page by page (up to 10 pages max)
-      let page = 1;
-      const MAX_PAGES = 10;
-      while (page <= MAX_PAGES) {
-        try {
-          const oddsPage = await apiFetch('/odds', { date: dateStr, bookmaker: 8, page });
-          if (!oddsPage || oddsPage.length === 0) break;
-
-          for (const oddsItem of oddsPage) {
-            const fid: number = oddsItem?.fixture?.id;
-            if (!fid) continue;
-            const stored = await storeOddsFromData(fid, [oddsItem]);
-            totalOdds += stored;
-          }
-
-          // If fewer than expected items, this is the last page
-          if (oddsPage.length < 10) break;
-          page++;
-        } catch (oddsErr: any) {
-          if (oddsErr.message?.includes('daily limit')) throw oddsErr;
-          console.error(`[bootstrap] Odds page ${page} error for ${dateStr}:`, oddsErr.message);
-          break;
-        }
-      }
+      const result = await importFixturesForDate(dateStr, MATCHES_PER_DAY);
+      dayResults.push(result);
+      totalFixtures += result.imported;
+      totalOdds += result.oddsSaved;
+      console.log(
+        `[bootstrap] ${dateStr}: cleared=${result.cleared} imported=${result.imported} odds=${result.oddsSaved}`
+      );
     } catch (dayErr: any) {
       if (dayErr.message?.includes('daily limit')) {
         console.error('[bootstrap] Daily API quota hit — stopping early.');
         break;
       }
       console.error(`[bootstrap] Error on date ${dateStr}:`, dayErr.message);
+      dayResults.push({ date: dateStr, cleared: 0, imported: 0, oddsSaved: 0 });
     }
   }
 
-  return { fixturesSeen: totalFixtures, oddsSaved: totalOdds };
+  const cleanup = await cleanupMatchDatabase();
+
+  return {
+    fixturesSeen: totalFixtures,
+    oddsSaved: totalOdds,
+    daysProcessed: dayResults.length,
+    dayResults,
+    cleanup,
+  };
 }
 
 // ──────────────────────────────────────────────
@@ -502,37 +610,122 @@ function resolveSelection(selection: any, result: { home: number | null; away: n
 // PURGE: Delete old finished matches (runs daily)
 // ──────────────────────────────────────────────
 
-export async function purgeOldFinishedFixtures() {
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const FINISHED_STATUSES = ['FT', 'AET', 'PEN', 'AWD', 'WO'];
+export async function cleanupMatchDatabase(maxTotal = MAX_TOTAL_MATCHES) {
+  const log: string[] = [];
+  const push = (msg: string) => {
+    log.push(msg);
+    console.log(`[match-cleanup] ${msg}`);
+  };
 
-  const { data: oldFixtures } = await supabaseAdmin
+  const finishedStatuses = ['FT', 'AET', 'PEN', 'ABD', 'AWD', 'WO'];
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: oldMatches } = await supabaseAdmin
     .from('fixtures')
     .select('id')
-    .in('status', FINISHED_STATUSES)
-    .lt('kickoff_at', cutoff)
-    .limit(200);
+    .in('status', finishedStatuses)
+    .lt('kickoff_at', twentyFourHoursAgo);
 
   let deletedFixtures = 0;
   let deletedOdds = 0;
 
-  // Delete in batches
-  const ids = (oldFixtures || []).map((f: any) => f.id);
-
-  if (ids.length > 0) {
+  if (oldMatches?.length) {
+    const ids = oldMatches.map((m) => m.id);
     const { data: deletedOddsData } = await supabaseAdmin
       .from('odds')
       .delete()
       .in('fixture_id', ids)
       .select('id');
     deletedOdds = deletedOddsData?.length || 0;
-
     await supabaseAdmin.from('fixtures').delete().in('id', ids);
     deletedFixtures = ids.length;
+    push(`Deleted ${deletedFixtures} finished matches older than 24h`);
   }
 
-  console.log(`[purge] Deleted ${deletedFixtures} fixtures and ${deletedOdds} odds records.`);
-  return { deletedFixtures, deletedOdds };
+  const { data: oddsRows } = await supabaseAdmin
+    .from('odds')
+    .select('fixture_id, market_name, market_key, selection, odd_value, markets');
+  const fixtureIdsWithOdds = new Set<number>();
+  const pricedCounts = new Map<number, number>();
+
+  for (const row of oddsRows || []) {
+    const fid = row.fixture_id as number;
+    if (row.market_key === 'all_markets' && row.markets?.flat_markets) {
+      if (oddsRowHasMatchWinner(row)) fixtureIdsWithOdds.add(fid);
+      continue;
+    }
+    const mk = (row.market_key || '').toLowerCase();
+    const mn = (row.market_name || '').toLowerCase();
+    const isMW =
+      mk.includes('match_winner') ||
+      mk.includes('1x2') ||
+      mn.includes('match winner') ||
+      mn.includes('full time result');
+    if (isMW && row.odd_value && row.odd_value > 0) {
+      pricedCounts.set(fid, (pricedCounts.get(fid) || 0) + 1);
+    }
+  }
+
+  for (const [fid, count] of pricedCounts.entries()) {
+    if (count >= 2) fixtureIdsWithOdds.add(fid);
+  }
+
+  const { data: allFixtures } = await supabaseAdmin.from('fixtures').select('id, kickoff_at, status');
+  const now = Date.now();
+  const windowStart = new Date(now - 2 * 60 * 60 * 1000).toISOString();
+  const windowEnd = new Date(now + DAYS_AHEAD * 24 * 60 * 60 * 1000).toISOString();
+
+  const withoutOdds: number[] = [];
+  const outsideWindow: number[] = [];
+
+  for (const f of allFixtures || []) {
+    if (!fixtureIdsWithOdds.has(f.id)) {
+      withoutOdds.push(f.id);
+      continue;
+    }
+    const kickoff = f.kickoff_at || '';
+    const status = String(f.status || 'NS').toUpperCase();
+    if (kickoff && (kickoff < windowStart || kickoff > windowEnd) && ['NS', 'TBD', 'PST'].includes(status)) {
+      outsideWindow.push(f.id);
+    }
+  }
+
+  const idsToDelete = [...new Set([...withoutOdds, ...outsideWindow])];
+  if (idsToDelete.length > 0) {
+    await supabaseAdmin.from('odds').delete().in('fixture_id', idsToDelete);
+    await supabaseAdmin.from('fixtures').delete().in('id', idsToDelete);
+    push(
+      `Deleted ${withoutOdds.length} fixtures without valid odds and ${outsideWindow.length} outside the 7-day window`
+    );
+  }
+
+  const { data: allMatchIds } = await supabaseAdmin
+    .from('fixtures')
+    .select('id')
+    .order('kickoff_at', { ascending: false });
+
+  let pruned = 0;
+  if (allMatchIds && allMatchIds.length > maxTotal) {
+    const idsToPrune = allMatchIds.slice(maxTotal).map((m) => m.id);
+    const { data: prunedOdds } = await supabaseAdmin
+      .from('odds')
+      .delete()
+      .in('fixture_id', idsToPrune)
+      .select('id');
+    deletedOdds += prunedOdds?.length || 0;
+    await supabaseAdmin.from('fixtures').delete().in('id', idsToPrune);
+    pruned = idsToPrune.length;
+    deletedFixtures += pruned;
+    push(`Pruned ${pruned} oldest matches to stay under ${maxTotal}`);
+  } else {
+    push(`Database size OK (${allMatchIds?.length || 0} / ${maxTotal})`);
+  }
+
+  return { deletedFixtures, deletedOdds, pruned, log };
+}
+
+export async function purgeOldFinishedFixtures() {
+  return cleanupMatchDatabase();
 }
 
 // ──────────────────────────────────────────────

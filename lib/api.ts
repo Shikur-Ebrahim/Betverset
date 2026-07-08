@@ -4,8 +4,8 @@ import { getPublicApiBaseUrl } from './public-api-url';
 
 const API_URL = getPublicApiBaseUrl();
 
-/** Max matches on home "All Games" (must match backend MAX_FIXTURES_PAGE). */
-export const FIXTURE_LIST_LIMIT = 5000;
+/** Max matches in the 7-day window (50/day × 7 days). */
+export const FIXTURE_LIST_LIMIT = 350;
 
 async function parseJsonResponse(res: Response): Promise<Record<string, unknown>> {
   const text = await res.text();

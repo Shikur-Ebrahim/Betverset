@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { filterFixturesWithOdds, loadMatchWinnerOddsForFixtures } from '@/lib/load-fixture-odds';
+import { formatFixtureRows } from '@/lib/fixture-format';
+import { MAX_TOTAL_MATCHES } from '@/lib/services/apiFootball';
 
 function buildMeta(fixtures: any[]) {
   const now = new Date();
@@ -50,7 +53,10 @@ function buildMeta(fixtures: any[]) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get('limit') || '100', 10);
+    const limit = Math.min(
+      parseInt(searchParams.get('limit') || String(MAX_TOTAL_MATCHES), 10),
+      MAX_TOTAL_MATCHES
+    );
     const day = searchParams.get('day') || null;
     const country = searchParams.get('country') || null;
     const api_league_id = searchParams.get('api_league_id')
@@ -89,46 +95,10 @@ export async function GET(req: Request) {
       .limit(limit);
 
     if (error) throw error;
-    const fixtures = fixturesRows || [];
-
-    // Build odds
-    const odds: Record<string, any[]> = {};
-    fixtures.forEach((f: any) => {
-      if (f.home_odds || f.draw_odds || f.away_odds) {
-        const fid = String(f.id);
-        const items = [
-          { fixture_id: f.id, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Home', odd_value: f.home_odds || null },
-          { fixture_id: f.id, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Draw', odd_value: f.draw_odds || null },
-          { fixture_id: f.id, market_name: 'Match Winner', market_key: 'match_winner', selection: 'Away', odd_value: f.away_odds || null },
-        ].filter((o) => o.odd_value !== null);
-        if (items.length) odds[fid] = items;
-      }
-    });
-
-    if (fixtures.length > 0) {
-      const fixtureIds = fixtures.map((f: any) => f.id);
-      const { data: oddsRows } = await supabaseAdmin
-        .from('odds')
-        .select('fixture_id, market_key, market_name, selection, odd_value')
-        .in('fixture_id', fixtureIds.slice(0, 500))
-        .like('market_key', '%match_winner%');
-
-      if (oddsRows) {
-        for (const o of oddsRows) {
-          const fid = String(o.fixture_id);
-          if (!odds[fid]) odds[fid] = [];
-          if (!odds[fid].some((x: any) => x.selection === o.selection)) {
-            odds[fid].push({
-              fixture_id: o.fixture_id,
-              market_name: o.market_name,
-              market_key: o.market_key,
-              selection: o.selection,
-              odd_value: o.odd_value,
-            });
-          }
-        }
-      }
-    }
+    const allFixtures = fixturesRows || [];
+    const withOdds = await filterFixturesWithOdds(allFixtures);
+    const fixtures = formatFixtureRows(withOdds);
+    const odds = await loadMatchWinnerOddsForFixtures(fixtures);
 
     const meta = buildMeta(fixtures);
     return NextResponse.json({ fixtures, odds, meta });

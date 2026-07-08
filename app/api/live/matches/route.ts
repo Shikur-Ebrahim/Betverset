@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { formatLiveMatchRow } from '@/lib/fixture-format';
 
 // GET /api/live/matches
 export async function GET() {
@@ -12,38 +13,7 @@ export async function GET() {
 
     if (error) throw error;
 
-    const formatted = (fixtures || []).map((doc: any) => ({
-      id: doc.id,
-      fixture_id: doc.id,
-      match_date: doc.kickoff_at,
-      status: doc.status,
-      elapsed: doc.elapsed,
-      home_team_id: doc.home_team_id,
-      home_team_name: doc.home_team_name,
-      away_team_id: doc.away_team_id,
-      away_team_name: doc.away_team_name,
-      home_goals: doc.home_goals,
-      away_goals: doc.away_goals,
-      fixture: {
-        id: doc.id,
-        date: doc.kickoff_at,
-        status: { short: doc.status, elapsed: doc.elapsed },
-      },
-      teams: {
-        home: { id: doc.home_team_id, name: doc.home_team_name, logo: doc.home_team_logo },
-        away: { id: doc.away_team_id, name: doc.away_team_name, logo: doc.away_team_logo }
-      },
-      league: {
-        id: doc.league_id,
-        name: doc.league_name,
-        logo: doc.league_logo,
-      },
-      goals: {
-        home: doc.home_goals,
-        away: doc.away_goals
-      },
-      ...doc.data
-    }));
+    const formatted = (fixtures || []).map((doc) => formatLiveMatchRow(doc));
 
     return NextResponse.json(formatted, {
       headers: { 'Cache-Control': 'no-store' },
